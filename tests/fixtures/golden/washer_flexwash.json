@@ -1,0 +1,22 @@
+{
+  "state_keys": [
+    "alarm_code",
+    "child_lock",
+    "cycle_active",
+    "delay_start_hours",
+    "detergent_low",
+    "diagnosis_status",
+    "drum_clean_cycles_remaining",
+    "energy_kwh",
+    "finish_time",
+    "job_beginning_status",
+    "machine_state",
+    "power_switch",
+    "progress",
+    "progress_percentage",
+    "remote_control",
+    "rinse_cycles",
+    "spin_speed",
+    "wash_temperature"
+  ]
+}
