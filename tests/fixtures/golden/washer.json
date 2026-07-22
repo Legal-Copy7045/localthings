@@ -11,6 +11,7 @@
     "drum_clean_cycles_remaining",
     "drum_clean_last_cleaned",
     "energy_kwh",
+    "energy_saved_kwh",
     "finish_time",
     "firmware_update",
     "job_beginning_status",
