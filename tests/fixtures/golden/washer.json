@@ -1,6 +1,8 @@
 {
   "state_keys": [
+    "ai_energy_level",
     "alarm_code",
+    "bubble_soak",
     "buzzer_sound",
     "child_lock",
     "cycle",
@@ -11,11 +13,14 @@
     "drum_clean_cycles_remaining",
     "drum_clean_last_cleaned",
     "energy_kwh",
+    "energy_saved_kwh",
     "finish_time",
     "firmware_update",
+    "intensive",
     "job_beginning_status",
     "machine_state",
     "power_switch",
+    "pre_wash",
     "progress",
     "progress_percentage",
     "remote_control",
