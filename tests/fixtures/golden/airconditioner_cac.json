@@ -2,6 +2,9 @@
   "state_keys": [
     "absence_power_saving_active",
     "absence_power_saving_mode",
+    "air_filter_pm1_status",
+    "air_filter_pm1_usage",
+    "air_filter_pm1_usage_hours",
     "air_filter_status",
     "air_filter_usage",
     "air_filter_usage_hours",
@@ -29,6 +32,7 @@
     "selfcheck_result",
     "selfcheck_status",
     "super_fine_dust",
-    "tropical_night_mode"
+    "tropical_night_mode",
+    "uv_led"
   ]
 }
