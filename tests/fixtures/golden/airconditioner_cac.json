@@ -31,6 +31,9 @@
     "selfcheck_error",
     "selfcheck_result",
     "selfcheck_status",
+    "sound_mode",
+    "sound_output",
+    "sound_volume",
     "super_fine_dust",
     "tropical_night_mode",
     "uv_led"
