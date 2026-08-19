@@ -1,5 +1,11 @@
 {
   "state_keys": [
+    "add_wash_alarm",
+    "add_wash_alarm_final_rinse",
+    "add_wash_alarm_rinse",
+    "add_wash_alarm_spin",
+    "add_wash_available",
+    "add_wash_indicator",
     "alarm_code",
     "bubble_soak",
     "child_lock",
