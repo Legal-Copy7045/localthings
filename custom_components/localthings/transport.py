@@ -18,6 +18,7 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Protocol
 
 import cbor2
+from smartthings_local.protocol.auth import AuthenticationProvider
 from smartthings_local.protocol.dtls_session import DtlsCoapSession
 
 from .const import (
@@ -31,6 +32,7 @@ from .const import (
     DTLS_LOCAL_PORT_BASE,
     TRANSPORT_LEGACY_HTTP,
 )
+from .session import authentication_provider_from_entry, entry_endpoint
 
 
 def local_source_port(host: str) -> int:
@@ -143,15 +145,20 @@ class DtlsTransport:
         host: str,
         port: int,
         *,
-        cert_pem: str,
-        key_pem: str,
+        cert_pem: str | None = None,
+        key_pem: str | None = None,
+        auth: AuthenticationProvider | None = None,
         on_notification: Callable[[str, bytes], None] | None = None,
         local_port: int | None = None,
     ) -> None:
+        """`auth` is what an entry's session uses (session.py picks it);
+        `cert_pem`/`key_pem` are the config flow's probe, which has no entry
+        yet. One or the other, as the library itself requires."""
         self._host = host
         self._port = port
         self._cert_pem = cert_pem
         self._key_pem = key_pem
+        self._auth = auth
         self._on_notification = on_notification
         self._local_port = local_port
         self._session: DtlsCoapSession | None = None
@@ -165,7 +172,11 @@ class DtlsTransport:
         return self._port
 
     def connect(self) -> None:
-        kwargs: dict[str, Any] = {"cert_pem": self._cert_pem, "key_pem": self._key_pem}
+        kwargs: dict[str, Any] = (
+            {"auth": self._auth}
+            if self._auth is not None
+            else {"cert_pem": self._cert_pem, "key_pem": self._key_pem}
+        )
         if self._on_notification is not None:
             kwargs["on_notification"] = self._on_notification
         if self._local_port is not None:
@@ -245,11 +256,11 @@ def create_transport(
             token=data[CONF_DEVICE_TOKEN],
             family=data.get(CONF_LEGACY_FAMILY),
         )
+    host, port = entry_endpoint(data)
     return DtlsTransport(
-        data[CONF_HOST],
-        data[CONF_PORT],
-        cert_pem=data[CONF_LEAF_CERT_PEM],
-        key_pem=data[CONF_LEAF_KEY_PEM],
+        host,
+        port,
+        auth=authentication_provider_from_entry(data),
         on_notification=on_notification,
         local_port=local_port,
     )
