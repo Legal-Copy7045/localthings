@@ -779,3 +779,34 @@ def test_every_filter_reset_writes_to_its_own_resource(capability, key, href):
         [s for s in href.strip("/").split("/") if s],
         {"x.com.samsung.da.filterReset": "On"},
     )
+
+
+@pytest.mark.parametrize(
+    "capability,key,href",
+    [
+        (common.WATER_FILTER, "filter_reset", "/filter/waterfilter/vs/0"),
+        (airconditioner.AIR_FILTER, "air_filter_reset", "/filter/airdustfilter/vs/0"),
+        (airconditioner.AIR_FILTER_PM1, "air_filter_pm1_reset", "/filter/airdustPM1filter/vs/0"),
+        (air_purifier.HEPA_FILTER, "hepa_filter_reset", "/filter/hepafilter/vs/0"),
+        (fridge.AIR_FILTER, "air_filter_reset", "/filter/airdustfilter/vs/0"),
+        (fridge.DEODOR_FILTER, "deodor_filter_reset", "/filter/deodorfilter/vs/0"),
+        (range_hood.HOOD_FILTER, "hood_filter_reset", "/filter/hoodfilter/vs/0"),
+    ],
+)
+def test_filter_reset_survives_the_resources_aware_write_call(capability, key, href):
+    """The coordinator offers every write_fn the four-argument
+    (payload, rep, href, resources) form first and falls back to three on
+    TypeError, so a write_fn's arity is part of its contract. Issue #461: a
+    fourth parameter carrying the bound path segments swallowed `resources`
+    instead, and the button posted to every href on the device at once
+    ('path_segs must contain at most 32 values'). Called the way the
+    coordinator calls it, the path must still be this filter's own."""
+    desc = next(e for e in capability.entities if e.key == key)
+    try:
+        result = desc.write_fn(desc.payload, {}, href, {"/power/vs/0": {}, href: {}})
+    except TypeError:
+        result = desc.write_fn(desc.payload, {}, href)
+    assert result == (
+        [s for s in href.strip("/").split("/") if s],
+        {"x.com.samsung.da.filterReset": "On"},
+    )

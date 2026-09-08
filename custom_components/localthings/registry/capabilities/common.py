@@ -629,6 +629,14 @@ def filter_reset_button(key: str, href: str) -> ButtonDesc:
     and hood resources here are extrapolation rather than measurement.
     """
     segs = [s for s in href.strip("/").split("/") if s]
+
+    def write(payload, _rep, _href=None):
+        # Three parameters exactly, with segs closed over rather than bound as
+        # a fourth: the coordinator tries write_fn(payload, rep, href,
+        # resources) first, so a fourth parameter catches the resources
+        # snapshot instead (#461 -- the button posted to every href at once).
+        return list(segs), {"x.com.samsung.da.filterReset": payload}
+
     return ButtonDesc(
         key=key,
         field="",
@@ -636,10 +644,7 @@ def filter_reset_button(key: str, href: str) -> ButtonDesc:
         icon="mdi:restart",
         entity_category="config",
         exists_fn=_filter_reset_supported,
-        write_fn=lambda p, rep, href=None, segs=segs: (
-            list(segs),
-            {"x.com.samsung.da.filterReset": p},
-        ),
+        write_fn=write,
     )
 
 
