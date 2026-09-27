@@ -220,13 +220,20 @@ def _clienthello_scan(host: str, ports: list[int], preferred: int | None = None)
         timeout=CLIENTHELLO_PROBE_TIMEOUT_S,
         retries=CLIENTHELLO_PROBE_RETRIES,
     )
+    # Which reply each port drew, since a fatal alert also counts as a
+    # responder: a refusal and a HelloVerifyRequest otherwise read the same
+    # here (#504).
+    replies = {
+        r.port: (r.response_kind, r.alert) for r in result.results if r.response_kind is not None
+    }
     _LOGGER.debug(
-        "DTLS probe of %s: outcome=%s selected=%s responders=%s dialled_live=%s",
+        "DTLS probe of %s: outcome=%s selected=%s responders=%s dialled_live=%s replies=%s",
         host,
         result.outcome,
         result.selected_port,
         result.responder_ports,
         result.live_ports,
+        replies,
     )
     if result.selected_port is not None:
         return [result.selected_port]

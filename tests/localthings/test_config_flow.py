@@ -698,6 +698,81 @@ def test_resolve_alert_logs_how_far_the_diagnostic_handshake_got(caplog) -> None
     assert "ServerHelloDone" in caplog.text
 
 
+def test_resolve_alert_logs_resends_by_count(caplog) -> None:
+    """A re-issued HelloVerifyRequest shows as one name but two sends (#504)."""
+    from collections import Counter
+
+    from smartthings_local.errors import SessionTimeoutError
+
+    from custom_components.localthings import config_flow
+
+    class _Result:
+        outcome = "live"
+        handshake_msgs = ("HelloVerifyRequest",)
+        alert = None
+
+        def __init__(self) -> None:
+            self.handshake_counts = Counter({"HelloVerifyRequest": 2})
+
+    caplog.set_level("DEBUG", logger="custom_components.localthings.config_flow")
+    with patch.object(config_flow, "_diagnostic_alert", lambda *a, **k: _Result()):
+        config_flow._resolve_alert(SessionTimeoutError(), MOCK_HOST, 49154, "CERT", "KEY")
+    assert "counts={'HelloVerifyRequest': 2}" in caplog.text
+
+
+def test_a_bare_alert_after_a_timeout_is_not_the_reason() -> None:
+    """#504: the real handshake timed out, then the diagnostic drew a fatal
+    handshake_failure with nothing ahead of it. The appliance was refusing
+    every new peer by then and never reached our certificate, so the
+    failure stays a timeout rather than "refused the handshake"."""
+    from smartthings_local.errors import SessionTimeoutError
+
+    from custom_components.localthings import config_flow
+
+    class _Result:
+        outcome = "rejected"
+        handshake_msgs = ()
+        alert = (2, "handshake_failure")
+
+    with patch.object(config_flow, "_diagnostic_alert", lambda *a, **k: _Result()):
+        name = config_flow._resolve_alert(SessionTimeoutError(), MOCK_HOST, 49154, "CERT", "KEY")
+    assert name is None
+
+
+def test_a_bare_alert_after_a_refusal_still_counts() -> None:
+    """Without the timeout, the same bare alert is the appliance's answer to
+    this handshake -- a cipher refusal, say -- and keeps its label."""
+    from smartthings_local.errors import SessionError
+
+    from custom_components.localthings import config_flow
+
+    class _Result:
+        outcome = "rejected"
+        handshake_msgs = ()
+        alert = (2, "handshake_failure")
+
+    with patch.object(config_flow, "_diagnostic_alert", lambda *a, **k: _Result()):
+        name = config_flow._resolve_alert(SessionError(), MOCK_HOST, 49154, "CERT", "KEY")
+    assert name == "handshake_failure"
+
+
+def test_an_alert_after_the_appliances_own_flight_still_counts() -> None:
+    """A certificate refusal comes after the appliance's own messages, so a
+    timeout ahead of it doesn't hide it."""
+    from smartthings_local.errors import SessionTimeoutError
+
+    from custom_components.localthings import config_flow
+
+    class _Result:
+        outcome = "rejected"
+        handshake_msgs = ("HelloVerifyRequest", "ServerHello", "CertificateRequest")
+        alert = (2, "unknown_ca")
+
+    with patch.object(config_flow, "_diagnostic_alert", lambda *a, **k: _Result()):
+        name = config_flow._resolve_alert(SessionTimeoutError(), MOCK_HOST, 49154, "CERT", "KEY")
+    assert name == "unknown_ca"
+
+
 def test_resolve_alert_is_none_when_the_diagnostic_handshake_also_fails() -> None:
     """A best-effort extra probe: its own failure must not raise out of
     _resolve_alert, it just leaves the caller with no alert to report."""

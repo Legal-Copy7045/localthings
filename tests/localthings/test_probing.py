@@ -4,19 +4,24 @@ from __future__ import annotations
 
 
 class _FakeLiveness:
-    """Stands in for smartthings_local's DtlsLivenessResult.
+    """Stands in for smartthings_local's DtlsLivenessResult. A reply is a
+    HelloVerifyRequest unless a test says otherwise, and `is_dtls_server`
+    keys on `response_kind`, as the real one does."""
 
-    The real `is_dtls_server` keys on `response_kind is not None`; this fake
-    keys on `responder_port is not None` instead. Harmless for the code
-    under test here (both are set together in every fixture below), but it
-    is drift from the contract the fake stands in for -- don't read this as
-    the real semantics.
-    """
-
-    def __init__(self, port: int, responder_port: int | None) -> None:
+    def __init__(
+        self,
+        port: int,
+        responder_port: int | None,
+        response_kind: str | None = None,
+        alert: tuple[int, str] | None = None,
+    ) -> None:
         self.port = port
         self.responder_port = responder_port
-        self.is_dtls_server = responder_port is not None
+        if response_kind is None and responder_port is not None:
+            response_kind = "HelloVerifyRequest"
+        self.response_kind = response_kind
+        self.alert = alert
+        self.is_dtls_server = response_kind is not None
 
 
 class _FakeProbeSet:
@@ -172,6 +177,31 @@ def test_clienthello_scan_selects_the_port_that_answered(monkeypatch) -> None:
 
     monkeypatch.setattr("smartthings_local.protocol.dtls_probe.probe_dtls_ports", _probe_ports)
     assert probing._clienthello_scan("10.0.0.1", dialled) == [49155]
+
+
+def test_clienthello_scan_logs_which_reply_each_port_drew(monkeypatch, caplog) -> None:
+    """A fatal alert counts as a responder too, so the log names the reply:
+    a refusal and a HelloVerifyRequest otherwise read the same (#504)."""
+    from custom_components.localthings import probing
+
+    def _probe_ports(host, ports, *, preferred_port=None, **kwargs):
+        results = (
+            _FakeLiveness(
+                port=49154,
+                responder_port=49154,
+                response_kind="Alert",
+                alert=(2, "handshake_failure"),
+            ),
+            _FakeLiveness(port=49155, responder_port=None),
+        )
+        return _FakeProbeSet(outcome="selected", selected_port=49154, results=results)
+
+    monkeypatch.setattr("smartthings_local.protocol.dtls_probe.probe_dtls_ports", _probe_ports)
+    caplog.set_level("DEBUG", logger="custom_components.localthings.probing")
+
+    probing._clienthello_scan("10.0.0.1", [49154, 49155])
+
+    assert "replies={49154: ('Alert', (2, 'handshake_failure'))}" in caplog.text
 
 
 def test_clienthello_scan_returns_every_responder_when_ambiguous(monkeypatch) -> None:
