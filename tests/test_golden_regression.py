@@ -1860,3 +1860,33 @@ def test_registry_reproduces_golden_state_keys_for_range_ne63a6111ss():
         f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
         f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
     )
+
+
+def test_registry_reproduces_golden_state_keys_for_airconditioner_aca_kr_tp2_21_an9000():
+    """System Fresh Air Ventilator (issue #522): routes only by /oic/d's
+    oic.d.airconditioner, and its modes are ventilation ones."""
+    from tests.conftest import _load_device
+
+    name = "airconditioner_aca_kr_tp2_21_an9000"
+    golden = json.loads((GOLDEN / f"{name}.json").read_text())
+    state_keys = _new_state_keys(
+        name, _load_device(name), device_types=("oic.wk.d", "oic.d.airconditioner")
+    )
+    assert set(state_keys) == set(golden["state_keys"]), (
+        f"state_keys mismatch:\n"
+        f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
+        f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
+    )
+
+
+def test_registry_reproduces_golden_state_keys_for_microwave_nw9300md():
+    """NW9300MD wall combo (issue #525): the microwave cavity is the master,
+    the oven cavity an indexed subdevice at /device/2."""
+    name = "microwave_nw9300md"
+    golden = json.loads((GOLDEN / f"{name}.json").read_text())
+    state_keys = _new_subdevice_aware_state_keys(name, device_types=("oic.wk.d", "oic.d.oven"))
+    assert set(state_keys) == set(golden["state_keys"]), (
+        f"state_keys mismatch:\n"
+        f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
+        f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
+    )
