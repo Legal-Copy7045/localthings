@@ -118,6 +118,12 @@
       "add_wash_indicator": {
         "name": "AddWash gotowe"
       },
+      "pre_wash_selected": {
+        "name": "Wybrano pranie wstępne"
+      },
+      "delay_wash_set": {
+        "name": "Ustawiono opóźniony start"
+      },
       "stick_ble_connected": {
         "name": "Odkurzacz pionowy połączony przez BLE"
       },
@@ -138,6 +144,9 @@
       },
       "front_vent_open": {
         "name": "Przedni wylot powietrza"
+      },
+      "dual_setpoint_enabled": {
+        "name": "Podwójna nastawa włączona"
       }
     },
     "button": {
@@ -185,6 +194,9 @@
       },
       "stop": {
         "name": "Zatrzymaj"
+      },
+      "start_cooking": {
+        "name": "Rozpocznij gotowanie"
       }
     },
     "climate": {
@@ -429,7 +441,7 @@
         "name": "Cykl",
         "state": {
           "01": "Normalny",
-          "06": "Suszenie czasowe",
+          "06": "Czas suszenia",
           "16": "Bawełna",
           "17": "Super szybki",
           "18": "Syntetyki",
@@ -469,7 +481,7 @@
           "37": "Bluzki",
           "38": "Do prasowania",
           "39": "Osuszanie pomieszczenia",
-          "3a": "Higieniczna pielęgnacja",
+          "3a": "Higiena",
           "3b": "Pościel/odkurzanie",
           "3c": "Odzież sportowa",
           "3d": "Jeansy"
@@ -669,6 +681,15 @@
       "rinse_cycles": {
         "name": "Liczba płukań"
       },
+      "laundry_out_time": {
+        "name": "Przypomnienie o wyjęciu prania",
+        "state": {
+          "0": "Wyłączone",
+          "30": "Co 30 min",
+          "60": "Co 60 min",
+          "90": "Co 90 min"
+        }
+      },
       "sensing_mode": {
         "name": "Działanie AI Purify",
         "state": {
@@ -692,6 +713,17 @@
           "01": "Niska",
           "02": "Średnia",
           "03": "Wysoka"
+        }
+      },
+      "soil_level": {
+        "name": "Stopień zabrudzenia",
+        "state": {
+          "none": "Brak",
+          "extra_light": "Bardzo lekki",
+          "light": "Lekki",
+          "normal": "Normalny",
+          "heavy": "Mocny",
+          "extra_heavy": "Bardzo mocny"
         }
       },
       "sound_mode": {
@@ -752,7 +784,7 @@
           "5d": "Super Eco",
           "5e": "Delikatne",
           "5f": "Dziecięce",
-          "60": "Outdoor",
+          "60": "Odzież wierzchnia",
           "61": "Ciemne kolory",
           "63": "Czyszczenie bębna",
           "64": "Płukanie + wirowanie",
@@ -795,7 +827,7 @@
           "04": "Szybkie pranie",
           "05": "Wełna/bielizna",
           "06": "Pościel",
-          "07": "Outdoor",
+          "07": "Odzież wierzchnia",
           "08": "Płukanie + wirowanie",
           "09": "Czyszczenie bębna",
           "0a": "Ręczniki",
@@ -813,7 +845,7 @@
           "16": "Bluzki",
           "17": "Pobrany program",
           "18": "Soft Bubble",
-          "19": "AI Wash",
+          "19": "Pranie optymalne",
           "1a": "Koszule",
           "1b": "Bawełna",
           "1c": "Eco 40-60",
@@ -854,7 +886,7 @@
           "60": "Samoczyszczenie+",
           "65": "Tkaniny kolorowe",
           "66": "Jeansy",
-          "69": "AI Wash",
+          "69": "Pranie optymalne",
           "6a": "Wełna",
           "6b": "Jeansy",
           "6c": "Bluzki",
@@ -866,7 +898,7 @@
           "72": "Koszule",
           "73": "Dezynfekcja",
           "74": "Czyszczenie bębna",
-          "75": "Outdoor",
+          "75": "Odzież wierzchnia",
           "76": "Dziecięce",
           "77": "Bawełna",
           "78": "Płukanie + wirowanie",
@@ -1040,6 +1072,9 @@
       "burner_state": {
         "name": "Pole grzejne {number} — stan"
       },
+      "burner_power_level": {
+        "name": "Pole grzejne {number} — poziom mocy"
+      },
       "clean_level": {
         "name": "Poziom czyszczenia"
       },
@@ -1167,6 +1202,14 @@
       },
       "drum_clean_last_cleaned": {
         "name": "Ostatnie czyszczenie bębna"
+      },
+      "quick_wash": {
+        "name": "Szybkie pranie",
+        "state": {
+          "not_used": "Niedostępne",
+          "off": "Wyłączone",
+          "on": "Włączone"
+        }
       },
       "dryer_type": {
         "name": "Typ suszarki",
@@ -1450,6 +1493,24 @@
           "medium": "Średnia",
           "on": "Wł."
         }
+      },
+      "dual_setpoint_cooling": {
+        "name": "Podwójna nastawa — chłodzenie"
+      },
+      "dual_setpoint_heating": {
+        "name": "Podwójna nastawa — grzanie"
+      },
+      "auto_changeover_cool_primary_offset": {
+        "name": "Automatyczne przełączanie — główne przesunięcie chłodzenia"
+      },
+      "auto_changeover_cool_secondary_offset": {
+        "name": "Automatyczne przełączanie — dodatkowe przesunięcie chłodzenia"
+      },
+      "auto_changeover_heat_primary_offset": {
+        "name": "Automatyczne przełączanie — główne przesunięcie grzania"
+      },
+      "auto_changeover_heat_secondary_offset": {
+        "name": "Automatyczne przełączanie — dodatkowe przesunięcie grzania"
       }
     },
     "switch": {
@@ -1686,6 +1747,9 @@
       },
       "booster_oscillation": {
         "name": "Oscylacja boostera"
+      },
+      "auto_changeover": {
+        "name": "Automatyczne przełączanie"
       }
     },
     "time": {
@@ -1972,6 +2036,39 @@
     },
     "service_device_not_loaded": {
       "message": "To urządzenie nie jest jeszcze połączone. Spróbuj ponownie, gdy się wczyta."
+    },
+    "cook_start_not_supported": {
+      "message": "To urządzenie nie zgłasza żadnego trybu, który można uruchomić zdalnie, więc Home Assistant nie może go uruchomić."
+    },
+    "cook_start_not_idle": {
+      "message": "Urządzenie już gotuje. Najpierw je zatrzymaj albo zmień temperaturę i czas gotowania w trakcie pracy."
+    },
+    "cook_mode_required": {
+      "message": "Najpierw wybierz tryb. To urządzenie można uruchomić w trybach: {startable}."
+    },
+    "cook_mode_not_startable": {
+      "message": "Trybu {mode} nie można uruchomić zdalnie w tym urządzeniu. Można uruchomić: {startable}."
+    },
+    "cook_mode_unavailable": {
+      "message": "Tryb {mode} nie jest teraz dostępny w tej komorze. Można uruchomić: {startable}."
+    },
+    "cook_temperature_not_supported": {
+      "message": "Tryb {mode} nie ma ustawienia temperatury."
+    },
+    "cook_temperature_required": {
+      "message": "Tryb {mode} wymaga temperatury."
+    },
+    "cook_temperature_not_a_choice": {
+      "message": "Tryb {mode} przyjmuje tylko {choices}."
+    },
+    "cook_temperature_out_of_range": {
+      "message": "Tryb {mode} przyjmuje temperaturę od {min} do {max}."
+    },
+    "cook_duration_not_supported": {
+      "message": "Tryb {mode} nie ma czasu gotowania."
+    },
+    "cook_duration_out_of_range": {
+      "message": "Tryb {mode} przyjmuje czas gotowania od {min} do {max}."
     }
   }
 }
