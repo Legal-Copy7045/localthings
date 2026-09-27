@@ -30,10 +30,10 @@ different from an oven, and defined fresh here:
 
 Cooking-mode writes are unproven here, same caveat as oven.py's OVEN_MODE
 -- exposed as a SelectDesc for fidelity, first real-world write is the test.
-Starting a cook is a separate, unsolved problem
-(docs/investigations/oven-cycle-start.md); note that every `MicroWave*` mode
-in the corpus is `Setting`-only in modeSpec, so whatever lands there will
-not start the magnetron.
+A cook starts the way an oven's does (cook.py, oven.START_COOKING_BUTTON),
+only for modes the board's modeSpec declares startable -- and every
+`MicroWave*` mode in the corpus is `Setting`-only, so a start never runs
+the magnetron.
 
 DAWIT 3.0 generation (issue #433, OT80H30-class over-the-range combi):
 this board answers none of the hrefs above -- no /oven/vs/0, /mode/vs/0,
@@ -52,11 +52,10 @@ path, not permission. Same call as common.py's KIDS_LOCK_VS_FALLBACK
 always error.
 """
 
-import json
-
 from ..capability import Capability
 from ..entities import BinarySensorDesc, NumberDesc, SelectDesc, SensorDesc, SwitchDesc
 from .common import int_or_none, normalize_temp_unit, parse_iso_utc
+from .cook import PARAM_MODE, PARAM_TEMPERATURE, mode_specs
 from .laundry import option_value, option_write
 
 # ---------------------------------------------------------------------------
@@ -102,23 +101,11 @@ def _microwave_temp_unit(rep):
 def _mode_temp_ranges(resources):
     """{mode: (min, max, step)} in °C for every modeSpec entry with a
     temperature range; modes without one report 'NotSupported'."""
-    spec = (resources.get("/mode/vs/0") or {}).get("x.com.samsung.da.modeSpec")
-    if isinstance(spec, str):
-        try:
-            spec = json.loads(spec)
-        except ValueError:
-            return {}
-    ranges = {}
-    for entry in spec if isinstance(spec, list) else ():
-        if not isinstance(entry, dict):
-            continue
-        lo = int_or_none(entry.get("tempMinC"))
-        hi = int_or_none(entry.get("tempMaxC"))
-        if lo is None or hi is None or lo > hi:
-            continue
-        step = int_or_none(entry.get("tempIntervalC")) or SETPOINT_STEP_C
-        ranges[entry.get("mode")] = (lo, hi, step)
-    return ranges
+    return {
+        name: (temp.minimum, temp.maximum, temp.step or SETPOINT_STEP_C)
+        for name, spec in mode_specs(resources).items()
+        if (temp := spec.temps.get("C")) is not None
+    }
 
 
 def _setpoint_bounds(resources):
@@ -294,6 +281,7 @@ MICROWAVE_SETPOINT = Capability(
                 items[0].get("x.com.samsung.da.desired") if items else None
             ),
             write_fn=_setpoint_write,
+            cook_param=PARAM_TEMPERATURE,
         ),
         SensorDesc(
             key="current_temp_c",
@@ -320,6 +308,7 @@ MICROWAVE_MODE = Capability(
             options=_cooking_mode_options,
             value_fn=lambda v: v[0] if v else None,
             write_fn=_mode_write,
+            cook_param=PARAM_MODE,
         ),
         SwitchDesc(
             key="sound",

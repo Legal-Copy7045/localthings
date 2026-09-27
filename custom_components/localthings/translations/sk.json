@@ -194,6 +194,9 @@
       },
       "stop": {
         "name": "Zastaviť"
+      },
+      "start_cooking": {
+        "name": "Spustiť varenie"
       }
     },
     "climate": {
@@ -2033,6 +2036,39 @@
     },
     "service_device_not_loaded": {
       "message": "Toto zariadenie ešte nie je pripojené. Skúste to znova, keď sa načíta."
+    },
+    "cook_start_not_supported": {
+      "message": "Tento spotrebič nehlási žiadny režim, ktorý možno spustiť na diaľku, takže ho Home Assistant nemôže spustiť."
+    },
+    "cook_start_not_idle": {
+      "message": "Spotrebič už varí. Najprv ho zastavte, alebo zmeňte teplotu a čas prípravy počas chodu."
+    },
+    "cook_mode_required": {
+      "message": "Najprv zvoľte režim. Tento spotrebič možno spustiť v režimoch: {startable}."
+    },
+    "cook_mode_not_startable": {
+      "message": "Režim {mode} nemožno na tomto spotrebiči spustiť na diaľku. Možno spustiť: {startable}."
+    },
+    "cook_mode_cavity_unsupported": {
+      "message": "Režim {mode} používa jeden priestor dvojitej rúry, ktorý Home Assistant zatiaľ nevie spustiť."
+    },
+    "cook_temperature_not_supported": {
+      "message": "Režim {mode} nemá nastavenie teploty."
+    },
+    "cook_temperature_required": {
+      "message": "Režim {mode} vyžaduje teplotu."
+    },
+    "cook_temperature_not_a_choice": {
+      "message": "Režim {mode} prijíma len {choices}."
+    },
+    "cook_temperature_out_of_range": {
+      "message": "Režim {mode} prijíma teplotu od {min} do {max}."
+    },
+    "cook_duration_not_supported": {
+      "message": "Režim {mode} nemá čas prípravy."
+    },
+    "cook_duration_out_of_range": {
+      "message": "Režim {mode} prijíma čas prípravy od {min} do {max}."
     }
   }
 }

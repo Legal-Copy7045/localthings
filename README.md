@@ -113,6 +113,12 @@ On these appliances, a chosen cycle, temperature, rinse count or spin speed take
 
 This interface speaks only TLS 1.0 and presents a certificate LocalThings can't verify, so LocalThings accepts both on this one connection. No other part of LocalThings relaxes TLS.
 
+### Starting an oven, range or microwave
+
+An oven only starts when the mode, temperature and cook time arrive together. While it's idle, the mode select, setpoint and cook time hold your choice, starting from the mode's own defaults, and the **Start cooking** button sends them. The `localthings.start_cooking` action does the same in one call, with any value you leave out taken from the mode's defaults. Once a cook is running, changes to the setpoint and cook time go straight to the oven.
+
+Each appliance reports which of its modes a remote may start, and the temperature and time limits for each. LocalThings follows that list. The button appears only on an appliance that reports at least one mode it can start, and a start outside those limits is refused with the allowed range. Some modes can't be started remotely by design: on every microwave seen so far, none of the microwave-power modes can be. Remote Control has to be on at the appliance, and it switches off after a power cut.
+
 ### Multi-unit air conditioners
 
 Some installations run several indoor units from one outdoor unit, all at one IP address. LocalThings finds the extra units after its first connection. Each unit gets its own Home Assistant device and climate card, linked to the main unit. LocalThings skips the unused slots some systems report. If a unit you expect is missing, attach a diagnostics download to an issue.

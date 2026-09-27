@@ -248,6 +248,39 @@
     },
     "service_device_not_loaded": {
       "message": "Este dispositivo aún no está conectado. Vuelve a intentarlo cuando se haya cargado."
+    },
+    "cook_start_not_supported": {
+      "message": "Este aparato no indica ningún modo que se pueda iniciar a distancia, así que Home Assistant no puede iniciarlo."
+    },
+    "cook_start_not_idle": {
+      "message": "El aparato ya está cocinando. Deténgalo primero, o cambie la temperatura y el tiempo mientras funciona."
+    },
+    "cook_mode_required": {
+      "message": "Elija primero un modo de cocción. Este aparato se puede iniciar en: {startable}."
+    },
+    "cook_mode_not_startable": {
+      "message": "{mode} no se puede iniciar a distancia en este aparato. Se puede iniciar en: {startable}."
+    },
+    "cook_mode_cavity_unsupported": {
+      "message": "{mode} usa una de las dos cavidades del horno, que Home Assistant aún no puede iniciar."
+    },
+    "cook_temperature_not_supported": {
+      "message": "{mode} no admite temperatura."
+    },
+    "cook_temperature_required": {
+      "message": "{mode} necesita una temperatura."
+    },
+    "cook_temperature_not_a_choice": {
+      "message": "{mode} solo admite {choices}."
+    },
+    "cook_temperature_out_of_range": {
+      "message": "{mode} admite una temperatura de {min} a {max}."
+    },
+    "cook_duration_not_supported": {
+      "message": "{mode} no admite tiempo de cocción."
+    },
+    "cook_duration_out_of_range": {
+      "message": "{mode} admite un tiempo de cocción de {min} a {max}."
     }
   },
   "entity": {
@@ -445,6 +478,9 @@
       },
       "stop": {
         "name": "Detener"
+      },
+      "start_cooking": {
+        "name": "Iniciar cocción"
       }
     },
     "climate": {

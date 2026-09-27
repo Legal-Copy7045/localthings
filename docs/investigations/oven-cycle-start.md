@@ -1,9 +1,13 @@
 # Starting an oven or microwave cycle
 
-A cook start has been measured working on one board. The cook parameters
-and the run command go to the device collection in a single write, not to
-each resource separately, which is the one shape none of the attempts
-below used.
+A cook start has been measured working on two boards: an NV7000BS wall
+oven and #473's NE63A6111SS range. The cook parameters and the run command
+go to the device collection in a single write, not to each resource
+separately, which is the one shape none of the attempts below used.
+
+LocalThings now starts a cook this way (`registry/capabilities/cook.py`),
+only in a mode the board's own `modeSpec` declares `Start&Setting` and
+within that mode's limits. A board with no `modeSpec` gets no start.
 
 This file keeps the earlier results, because they still bound what the
 answer can be, and revises what they mean. The probe ladder at the end is
@@ -45,6 +49,20 @@ t+4s    /operational/state/vs/0   state = "Run", opTime = "00:01:00"
 
 Stopping is an ordinary single-resource write of `state: "Ready"`, which
 is why stop has always worked while start has not.
+
+Reproduced 2026-09-26 on #473's NE63A6111SS range with Bake, 350F and
+`00:10:00`: 30 s later the operational state read `Run`, `/oven/vs/0`
+`Preheat`, and `desired` 350. Two more observations from that board:
+
+- A `/device/0` batch carrying only the mode element put the panel into
+  setting (a blinking "000") and then cancelled. The reporter says the
+  three elements can also go as separate `/device/0` writes and that the
+  `/devices/0` marker isn't needed, but not whether those separate writes
+  started a cook, so LocalThings sends the one measured batch.
+- Its diagnostics were captured in Keep Warm, which has no cook time, with
+  the operational state and the cavity both reading `Ready`. So `Ready`
+  alone is not idle; `cook.is_idle` also wants the mode at `NoOperation`,
+  as every idle dump reports.
 
 **Remote Control has to be on at the panel, and is worth checking before
 reading anything into a result.** With it off, the cook parameters are

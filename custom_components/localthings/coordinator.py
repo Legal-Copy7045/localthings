@@ -7,6 +7,7 @@ import contextlib
 import logging
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import asdict
 from datetime import timedelta
 from typing import Any, cast
@@ -55,6 +56,7 @@ from .registry import CAPABILITIES
 from .registry.adapter import _key, flatten
 from .registry.batch import parse_device0_batch
 from .registry.by_type import resolve as resolve_registry
+from .registry.capabilities import cook
 from .registry.capabilities.common import (
     merge_items_field,
     merge_options_field,
@@ -437,6 +439,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Cloud "Download" programs discovered on this device (issue #342).
         # Same restore-from-entry shape as _learned above; see cloudcourse.py.
         self._cloud = CloudCourses(entry.data.get(CONF_CLOUD_COURSES))
+        # An oven's mode/setpoint/cook time chosen while idle, held until a
+        # start sends them (issue #473). MAIN only; see cook.HeldCook.
+        self._held_cook = cook.HeldCook()
         # Narrowed to this device's own climate hrefs once discovery has
         # run -- see _refresh_learnable_hrefs.
         self._learnable_hrefs: set[str] = set()
@@ -507,7 +512,8 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def entity_resources(self) -> dict[str, dict]:
         """The live snapshot as entity descriptors should see it: the device's
         own reps, plus this integration's discovered cloud programs merged
-        onto /course/vs/0 under cloudcourse.FIELD (issue #342).
+        onto /course/vs/0 under cloudcourse.FIELD (issue #342), and an idle
+        oven's held cook choices (issue #473, cook.HeldCook).
 
         Merged at read time rather than applied to the state cache, so the
         synthetic field can never be polled over or written to the device --
@@ -525,7 +531,7 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         this per-subdevice means keying the store by actual href the way
         LearnedModes does, and migrating the persisted shape.
         """
-        snapshot = self.last_resources
+        snapshot = self._held_cook.overlay(self.last_resources)
         rep = snapshot.get(cloudcourse.COURSE_HREF)
         if rep is None:
             return snapshot
@@ -2211,6 +2217,15 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         or the laundry firmware declares itself writable without Smart
         Control."""
         desc = bound_entity.desc
+        cook_param = getattr(desc, "cook_param", None)
+        if cook_param == cook.PARAM_START:
+            await self.async_start_cooking(bound_entity.subdevice)
+            return
+        if cook_param is not None and self._holds_cook(bound_entity.subdevice):
+            # Nothing reaches the appliance, so Remote Control is only
+            # checked at the start.
+            self._hold_cook(desc, cook_param, payload)
+            return
         write_fn = getattr(desc, "write_fn", None)
         if write_fn is None:
             return
@@ -2323,6 +2338,30 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 write_href, settle_s=self._POST_TIMEOUT_S + self._POLL_TIMEOUT_S
             )
 
+        def _rearm() -> None:
+            # The retry's own reconnect pause + second PUT can eat well
+            # into the settle window armed above, leaving too little of it
+            # for the confirming poll below and reviving the
+            # revert-then-reapply symptom settle_s exists to prevent (issue
+            # #9). Re-arm it fresh now that the write actually landed.
+            if not write_only:
+                self._observe.mark_write_pending(
+                    write_href, settle_s=self._POST_TIMEOUT_S + self._POLL_TIMEOUT_S
+                )
+
+        await self._async_put(path_segs, body, write_href, on_retry=_rearm)
+        await self.async_request_refresh()
+
+    async def _async_put(
+        self,
+        path_segs: list[str],
+        body: dict | list,
+        write_href: str,
+        on_retry: Callable[[], None] | None = None,
+    ) -> None:
+        """PUT `body`, reconnecting and retrying once on a dead session.
+        Raises HomeAssistantError if the retry fails too."""
+
         def _do_put():
             if self._session is None:
                 self._connect_session()
@@ -2360,16 +2399,91 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         translation_key="command_failed",
                         translation_placeholders={"href": write_href, "error": str(e2)},
                     ) from e2
-                # The retry's own reconnect pause + second PUT can eat well
-                # into the settle window armed above, leaving too little of
-                # it for the confirming poll below and reviving the
-                # revert-then-reapply symptom settle_s exists to prevent
-                # (issue #9). Re-arm it fresh now that the write actually
-                # landed.
-                if not write_only:
-                    self._observe.mark_write_pending(
-                        write_href, settle_s=self._POST_TIMEOUT_S + self._POLL_TIMEOUT_S
-                    )
+                if on_retry is not None:
+                    on_retry()
+
+    # ------------------------------------------------------------------
+    # Oven and microwave cook start (issue #473). See cook.py.
+    # ------------------------------------------------------------------
+
+    def _holds_cook(self, subdevice: Subdevice) -> bool:
+        """Whether a mode/setpoint/cook-time write is held rather than sent:
+        an idle MAIN whose modeSpec declares a mode it can start. Anything
+        else writes through as before -- mid-cook changes hold on the
+        board, and a board that can't be started keeps the plain write."""
+        if subdevice != MAIN:
+            return False
+        resources = self.device_resources(MAIN)
+        return cook.is_idle(resources) and bool(cook.startable_modes(resources))
+
+    def _hold_cook(self, desc: Any, param: str, payload: Any) -> None:
+        validate_fn = getattr(desc, "validate_fn", None)
+        resources = self.device_resources(MAIN)
+        if validate_fn is not None and (error := validate_fn(payload, {}, resources)):
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key=error)
+        # The cook-time number is in minutes; the plan counts seconds.
+        value = round(float(payload) * 60) if param == cook.PARAM_DURATION else payload
+        try:
+            self._held_cook.hold(param, value, resources)
+        except cook.CookStartError as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key=err.key,
+                translation_placeholders=err.placeholders,
+            ) from err
+        self._log.info("holding %s=%r until the cook starts", param, value)
+        self._canonical_cache.clear()
+        self.async_set_updated_data(flatten(self.bound, self.entity_resources()))
+
+    async def async_start_cooking(
+        self,
+        subdevice: Subdevice = MAIN,
+        *,
+        mode: str | None = None,
+        temperature: float | None = None,
+        duration: int | None = None,
+    ) -> None:
+        """Start a cook in one Collection write to `/device/0`.
+
+        With no arguments this starts what the mode/setpoint/cook-time
+        entities hold; with any, it starts exactly those (`temperature` in
+        the oven's own unit, `duration` in seconds) and fills the rest from
+        the mode's own defaults. Either way it is checked against the
+        board's modeSpec first, and a rejected start raises before anything
+        is sent.
+        """
+        if subdevice != MAIN:
+            # Every start measured was on a single-subdevice appliance, and
+            # which inner hrefs a second subdevice's batch takes is unknown.
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="cook_start_not_supported"
+            )
+        raw_resources = self._cache.snapshot()
+        if not self._entry.options.get(
+            CONF_BYPASS_REMOTE_CONTROL, False
+        ) and not remote_control_enabled(raw_resources):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="remote_control_disabled"
+            )
+        resources = self.device_resources(MAIN)
+        try:
+            if mode is None and temperature is None and duration is None:
+                plan = self._held_cook.plan(resources)
+            else:
+                plan = cook.plan_start(resources, mode, temperature, duration)
+        except cook.CookStartError as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key=err.key,
+                translation_placeholders=err.placeholders,
+            ) from err
+        self._log.info("starting cook: %s", plan)
+        # No readback of /device/0 after the write: smartthings-local found
+        # the fetch-back itself is what reverts some boards, and neither
+        # measured start had one.
+        await self._async_put(["device", "0"], plan.batch(), "/device/0")
+        self._held_cook.clear()
+        self._canonical_cache.clear()
         await self.async_request_refresh()
 
     # ------------------------------------------------------------------

@@ -1,10 +1,10 @@
-"""Home Assistant services for direct OCF resource read/write access
-(issue #300): a raw-transport escape hatch for reverse-engineering a
-device's write contract -- an ordered multi-write sequence with settle
-delays and a delayed re-read, which the single-write options-flow debug
-panel can't express. Both sit on the same coordinator primitives the panel
-now calls too (config_flow.py), so there is exactly one code path that
-performs a raw write.
+"""Home Assistant services: `start_cooking` (issue #473), and direct OCF
+resource read/write access (issue #300) -- a raw-transport escape hatch for
+reverse-engineering a device's write contract, as an ordered multi-write
+sequence with settle delays and a delayed re-read, which the single-write
+options-flow debug panel can't express. Both raw services sit on the same
+coordinator primitives the panel now calls too (config_flow.py), so there
+is exactly one code path that performs a raw write.
 
 Kept thin on purpose: session/lock ownership lives on the coordinator
 (coordinator.py). This module only resolves the service call's device
@@ -17,13 +17,16 @@ from __future__ import annotations
 from typing import Any, cast
 
 import voluptuous as vol
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from homeassistant.util.unit_conversion import TemperatureConverter
 
-from .const import DOMAIN, SERVICE_READ_RESOURCE, SERVICE_WRITE_RESOURCE
+from .const import DOMAIN, SERVICE_READ_RESOURCE, SERVICE_START_COOKING, SERVICE_WRITE_RESOURCE
 from .coordinator import LocalThingsCoordinator, normalize_href
+from .registry.capabilities import cook
 from .registry.encode import json_safe
 from .registry.subdevices import MAIN, Subdevice
 
@@ -35,6 +38,9 @@ ATTR_WRITES = "writes"
 ATTR_VERIFY_AFTER = "verify_after"
 ATTR_HOLD_SESSION_LOCK = "hold_session_lock"
 ATTR_DEVICE_ID = "device_id"
+ATTR_MODE = "mode"
+ATTR_TEMPERATURE = "temperature"
+ATTR_DURATION = "duration"
 
 _WRITE_ITEM_SCHEMA = vol.Schema(
     {
@@ -70,6 +76,16 @@ _READ_RESOURCE_SCHEMA = vol.Schema(
     {
         **cv.TARGET_SERVICE_FIELDS,
         vol.Optional(ATTR_HREF): str,
+    }
+)
+
+
+_START_COOKING_SCHEMA = vol.Schema(
+    {
+        **cv.TARGET_SERVICE_FIELDS,
+        vol.Optional(ATTR_MODE): cv.string,
+        vol.Optional(ATTR_TEMPERATURE): vol.Coerce(float),
+        vol.Optional(ATTR_DURATION): cv.positive_time_period,
     }
 )
 
@@ -206,8 +222,31 @@ async def _async_read_resource(hass: HomeAssistant, call: ServiceCall) -> Servic
     return cast(ServiceResponse, json_safe(read_result))
 
 
+async def _async_start_cooking(hass: HomeAssistant, call: ServiceCall) -> None:
+    coordinator, subdevice, _device_id = _resolve_target(hass, call)
+    temperature = call.data.get(ATTR_TEMPERATURE)
+    if temperature is not None:
+        # Given in Home Assistant's unit, as the setpoint entity shows it;
+        # the oven takes its own.
+        unit = cook.device_unit(coordinator.device_resources(subdevice))
+        if unit is not None:
+            temperature = TemperatureConverter.convert(
+                temperature,
+                hass.config.units.temperature_unit,
+                UnitOfTemperature.CELSIUS if unit == "Celsius" else UnitOfTemperature.FAHRENHEIT,
+            )
+    duration = call.data.get(ATTR_DURATION)
+    await coordinator.async_start_cooking(
+        subdevice,
+        mode=call.data.get(ATTR_MODE),
+        temperature=temperature,
+        duration=int(duration.total_seconds()) if duration is not None else None,
+    )
+
+
 def async_setup_services(hass: HomeAssistant) -> None:
-    """Register the write_resource/read_resource services (issue #300).
+    """Register start_cooking (issue #473) and write_resource/read_resource
+    (issue #300).
 
     Called once from `async_setup`, not per config entry: services are
     process-global, and `hass.services.async_register` on an
@@ -222,6 +261,9 @@ def async_setup_services(hass: HomeAssistant) -> None:
     async def _handle_read(call: ServiceCall) -> ServiceResponse:
         return await _async_read_resource(hass, call)
 
+    async def _handle_start_cooking(call: ServiceCall) -> None:
+        await _async_start_cooking(hass, call)
+
     hass.services.async_register(
         DOMAIN,
         SERVICE_WRITE_RESOURCE,
@@ -235,4 +277,10 @@ def async_setup_services(hass: HomeAssistant) -> None:
         _handle_read,
         schema=_READ_RESOURCE_SCHEMA,
         supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_START_COOKING,
+        _handle_start_cooking,
+        schema=_START_COOKING_SCHEMA,
     )

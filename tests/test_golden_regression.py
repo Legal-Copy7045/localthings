@@ -1845,3 +1845,18 @@ def test_registry_reproduces_golden_state_keys_for_washer_ww90dg6u25le():
         f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
         f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
     )
+
+
+def test_registry_reproduces_golden_state_keys_for_range_ne63a6111ss():
+    """NE63A6111SS (issue #473), the second board measured starting a cook
+    from one /device/0 write. Captured in Keep Warm."""
+    from tests.conftest import _load_device
+
+    resources = _load_device("range_ne63a6111ss")
+    golden = json.loads((GOLDEN / "range_ne63a6111ss.json").read_text())
+    state_keys = _new_state_keys("range_ne63a6111ss", resources)
+    assert set(state_keys) == set(golden["state_keys"]), (
+        f"state_keys mismatch:\n"
+        f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
+        f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
+    )

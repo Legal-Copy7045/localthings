@@ -194,6 +194,9 @@
       },
       "stop": {
         "name": "Arresto"
+      },
+      "start_cooking": {
+        "name": "Avvia cottura"
       }
     },
     "climate": {
@@ -2033,6 +2036,39 @@
     },
     "service_device_not_loaded": {
       "message": "Questo dispositivo non è ancora connesso. Riprova una volta caricato."
+    },
+    "cook_start_not_supported": {
+      "message": "Questo apparecchio non indica alcuna modalità avviabile da remoto, quindi Home Assistant non può avviarlo."
+    },
+    "cook_start_not_idle": {
+      "message": "L'apparecchio sta già cuocendo. Fermalo prima, oppure modifica temperatura e tempo durante la cottura."
+    },
+    "cook_mode_required": {
+      "message": "Scegli prima una modalità di cottura. Questo apparecchio può essere avviato in: {startable}."
+    },
+    "cook_mode_not_startable": {
+      "message": "{mode} non può essere avviata da remoto su questo apparecchio. Modalità avviabili: {startable}."
+    },
+    "cook_mode_cavity_unsupported": {
+      "message": "{mode} usa una delle due cavità del forno, che Home Assistant non può ancora avviare."
+    },
+    "cook_temperature_not_supported": {
+      "message": "{mode} non prevede una temperatura."
+    },
+    "cook_temperature_required": {
+      "message": "{mode} richiede una temperatura."
+    },
+    "cook_temperature_not_a_choice": {
+      "message": "{mode} accetta solo {choices}."
+    },
+    "cook_temperature_out_of_range": {
+      "message": "{mode} accetta una temperatura da {min} a {max}."
+    },
+    "cook_duration_not_supported": {
+      "message": "{mode} non prevede un tempo di cottura."
+    },
+    "cook_duration_out_of_range": {
+      "message": "{mode} accetta un tempo di cottura da {min} a {max}."
     }
   }
 }
