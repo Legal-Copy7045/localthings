@@ -29,7 +29,7 @@ NQ7000B): the write contract is the one verified on a TP1X_DA-KS range
 (issue #404), not yet confirmed on a microwave-class board.
 """
 
-from ..capabilities import common, ignored, microwave, oven, range_hood
+from ..capabilities import common, dishwasher, ignored, microwave, oven, range_hood
 from ..capabilities import range as range_caps
 from ._base import DeviceRegistry, _build
 
@@ -54,6 +54,9 @@ REGISTRY = DeviceRegistry(
             range_hood.HOOD_STATUS,
             range_hood.HOOD_SPEC,
             range_caps.RANGE_CLOCK_SYNC,
+            # The same diagnosisStart shape the oven registry binds (#300),
+            # reported by the NW9300MD wall combo's microwave cavity (#525).
+            dishwasher.DIAGNOSIS,
         ]
     ),
 )
