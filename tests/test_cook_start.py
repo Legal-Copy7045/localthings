@@ -336,6 +336,26 @@ class TestHeld:
 
         assert held.values == {cook.PARAM_MODE: "Bake"}
 
+    def test_each_held_value_is_checked_with_the_others(self):
+        """A mode with no default time: a held temperature must not be
+        checked against a default that isn't there once a time is held."""
+        resources = _idle("range_ne63a6111ss")
+        spec = json.loads(resources["/mode/vs/0"]["x.com.samsung.da.modeSpec"])
+        spec[0]["timeDefault"] = "NotSupported"
+        resources["/mode/vs/0"] = {
+            **resources["/mode/vs/0"],
+            "x.com.samsung.da.modeSpec": json.dumps(spec),
+        }
+        held = cook.HeldCook()
+        held.hold(cook.PARAM_MODE, "Bake", resources)
+
+        held.hold(cook.PARAM_DURATION, 1800, resources)
+        held.hold(cook.PARAM_TEMPERATURE, 400, resources)
+
+        assert held.plan(resources) == cook.CookPlan(
+            mode="Bake", temperature=400, unit="Fahrenheit", duration=1800
+        )
+
     def test_the_panel_turning_on_drops_everything(self):
         resources = _idle("range_ne63a6111ss")
         held = cook.HeldCook()

@@ -288,11 +288,17 @@ def plan_start(
     mode: str | None = None,
     temperature: float | None = None,
     duration: int | None = None,
+    *,
+    complete: bool = True,
 ) -> CookPlan:
     """Check a start against the board's declaration and fill what was
     left out with the mode's own defaults. `temperature` is in the oven's
     own unit and is rounded to the mode's step; `duration` is seconds.
-    Raises CookStartError naming what the board allows."""
+    Raises CookStartError naming what the board allows.
+
+    `complete=False` checks only what is given, for a value held before
+    the rest are chosen: a mode with no default time is not refused for
+    lacking one yet."""
     specs = mode_specs(resources)
     if not any(spec.startable for spec in specs.values()):
         raise CookStartError("cook_start_not_supported")
@@ -320,7 +326,7 @@ def plan_start(
             raise CookStartError("cook_temperature_not_supported", mode=mode)
         target = None
     else:
-        target = _check_temperature(temp, temperature, mode, unit, resources)
+        target = _check_temperature(temp, temperature, mode, unit, resources, complete)
 
     if spec.time_max is None:
         if duration is not None:
@@ -329,7 +335,9 @@ def plan_start(
     else:
         seconds = spec.time_default if duration is None else int(duration)
         lo = spec.time_min or 0
-        if seconds is None or not lo <= seconds <= spec.time_max:
+        if seconds is None and not complete:
+            pass
+        elif seconds is None or not lo <= seconds <= spec.time_max:
             raise CookStartError(
                 "cook_duration_out_of_range",
                 mode=mode,
@@ -339,9 +347,11 @@ def plan_start(
     return CookPlan(mode=mode, temperature=target, unit=unit, duration=seconds)
 
 
-def _check_temperature(temp, temperature, mode, unit, resources) -> int:
+def _check_temperature(temp, temperature, mode, unit, resources, complete=True) -> int | None:
     symbol = "°C" if unit == "Celsius" else "°F"
     if temperature is None:
+        if temp.default is None and not complete:
+            return None
         if temp.default is None:
             raise CookStartError("cook_temperature_required", mode=mode)
         return temp.default
@@ -408,18 +418,24 @@ class HeldCook:
         """Validate `value` against the declaration and hold it. Raises
         CookStartError when the board rules it out."""
         self._expire(resources)
-        # Checked against the held mode, else the board's default mode --
-        # the one a start would use.
-        mode = self.values.get(PARAM_MODE)
+        # Checked as the start would be: against the held mode (else the
+        # board's default) and whatever else is already held.
         if param == PARAM_MODE:
-            plan_start(resources, mode=value)
+            plan_start(resources, mode=value, complete=False)
             held = {PARAM_MODE: value}
-        elif param == PARAM_TEMPERATURE:
-            plan = plan_start(resources, mode=mode, temperature=float(value))
-            held = {**self.values, PARAM_TEMPERATURE: plan.temperature}
         else:
-            plan = plan_start(resources, mode=mode, duration=int(value))
-            held = {**self.values, PARAM_DURATION: plan.duration}
+            held = {**self.values, param: value}
+            plan = plan_start(
+                resources,
+                mode=held.get(PARAM_MODE),
+                temperature=held.get(PARAM_TEMPERATURE),
+                duration=held.get(PARAM_DURATION),
+                complete=False,
+            )
+            held = {
+                **held,
+                param: plan.temperature if param == PARAM_TEMPERATURE else plan.duration,
+            }
         if not self.values:
             self._base = _device_values(resources)
         self.values = held
