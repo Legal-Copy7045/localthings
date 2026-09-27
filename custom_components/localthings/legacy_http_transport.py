@@ -310,7 +310,13 @@ class LegacyHttpTransport:
             if mask is None or not isinstance(supported, list):
                 continue
             default, allowed = mask
-            if default in allowed and default < len(supported):
+            if default >= len(supported):
+                continue
+            # A course with no such setting allows nothing and points its
+            # default at the list's "None" -- Rinse+Spin's temperature, which
+            # the appliance itself reports as "None" once it runs. Without
+            # this the held course would show the previous course's value.
+            if default in allowed or (not allowed and supported[default] == "None"):
                 washer[name] = supported[default]
         return {**bodies, _WASHER_WRAPPER: washer}
 

@@ -612,6 +612,19 @@ class TestHeldCourseDefaults:
             {"Device": {"Operation": {"state": "Run"}, "Mode": {"options": ["Course_63"]}}}
         ]
 
+    def test_rinse_and_spin_reads_no_temperature(self, idle):
+        """Rinse+Spin has no temperature: its record allows none and points
+        the default at "None", which is what the appliance reports once the
+        course runs. Not the previous course's 40C."""
+        idle.write(["course", "vs", "0"], {PREFIX + "options": ["Course_64"]}, 8.0)
+
+        _, body = idle.read(["device", "0"], timeout=10.0)
+        washer = self._washer(body)
+
+        assert washer[PREFIX + "waterTemperature"] == "None"
+        assert washer[PREFIX + "rinseCycles"] == "1"
+        assert washer[PREFIX + "spinLevel"] == "1400"
+
     def test_nothing_held_reads_as_reported(self, idle):
         _, body = idle.read(["device", "0"], timeout=10.0)
 
