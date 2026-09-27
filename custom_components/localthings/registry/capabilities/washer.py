@@ -21,8 +21,10 @@ from ..capability import Capability
 from ..entities import BinarySensorDesc, SelectDesc, SensorDesc, SwitchDesc
 from .laundry import (
     OPTION_KIND_RINSE,
+    OPTION_KIND_SOIL,
     OPTION_KIND_SPIN,
     OPTION_KIND_WATER_TEMPERATURE,
+    _course_codes_from_supported_options,
     bool_option_exists,
     bool_option_switch,
     course_narrowed_options,
@@ -173,7 +175,7 @@ def _temperature_label(value, resources):
 WASHER_SETTINGS = Capability(
     href="/washer/vs/0",
     entities=(
-        # The three wash-control selects self-gate on the device reporting
+        # The wash-control selects self-gate on the device reporting
         # the control at all (see _wash_control_present) -- invisible on real
         # washers, which always report at least the value or its supported
         # list, but it drops the optionless writable phantoms a device
@@ -219,6 +221,22 @@ WASHER_SETTINGS = Capability(
             write_fn=lambda p, rep, href=None: (
                 ["washer", "vs", "0"],
                 {"x.com.samsung.da.rinseCycles": p},
+            ),
+        ),
+        SelectDesc(
+            key="soil_level",
+            field="x.com.samsung.da.soilLevel",
+            icon="mdi:liquid-spot",
+            entity_category="config",
+            options=course_narrowed_options(
+                OPTION_KIND_SOIL,
+                "x.com.samsung.da.soilLevel",
+                "x.com.samsung.da.supportedSoilLevel",
+            ),
+            exists_fn=_wash_control_present("soilLevel"),
+            write_fn=lambda p, rep, href=None: (
+                ["washer", "vs", "0"],
+                {"x.com.samsung.da.soilLevel": p},
             ),
         ),
         # Whether each reservoir auto-dispenses at all, as opposed to the
@@ -365,17 +383,22 @@ def _dosing_low(prefix):
 # dishwasher's storm-wash/auto-release-dry toggles; only this per-course
 # gating is washer-only.
 def _bool_option_switch(key, icon, prefix, availability_field):
-    def validate(p, rep, resources):
-        """Reject turning on when the selected course's byte in
-        `availability_field` isn't 'F0'. Turning off is never blocked.
-        Falls back to allowing the write whenever the availability data
-        can't be resolved (unrecognized course, missing/mismatched-length
-        bitmap) -- a false rejection is worse than an occasional no-op."""
-        if p != "On":
-            return None
+    def course_supported(rep, resources):
+        """Whether the selected course supports this washer toggle.
+
+        The bytes in BubbleSoakSet / PreWashAvailableSet /
+        IntensiveAvailableSet are keyed to the course order derived from the
+        device's supportedOptions table, not to x.com.samsung.da.editCourseList.
+        Some boards report a mismatched editCourseList order, so the supported
+        options table is the only reliable source for the current course's
+        availability slot.
+        """
         opts = rep.get("x.com.samsung.da.options") or []
         current = option_value(opts, "Course")
-        courses = cycle_options(resources)
+        course_rep = resources.get("/course/vs/0") or {}
+        courses = _course_codes_from_supported_options(course_rep)
+        if not courses:
+            courses = cycle_options(resources)
         if not current or current not in courses:
             return None
         raw = option_value(opts, availability_field)
@@ -384,12 +407,37 @@ def _bool_option_switch(key, icon, prefix, availability_field):
         pairs = hex_pairs(raw)
         if len(pairs) != len(courses):
             return None
-        if pairs[courses.index(current)] != "F0":
+        try:
+            return pairs[courses.index(current)] == "F0"
+        except ValueError:
+            return None
+
+    def validate(p, rep, resources):
+        """Reject turning on when the selected course's byte in
+        `availability_field` isn't 'F0'. Turning off is never blocked.
+        Falls back to allowing the write whenever the availability data
+        can't be resolved (unrecognized course, missing/mismatched-length
+        bitmap) -- a false rejection is worse than an occasional no-op."""
+        if p != "On":
+            return None
+        supported = course_supported(rep, resources)
+        if supported is False:
             return f"{key}_unavailable_for_cycle"
         return None
 
+    def extra_attributes(rep, resources):
+        """Report whether this option is supported for the active course."""
+        supported = course_supported(rep, resources)
+        return {"course_supported": supported}
+
     return bool_option_switch(
-        key, icon, prefix, entity_category="config", gate_on_presence=True, validate_fn=validate
+        key,
+        icon,
+        prefix,
+        entity_category="config",
+        gate_on_presence=True,
+        validate_fn=validate,
+        extra_state_attributes_fn=extra_attributes,
     )
 
 
