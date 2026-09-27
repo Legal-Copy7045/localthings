@@ -1829,3 +1829,19 @@ def test_registry_reproduces_golden_state_keys_for_oven_nv75n_dual_cook():
         f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
         f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
     )
+
+
+def test_registry_reproduces_golden_state_keys_for_washer_ww90dg6u25le():
+    """A Table_02 front-loader with bubble soak, pre-wash and intensive
+    availability bitmaps in a different course order from its
+    editCourseList (#511)."""
+    from tests.conftest import _load_device
+
+    resources = _load_device("washer_ww90dg6u25le")
+    golden = json.loads((GOLDEN / "washer_ww90dg6u25le.json").read_text())
+    state_keys = _new_state_keys("washer_ww90dg6u25le", resources)
+    assert set(state_keys) == set(golden["state_keys"]), (
+        f"state_keys mismatch:\n"
+        f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
+        f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
+    )
