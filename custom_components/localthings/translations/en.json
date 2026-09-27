@@ -2075,23 +2075,23 @@
     "instance_name": {
       "options": {
         "freezer": "Freezer",
-        "cooler": "Cooler",
-        "top": "Top",
-        "middle": "Middle",
-        "bottom": "Bottom",
-        "onedoor": "Onedoor",
-        "winecellar_top": "Winecellar Top",
-        "winecellar_bottom": "Winecellar Bottom",
-        "door_freezer": "Door Freezer",
-        "door_cooler": "Door Cooler",
-        "door_cvroom": "Door Cvroom",
-        "door_winecellar": "Door Winecellar",
-        "door_onedoorfreezer": "Door Onedoorfreezer",
-        "door_onedoorkimchi": "Door Onedoorkimchi",
-        "ice_maker": "Ice Maker",
-        "cubed_ice": "Cubed Ice",
+        "cooler": "Fridge",
+        "top": "Top compartment",
+        "middle": "Middle compartment",
+        "bottom": "Bottom compartment",
+        "onedoor": "Kimchi compartment",
+        "winecellar_top": "Top wine zone",
+        "winecellar_bottom": "Bottom wine zone",
+        "door_freezer": "Freezer door",
+        "door_cooler": "Fridge door",
+        "door_cvroom": "Flex zone door",
+        "door_winecellar": "Wine cellar door",
+        "door_onedoorfreezer": "Main door",
+        "door_onedoorkimchi": "Main door",
+        "ice_maker": "Ice maker",
+        "cubed_ice": "Cubed ice",
         "ice_bites": "Ice Bites",
-        "whiskey_ice_ball": "Whiskey Ice Ball"
+        "whiskey_ice_ball": "Ice balls"
       }
     }
   }

@@ -257,7 +257,7 @@
         "name": "Good Sleep"
       },
       "instance_setpoint": {
-        "name": "Valore impostato {instance_name}"
+        "name": "{instance_name}: valore impostato"
       },
       "oven_setpoint": {
         "name": "Valore impostato"
@@ -549,7 +549,7 @@
         "name": "Temperatura acqua calda"
       },
       "ice_type": {
-        "name": "Tipo {instance_name}",
+        "name": "{instance_name}: tipo",
         "state": {
           "off": "Spento",
           "whiskey_iceball_3": "3 palline/giorno",
@@ -612,7 +612,7 @@
         "name": "Modalità operativa"
       },
       "kimchi_zone_mode": {
-        "name": "Modalità conservazione {instance_name}",
+        "name": "{instance_name}: modalità conservazione",
         "state": {
           "off": "Spento",
           "kimchi_storage_normal": "Kimchi",
@@ -1266,13 +1266,13 @@
         "name": "Temperatura frigorifero"
       },
       "kimchi_ripening_status": {
-        "name": "Stato maturazione {instance_name}"
+        "name": "{instance_name}: stato maturazione"
       },
       "kimchi_ripening_remaining": {
-        "name": "Tempo residuo maturazione {instance_name}"
+        "name": "{instance_name}: tempo residuo maturazione"
       },
       "kimchi_rack_count": {
-        "name": "Numero ripiani {instance_name}"
+        "name": "{instance_name}: numero ripiani"
       },
       "hood_filter_capacity": {
         "name": "Capacità filtro"
@@ -1284,7 +1284,7 @@
         "name": "Utilizzo filtro"
       },
       "instance_temperature": {
-        "name": "Temperatura {instance_name}"
+        "name": "{instance_name}: temperatura"
       },
       "job_beginning_status": {
         "name": "Stato avvio ciclo"
@@ -1428,7 +1428,7 @@
         }
       },
       "ice_making_status": {
-        "name": "Stato produzione {instance_name}",
+        "name": "{instance_name}: stato produzione",
         "state": {
           "icestatus_stop": "Inattivo",
           "icestatus_run": "Produzione ghiaccio"
@@ -2075,23 +2075,23 @@
     "instance_name": {
       "options": {
         "freezer": "Congelatore",
-        "cooler": "Cooler",
+        "cooler": "Frigorifero",
         "top": "Scomparto superiore",
         "middle": "Scomparto centrale",
         "bottom": "Scomparto inferiore",
-        "onedoor": "Scomparto a una porta",
-        "winecellar_top": "Cantinetta superiore",
-        "winecellar_bottom": "Cantinetta inferiore",
+        "onedoor": "Scomparto kimchi",
+        "winecellar_top": "Zona vino superiore",
+        "winecellar_bottom": "Zona vino inferiore",
         "door_freezer": "Sportello congelatore",
-        "door_cooler": "Sportello cooler",
+        "door_cooler": "Sportello frigorifero",
         "door_cvroom": "Sportello zona flessibile",
         "door_winecellar": "Sportello cantinetta",
-        "door_onedoorfreezer": "Sportello congelatore",
-        "door_onedoorkimchi": "Sportello frigorifero kimchi",
+        "door_onedoorfreezer": "Sportello principale",
+        "door_onedoorkimchi": "Sportello principale",
         "ice_maker": "Produttore di ghiaccio",
-        "cubed_ice": "Ghiaccio a cubetti",
-        "ice_bites": "Ice Bites",
-        "whiskey_ice_ball": "Sfere di ghiaccio per whisky"
+        "cubed_ice": "Produttore di cubetti",
+        "ice_bites": "Produttore di Ice Bites",
+        "whiskey_ice_ball": "Produttore di sfere di ghiaccio"
       }
     }
   }

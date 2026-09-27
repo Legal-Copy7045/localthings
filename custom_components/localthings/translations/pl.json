@@ -71,7 +71,7 @@
         "name": "Dostępna aktualizacja oprogramowania"
       },
       "instance_open": {
-        "name": "{instance_name} otwarte"
+        "name": "{instance_name} — otwarte"
       },
       "paired_hood_connected": {
         "name": "Sparowany okap połączony"
@@ -1635,7 +1635,7 @@
         "name": "Nocny cichy tryb kostkarki"
       },
       "instance_enabled": {
-        "name": "{instance_name} włączone"
+        "name": "{instance_name} — włączone"
       },
       "intensive": {
         "name": "Intensywny"
@@ -2079,19 +2079,19 @@
         "top": "Górna komora",
         "middle": "Środkowa komora",
         "bottom": "Dolna komora",
-        "onedoor": "Komora jednodrzwiowa",
-        "winecellar_top": "Winiarka górna",
-        "winecellar_bottom": "Winiarka dolna",
+        "onedoor": "Komora na kimchi",
+        "winecellar_top": "Górna strefa wina",
+        "winecellar_bottom": "Dolna strefa wina",
         "door_freezer": "Drzwi zamrażarki",
         "door_cooler": "Drzwi chłodziarki",
         "door_cvroom": "Drzwi strefy Flex",
         "door_winecellar": "Drzwi winiarki",
-        "door_onedoorfreezer": "Drzwi zamrażarki",
-        "door_onedoorkimchi": "Drzwi lodówki do kimchi",
+        "door_onedoorfreezer": "Drzwi główne",
+        "door_onedoorkimchi": "Drzwi główne",
         "ice_maker": "Kostkarka do lodu",
         "cubed_ice": "Kostki lodu",
         "ice_bites": "Ice Bites",
-        "whiskey_ice_ball": "Kule lodu do whisky"
+        "whiskey_ice_ball": "Kule lodu"
       }
     }
   }

@@ -33,4 +33,4 @@ async def test_instance_names_stay_english_by_default(
     await hass.async_block_till_done()
 
     assert _name(hass, mock_entry, "freezer_temperature") == "Freezer temperature"
-    assert _name(hass, mock_entry, "icemaker_one_enabled") == "Cubed Ice enabled"
+    assert _name(hass, mock_entry, "icemaker_one_enabled") == "Cubed ice enabled"

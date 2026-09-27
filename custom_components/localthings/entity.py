@@ -89,7 +89,7 @@ _INSTANCE_NAMES_PREFIX = f"component.{DOMAIN}.selector.instance_name.options."
 
 async def async_load_instance_names(hass: HomeAssistant) -> dict[str, str]:
     """The {instance_name} labels in HA's language, keyed by the slug of
-    their English display name (issue #533)."""
+    the name Python derives for them (issue #533)."""
     strings = await async_get_translations(hass, hass.config.language, "selector", {DOMAIN})
     return {
         key.removeprefix(_INSTANCE_NAMES_PREFIX): value
@@ -100,7 +100,7 @@ async def async_load_instance_names(hass: HomeAssistant) -> dict[str, str]:
 
 def _localized_instance_name(name: str, localized: dict[str, str]) -> str:
     """An unlisted name -- a numbered instance or an ice maker name no
-    fixture has shown yet -- keeps its English display form."""
+    fixture has shown yet -- keeps its derived English form."""
     return localized.get(name.lower().replace(" ", "_"), name)
 
 

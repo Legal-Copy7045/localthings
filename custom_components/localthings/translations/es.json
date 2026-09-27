@@ -352,7 +352,7 @@
         "name": "Actualización de firmware disponible"
       },
       "instance_open": {
-        "name": "{instance_name} abierto"
+        "name": "{instance_name}: abierta"
       },
       "paired_hood_connected": {
         "name": "Campana emparejada conectada"
@@ -541,7 +541,7 @@
         "name": "Sueño reparador"
       },
       "instance_setpoint": {
-        "name": "Punto de ajuste de {instance_name}"
+        "name": "{instance_name}: punto de ajuste"
       },
       "oven_setpoint": {
         "name": "Punto de ajuste"
@@ -833,7 +833,7 @@
         "name": "Temperatura del agua caliente"
       },
       "ice_type": {
-        "name": "Tipo de hielo de {instance_name}",
+        "name": "{instance_name}: tipo de hielo",
         "state": {
           "off": "Desactivado",
           "whiskey_iceball_3": "3 bolas/día",
@@ -896,7 +896,7 @@
         "name": "Modo de funcionamiento"
       },
       "kimchi_zone_mode": {
-        "name": "Modo de almacenamiento de {instance_name}",
+        "name": "{instance_name}: modo de almacenamiento",
         "state": {
           "off": "Desactivado",
           "kimchi_storage_normal": "Kimchi",
@@ -1547,13 +1547,13 @@
         "name": "Temperatura del frigorífico"
       },
       "kimchi_ripening_status": {
-        "name": "Estado de fermentación de {instance_name}"
+        "name": "{instance_name}: estado de fermentación"
       },
       "kimchi_ripening_remaining": {
-        "name": "Tiempo restante de fermentación de {instance_name}"
+        "name": "{instance_name}: tiempo restante de fermentación"
       },
       "kimchi_rack_count": {
-        "name": "Número de bandejas de {instance_name}"
+        "name": "{instance_name}: número de bandejas"
       },
       "hood_filter_capacity": {
         "name": "Capacidad del filtro"
@@ -1565,7 +1565,7 @@
         "name": "Uso del filtro"
       },
       "instance_temperature": {
-        "name": "Temperatura de {instance_name}"
+        "name": "{instance_name}: temperatura"
       },
       "job_beginning_status": {
         "name": "Estado de inicio del ciclo"
@@ -1709,7 +1709,7 @@
         }
       },
       "ice_making_status": {
-        "name": "Estado de fabricación de hielo de {instance_name}",
+        "name": "{instance_name}: estado de fabricación de hielo",
         "state": {
           "icestatus_stop": "Inactiva",
           "icestatus_run": "Haciendo hielo"
@@ -1919,7 +1919,7 @@
         "name": "Modo silencioso de hielo nocturno"
       },
       "instance_enabled": {
-        "name": "{instance_name} habilitado"
+        "name": "{instance_name}: activada"
       },
       "intensive": {
         "name": "Intensivo"
@@ -2075,23 +2075,23 @@
     "instance_name": {
       "options": {
         "freezer": "Congelador",
-        "cooler": "Enfriador",
-        "top": "Compartimento superior",
-        "middle": "Compartimento central",
-        "bottom": "Compartimento inferior",
-        "onedoor": "Compartimento de una puerta",
-        "winecellar_top": "Vinoteca superior",
-        "winecellar_bottom": "Vinoteca inferior",
+        "cooler": "Frigorífico",
+        "top": "Parte superior",
+        "middle": "Parte central",
+        "bottom": "Parte inferior",
+        "onedoor": "Compartimento de kimchi",
+        "winecellar_top": "Zona de vino superior",
+        "winecellar_bottom": "Zona de vino inferior",
         "door_freezer": "Puerta del congelador",
-        "door_cooler": "Puerta del enfriador",
+        "door_cooler": "Puerta del frigorífico",
         "door_cvroom": "Puerta de la zona flexible",
         "door_winecellar": "Puerta de la vinoteca",
-        "door_onedoorfreezer": "Puerta del congelador",
-        "door_onedoorkimchi": "Puerta del frigorífico de kimchi",
+        "door_onedoorfreezer": "Puerta principal",
+        "door_onedoorkimchi": "Puerta principal",
         "ice_maker": "Máquina de hielo",
-        "cubed_ice": "Hielo en cubitos",
-        "ice_bites": "Ice Bites",
-        "whiskey_ice_ball": "Bolas de hielo para whisky"
+        "cubed_ice": "Máquina de cubitos",
+        "ice_bites": "Máquina de Ice Bites",
+        "whiskey_ice_ball": "Máquina de bolas de hielo"
       }
     }
   }

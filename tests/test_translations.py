@@ -762,11 +762,10 @@ def test_every_kimchi_zone_supportmode_code_has_a_state_label():
 
 
 def test_every_fixture_instance_name_has_a_catalog_entry():
-    """Every {instance_name} a captured device produces is translatable, and
-    its English entry is exactly the name shown before it was (issue #533).
-
-    A new compartment or ice-maker name fails here until it is added to
-    ``selector.instance_name.options`` in every language.
+    """Every {instance_name} a captured device produces is translatable
+    (issue #533). A new compartment or ice-maker name fails here until it is
+    added to ``selector.instance_name.options``; the mirror test above then
+    requires it in every language.
     """
     from custom_components.localthings.entity import _instance_display_name
     from custom_components.localthings.registry.adapter import _key
@@ -785,6 +784,23 @@ def test_every_fixture_instance_name_has_a_catalog_entry():
             if not bound.desc.use_instance_name:
                 continue
             name = _instance_display_name(bound, _key(bound))
-            if table.get(name.lower().replace(" ", "_")) != name:
+            if name.lower().replace(" ", "_") not in table:
                 missing[name] = fixture.name
     assert missing == {}
+
+
+def test_instance_name_templates_lead_with_the_placeholder():
+    """Instance names are written as capitalized noun phrases with no
+    article or case ending, which only reads right at the start of a name
+    (issue #533)."""
+    keys = {
+        (PLATFORM_OF[type(desc)], desc.translation_key or desc.key)
+        for desc in _all_descriptions()
+        if desc.use_instance_name
+    }
+    assert keys
+    for language in _languages():
+        entity = _load(language)["entity"]
+        for platform, key in keys:
+            name = entity[platform][key]["name"]
+            assert name.startswith("{instance_name}"), (language, platform, key, name)
