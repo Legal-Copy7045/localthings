@@ -154,6 +154,27 @@ class TestSeed:
         assert reps["/st/washercourse/vs/0"] == {PREFIX + "st.courseTable": "Table_00"}
         assert len(_FakeConnection.log) - before == 3
 
+    def test_the_seed_carries_the_power_flag_from_the_model_id(self, transport, monkeypatch):
+        """A WW6500 refuses remote power, and says so in its modelID, so the
+        sweep carries the setinfo flag the power switch is gated on."""
+        info = {
+            "Information": {
+                **INFORMATION["Information"],
+                "modelID": "TP6X_WW6500|FF18E000|20010102001011070000000000000000",
+            }
+        }
+        _FakeConnection.routes["/devices/0/information"] = (200, info)
+
+        _, body = transport.read(["device", "0"], timeout=10.0)
+        reps = {entry["href"]: entry["rep"] for entry in body}
+
+        assert reps["/wm/setinfo/vs/0"] == {PREFIX + "isModelSettingPowerOnOff": "false"}
+
+    def test_a_short_model_id_adds_no_power_flag(self, transport):
+        _, body = transport.read(["device", "0"], timeout=10.0)
+
+        assert "/wm/setinfo/vs/0" not in {entry["href"] for entry in body}
+
     def test_the_seed_costs_three_requests(self, transport):
         """The aggregate carries five resources; only the two it links to
         need fetching."""

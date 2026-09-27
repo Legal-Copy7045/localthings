@@ -27,6 +27,7 @@ from custom_components.localthings.legacy_http import (
     http_status_to_coap,
     is_mapped,
     is_start,
+    model_settings,
     split_start_only,
     staged_current,
     table_for,
@@ -36,6 +37,7 @@ from custom_components.localthings.legacy_http import (
     with_staged,
 )
 from custom_components.localthings.registry.by_type import resolve
+from custom_components.localthings.registry.capabilities.common import model_allows_power_on_off
 from custom_components.localthings.registry.discovery import discover
 
 FIXTURE = Path(__file__).parent / "fixtures" / "washer_tp6x_ww6500_8888.json"
@@ -226,6 +228,46 @@ class TestCourseTable:
         back on raw codes."""
         assert course_table("SOME_OTHER_FAMILY") == {}
         assert course_table("") == {}
+
+
+class TestModelSettings:
+    """This family serves no `/wm/setinfo/vs/0`; the power on/off flag CoAP
+    boards read from there rides in Information.modelID instead."""
+
+    WW6500 = "TP6X_WW6500|FF18E000|20010102001011070000000000000000"
+
+    @staticmethod
+    def _with(model_id):
+        return {"Information": {"modelID": model_id}}
+
+    def test_a_ww6500_does_not_take_remote_power(self):
+        """Its byte 26 is 00, and the washer answers a power write with
+        `400 Control fail, <Operation.power=Off>`."""
+        rep = model_settings(self._with(self.WW6500))["/wm/setinfo/vs/0"]
+
+        assert rep == {PREFIX + "isModelSettingPowerOnOff": "false"}
+        assert model_allows_power_on_off(model_settings(self._with(self.WW6500))) is False
+
+    def test_bit_0_of_byte_26_allows_it(self):
+        model_id = self.WW6500[: len(self.WW6500) - 6] + "01" + "0000"
+
+        assert model_allows_power_on_off(model_settings(self._with(model_id))) is True
+
+    def test_only_bit_0_counts(self):
+        model_id = self.WW6500[: len(self.WW6500) - 6] + "FE" + "0000"
+
+        assert model_allows_power_on_off(model_settings(self._with(model_id))) is False
+
+    def test_no_usable_model_id_says_nothing(self):
+        """Nothing to go on leaves the switch as it was."""
+        for bodies in (
+            {},
+            {"Information": {}},
+            self._with("TP6X_WW6500|FF18E000|2001"),
+            self._with("TP6X_WW6500"),
+            self._with("TP6X_WW6500|FF18E000|20010102001011070000000000ZZ0000"),
+        ):
+            assert model_settings(bodies) == {}
 
 
 class TestHttpStatusToCoap:

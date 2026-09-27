@@ -33,6 +33,7 @@ from .legacy_http import (
     http_status_to_coap,
     is_mapped,
     is_start,
+    model_settings,
     split_start_only,
     staged_current,
     table_for,
@@ -177,6 +178,8 @@ class LegacyHttpTransport:
         resources = to_resources(self._with_staged(bodies), self._table)
         # Not served by this family; see legacy_http.FAMILY_COURSE_TABLES.
         resources.update(course_table(self._family))
+        # Nor is /wm/setinfo/vs/0; the power flag rides in modelID instead.
+        resources.update(model_settings(bodies))
         return 0x45, [{"href": href, "rep": rep} for href, rep in resources.items()]
 
     def write(self, path_segs: Sequence[str], body: dict | list, timeout: float) -> tuple[int, Any]:
