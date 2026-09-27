@@ -1,3 +1,53 @@
+start_cooking:
+  name: Start cooking
+  description: >-
+    Start an oven, range or microwave cooking. Only modes the appliance
+    itself says a remote may start can be used, with its own temperature
+    and time limits for that mode. Remote Control has to be on at the
+    appliance, and it has to be idle. Leave every field empty to start what
+    the mode, setpoint and cook-time entities are holding; otherwise
+    anything left out uses the mode's own default.
+  fields:
+    device_id:
+      name: Device
+      description: The oven, range or microwave to start.
+      required: true
+      selector:
+        device:
+          integration: localthings
+    mode:
+      name: Mode
+      description: >-
+        The cooking mode, as the appliance names it (for example Bake or
+        ConvectionBake). Defaults to the appliance's own default mode.
+      required: false
+      example: Bake
+      selector:
+        text:
+    temperature:
+      name: Temperature
+      description: >-
+        In Home Assistant's temperature unit. Rounded to the mode's step.
+        Defaults to the mode's own default. Leave it out for a mode with no
+        temperature.
+      required: false
+      example: 180
+      selector:
+        number:
+          min: 0
+          max: 600
+          step: 1
+          mode: box
+    duration:
+      name: Cook time
+      description: >-
+        How long to cook, including preheat. Defaults to the mode's own
+        default.
+      required: false
+      example: "00:30:00"
+      selector:
+        duration:
+
 write_resource:
   name: Write resource
   description: >-

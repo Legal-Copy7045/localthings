@@ -194,6 +194,9 @@
       },
       "stop": {
         "name": "Stopp"
+      },
+      "start_cooking": {
+        "name": "Garen starten"
       }
     },
     "climate": {
@@ -2033,6 +2036,39 @@
     },
     "service_device_not_loaded": {
       "message": "Dieses Gerät ist noch nicht verbunden. Versuchen Sie es erneut, sobald es geladen wurde."
+    },
+    "cook_start_not_supported": {
+      "message": "Dieses Gerät meldet keine Betriebsart, die aus der Ferne gestartet werden darf, daher kann Home Assistant es nicht starten."
+    },
+    "cook_start_not_idle": {
+      "message": "Das Gerät gart bereits. Stoppen Sie es zuerst, oder ändern Sie Temperatur und Garzeit während des Betriebs."
+    },
+    "cook_mode_required": {
+      "message": "Wählen Sie zuerst eine Betriebsart. Dieses Gerät kann gestartet werden in: {startable}."
+    },
+    "cook_mode_not_startable": {
+      "message": "{mode} kann auf diesem Gerät nicht aus der Ferne gestartet werden. Möglich sind: {startable}."
+    },
+    "cook_mode_unavailable": {
+      "message": "{mode} ist in diesem Garraum gerade nicht verfügbar. Starten lässt sich: {startable}."
+    },
+    "cook_temperature_not_supported": {
+      "message": "{mode} hat keine Temperatureinstellung."
+    },
+    "cook_temperature_required": {
+      "message": "{mode} benötigt eine Temperatur."
+    },
+    "cook_temperature_not_a_choice": {
+      "message": "{mode} erlaubt nur {choices}."
+    },
+    "cook_temperature_out_of_range": {
+      "message": "{mode} erlaubt eine Temperatur von {min} bis {max}."
+    },
+    "cook_duration_not_supported": {
+      "message": "{mode} hat keine Garzeit."
+    },
+    "cook_duration_out_of_range": {
+      "message": "{mode} erlaubt eine Garzeit von {min} bis {max}."
     }
   }
 }

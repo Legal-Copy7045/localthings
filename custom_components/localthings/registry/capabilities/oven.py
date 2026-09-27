@@ -10,11 +10,11 @@ cook time via /operational/state/vs/0's operationTime/remainingTime, mode
 select via /mode/vs/0.modes (mid-cook acceptance unknown), stop via
 state='Ready'.
 
-Cycle start is not implemented: local-OCF cycle start isn't reproducible on
-this firmware -- see docs/investigations/oven-cycle-start.md for what three
-boards measured and what is worth probing next. Mode writes are also
-unreliable -- the oven rolls them back once a cycle is active, so
-OVEN_MODE's SelectDesc is effectively read-only in practice.
+Cycle start (issue #473) is one Collection write carrying mode, setpoint
+and cook time -- see cook.py. While a board that declares a startable mode
+is idle, the mode, setpoint and cook-time entities hold what is chosen and
+the start button sends it; mid-cook they write straight through, which the
+board keeps.
 """
 
 from datetime import UTC, datetime, timedelta
@@ -23,11 +23,13 @@ from ..batch import is_stub_rep
 from ..capability import Capability
 from ..entities import (
     BinarySensorDesc,
+    ButtonDesc,
     NumberDesc,
     SelectDesc,
     SensorDesc,
     SwitchDesc,
 )
+from . import cook
 from .common import normalize_temp_unit
 from .operational import STOP_BUTTON
 
@@ -293,6 +295,33 @@ def _option_switch_write(prefix):
     return write
 
 
+def _mode_setpoint_bounds(rep, resources):
+    """The current (or held) mode's own range from modeSpec; None falls
+    back to the static per-unit bounds below."""
+    bounds = cook.temp_bounds(resources)
+    return tuple(float(b) for b in bounds) if bounds else None
+
+
+def _cook_time_bounds(rep, resources):
+    """Before a start, the held mode's own time limits in whole minutes.
+    Mid-cook the static 0-1439 stays: those writes predate modeSpec and are
+    known to hold."""
+    if not cook.operation_ready(resources):
+        return None
+    spec = cook.mode_specs(resources).get(cook.current_mode(resources) or "")
+    if spec is None or spec.time_max is None:
+        return None
+    return float(-(-(spec.time_min or 0) // 60)), float(spec.time_max // 60), 1.0
+
+
+START_COOKING_BUTTON = ButtonDesc(
+    key="start_cooking",
+    icon="mdi:play",
+    cook_param=cook.PARAM_START,
+    exists_fn=cook.can_start,
+)
+
+
 # ---------------------------------------------------------------------------
 # Capabilities
 # ---------------------------------------------------------------------------
@@ -351,10 +380,13 @@ OVEN_OPERATIONAL_STATE = Capability(
             native_max=1439,
             step=1.0,
             icon="mdi:timer",
+            bounds_fn=_cook_time_bounds,
             value_fn=_op_minutes,
             write_fn=_cook_time_write,
+            cook_param=cook.PARAM_DURATION,
         ),
         STOP_BUTTON,
+        START_COOKING_BUTTON,
     ),
 )
 
@@ -457,10 +489,12 @@ OVEN_SETPOINT = Capability(
             native_min_fn=lambda rep: float(_setpoint_bounds(rep)[0]),
             native_max_fn=lambda rep: float(_setpoint_bounds(rep)[1]),
             step_fn=lambda rep: float(_setpoint_bounds(rep)[2]),
+            bounds_fn=_mode_setpoint_bounds,
             value_fn=lambda items: _setpoint(
                 items[0].get("x.com.samsung.da.desired") if items else None
             ),
             write_fn=_oven_setpoint_write,
+            cook_param=cook.PARAM_TEMPERATURE,
         ),
         SensorDesc(
             key="current_temp_c",
@@ -661,6 +695,7 @@ OVEN_MODE = Capability(
             value_fn=lambda v: v[0] if v else None,
             write_fn=_oven_mode_write,
             validate_fn=_oven_mode_validate,
+            cook_param=cook.PARAM_MODE,
         ),
         # No exists_fn on the NV7000BS-class board this was proven against
         # (UpperLamp_ is always in its options[]) -- but issue #300's

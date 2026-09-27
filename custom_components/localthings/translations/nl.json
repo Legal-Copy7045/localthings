@@ -194,6 +194,9 @@
       },
       "stop": {
         "name": "Stoppen"
+      },
+      "start_cooking": {
+        "name": "Bereiding starten"
       }
     },
     "climate": {
@@ -2033,6 +2036,39 @@
     },
     "service_device_not_loaded": {
       "message": "Dit apparaat is nog niet verbonden. Probeer het opnieuw zodra het is geladen."
+    },
+    "cook_start_not_supported": {
+      "message": "Dit apparaat meldt geen bereidingsstand die op afstand gestart mag worden, dus Home Assistant kan het niet starten."
+    },
+    "cook_start_not_idle": {
+      "message": "Het apparaat is al bezig. Stop het eerst, of wijzig de temperatuur en bereidingstijd terwijl het draait."
+    },
+    "cook_mode_required": {
+      "message": "Kies eerst een bereidingsstand. Dit apparaat kan gestart worden in: {startable}."
+    },
+    "cook_mode_not_startable": {
+      "message": "{mode} kan op dit apparaat niet op afstand gestart worden. Wel mogelijk: {startable}."
+    },
+    "cook_mode_unavailable": {
+      "message": "{mode} is nu niet beschikbaar in deze ovenruimte. Wel te starten: {startable}."
+    },
+    "cook_temperature_not_supported": {
+      "message": "{mode} heeft geen temperatuurinstelling."
+    },
+    "cook_temperature_required": {
+      "message": "{mode} heeft een temperatuur nodig."
+    },
+    "cook_temperature_not_a_choice": {
+      "message": "{mode} accepteert alleen {choices}."
+    },
+    "cook_temperature_out_of_range": {
+      "message": "{mode} accepteert een temperatuur van {min} tot {max}."
+    },
+    "cook_duration_not_supported": {
+      "message": "{mode} heeft geen bereidingstijd."
+    },
+    "cook_duration_out_of_range": {
+      "message": "{mode} accepteert een bereidingstijd van {min} tot {max}."
     }
   }
 }

@@ -194,6 +194,9 @@
       },
       "stop": {
         "name": "Stop"
+      },
+      "start_cooking": {
+        "name": "Start cooking"
       }
     },
     "climate": {
@@ -2033,6 +2036,39 @@
     },
     "service_device_not_loaded": {
       "message": "This device isn't connected yet. Try again once it has loaded."
+    },
+    "cook_start_not_supported": {
+      "message": "This appliance doesn't report any cooking mode a remote may start, so it can't be started from Home Assistant."
+    },
+    "cook_start_not_idle": {
+      "message": "The appliance is already cooking. Stop it first, or change the setpoint and cook time while it runs."
+    },
+    "cook_mode_required": {
+      "message": "Choose a cooking mode first. This appliance can be started in: {startable}."
+    },
+    "cook_mode_not_startable": {
+      "message": "{mode} can't be started remotely on this appliance. It can be started in: {startable}."
+    },
+    "cook_mode_unavailable": {
+      "message": "{mode} isn't available on this cavity right now. It can start: {startable}."
+    },
+    "cook_temperature_not_supported": {
+      "message": "{mode} doesn't take a temperature."
+    },
+    "cook_temperature_required": {
+      "message": "{mode} needs a temperature."
+    },
+    "cook_temperature_not_a_choice": {
+      "message": "{mode} only takes {choices}."
+    },
+    "cook_temperature_out_of_range": {
+      "message": "{mode} takes a temperature from {min} to {max}."
+    },
+    "cook_duration_not_supported": {
+      "message": "{mode} doesn't take a cook time."
+    },
+    "cook_duration_out_of_range": {
+      "message": "{mode} takes a cook time from {min} to {max}."
     }
   }
 }
