@@ -2049,8 +2049,8 @@
     "cook_mode_not_startable": {
       "message": "{mode} non può essere avviata da remoto su questo apparecchio. Modalità avviabili: {startable}."
     },
-    "cook_mode_cavity_unsupported": {
-      "message": "{mode} usa una delle due cavità del forno, che Home Assistant non può ancora avviare."
+    "cook_mode_unavailable": {
+      "message": "{mode} non è disponibile ora in questa cavità. Si può avviare: {startable}."
     },
     "cook_temperature_not_supported": {
       "message": "{mode} non prevede una temperatura."

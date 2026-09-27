@@ -439,9 +439,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Cloud "Download" programs discovered on this device (issue #342).
         # Same restore-from-entry shape as _learned above; see cloudcourse.py.
         self._cloud = CloudCourses(entry.data.get(CONF_CLOUD_COURSES))
-        # An oven's mode/setpoint/cook time chosen while idle, held until a
-        # start sends them (issue #473). MAIN only; see cook.HeldCook.
-        self._held_cook = cook.HeldCook()
+        # An oven cavity's mode/setpoint/cook time chosen while idle, held
+        # until a start sends them (issue #473); see cook.HeldCook.
+        self._held_cooks: dict[Subdevice, cook.HeldCook] = {}
         # Narrowed to this device's own climate hrefs once discovery has
         # run -- see _refresh_learnable_hrefs.
         self._learnable_hrefs: set[str] = set()
@@ -512,8 +512,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def entity_resources(self) -> dict[str, dict]:
         """The live snapshot as entity descriptors should see it: the device's
         own reps, plus this integration's discovered cloud programs merged
-        onto /course/vs/0 under cloudcourse.FIELD (issue #342), and an idle
-        oven's held cook choices (issue #473, cook.HeldCook).
+        onto /course/vs/0 under cloudcourse.FIELD (issue #342), and for an
+        oven the upper cavity's modeSpec shared with the lower one and each
+        idle cavity's held cook choices (issue #473, see cook.py).
 
         Merged at read time rather than applied to the state cache, so the
         synthetic field can never be polled over or written to the device --
@@ -531,7 +532,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         this per-subdevice means keying the store by actual href the way
         LearnedModes does, and migrating the persisted shape.
         """
-        snapshot = self._held_cook.overlay(self.last_resources)
+        snapshot = self._with_held_cooks(
+            cook.share_mode_spec(self.last_resources, self._cavity_mode_hrefs())
+        )
         rep = snapshot.get(cloudcourse.COURSE_HREF)
         if rep is None:
             return snapshot
@@ -618,7 +621,8 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         exists_fn counterpart to canonical_resources."""
         if self._rehydrate_resources is None:
             return self.canonical_resources(subdevice)
-        return canonical_view(subdevice, self._rehydrate_resources, self.subdevices)
+        resources = cook.share_mode_spec(self._rehydrate_resources, self._cavity_mode_hrefs())
+        return canonical_view(subdevice, resources, self.subdevices)
 
     # ------------------------------------------------------------------
     # Learned modes (issue #327)
@@ -2224,7 +2228,7 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if cook_param is not None and self._holds_cook(bound_entity.subdevice):
             # Nothing reaches the appliance, so Remote Control is only
             # checked at the start.
-            self._hold_cook(desc, cook_param, payload)
+            self._hold_cook(bound_entity.subdevice, desc, cook_param, payload)
             return
         write_fn = getattr(desc, "write_fn", None)
         if write_fn is None:
@@ -2406,25 +2410,48 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     # Oven and microwave cook start (issue #473). See cook.py.
     # ------------------------------------------------------------------
 
+    def _cavity_mode_hrefs(self) -> list[str]:
+        return [sub.to_actual(cook.MODE_HREF) for sub in self.subdevices if sub != MAIN]
+
+    def _cavity_resources(self, subdevice: Subdevice) -> dict[str, dict]:
+        """What the appliance reported for one cavity, in its canonical
+        view, with the upper cavity's modeSpec shared -- the cook checks'
+        input. Held choices are not in it."""
+        shared = cook.share_mode_spec(self.last_resources, self._cavity_mode_hrefs())
+        return canonical_view(subdevice, shared, self.subdevices)
+
+    def _with_held_cooks(self, snapshot: dict[str, dict]) -> dict[str, dict]:
+        """Each idle cavity's held choices, written over its own actual
+        hrefs in `snapshot` (a copy this method may change)."""
+        for subdevice, held in self._held_cooks.items():
+            if not held.values:
+                continue
+            view = canonical_view(subdevice, snapshot, self.subdevices)
+            overlaid = held.overlay(view)
+            if overlaid is view:
+                continue
+            for href in (cook.MODE_HREF, cook.TEMPERATURES_HREF, cook.OPERATION_HREF):
+                if href in overlaid:
+                    snapshot[subdevice.to_actual(href)] = overlaid[href]
+        return snapshot
+
     def _holds_cook(self, subdevice: Subdevice) -> bool:
         """Whether a mode/setpoint/cook-time write is held rather than sent:
-        an idle MAIN whose modeSpec declares a mode it can start. Anything
-        else writes through as before -- mid-cook changes hold on the
-        board, and a board that can't be started keeps the plain write."""
-        if subdevice != MAIN:
-            return False
-        resources = self.device_resources(MAIN)
+        an idle cavity that can start one of its modes. Anything else writes
+        through as before -- mid-cook changes hold on the board, and a board
+        that can't be started keeps the plain write."""
+        resources = self._cavity_resources(subdevice)
         return cook.is_idle(resources) and bool(cook.startable_modes(resources))
 
-    def _hold_cook(self, desc: Any, param: str, payload: Any) -> None:
+    def _hold_cook(self, subdevice: Subdevice, desc: Any, param: str, payload: Any) -> None:
         validate_fn = getattr(desc, "validate_fn", None)
-        resources = self.device_resources(MAIN)
+        resources = self._cavity_resources(subdevice)
         if validate_fn is not None and (error := validate_fn(payload, {}, resources)):
             raise ServiceValidationError(translation_domain=DOMAIN, translation_key=error)
         # The cook-time number is in minutes; the plan counts seconds.
         value = round(float(payload) * 60) if param == cook.PARAM_DURATION else payload
         try:
-            self._held_cook.hold(param, value, resources)
+            self._held_cooks.setdefault(subdevice, cook.HeldCook()).hold(param, value, resources)
         except cook.CookStartError as err:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
@@ -2443,18 +2470,19 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         temperature: float | None = None,
         duration: int | None = None,
     ) -> None:
-        """Start a cook in one Collection write to `/device/0`.
+        """Start a cook in one Collection write to the cavity's own
+        collection (`/device/0`, or `/device/1` for a lower cavity).
 
-        With no arguments this starts what the mode/setpoint/cook-time
-        entities hold; with any, it starts exactly those (`temperature` in
-        the oven's own unit, `duration` in seconds) and fills the rest from
-        the mode's own defaults. Either way it is checked against the
-        board's modeSpec first, and a rejected start raises before anything
-        is sent.
+        With no arguments this starts what the cavity's mode/setpoint/
+        cook-time entities hold; with any, it starts exactly those
+        (`temperature` in the oven's own unit, `duration` in seconds) and
+        fills the rest from the mode's own defaults. Either way it is
+        checked against the board's modeSpec first, and a rejected start
+        raises before anything is sent.
         """
-        if subdevice != MAIN:
-            # Every start measured was on a single-subdevice appliance, and
-            # which inner hrefs a second subdevice's batch takes is unknown.
+        if not subdevice.seed_path:
+            # A prefixed subdevice with no collection of its own (#205): no
+            # collection to send the batch to.
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="cook_start_not_supported"
             )
@@ -2465,10 +2493,11 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="remote_control_disabled"
             )
-        resources = self.device_resources(MAIN)
+        resources = self._cavity_resources(subdevice)
+        held = self._held_cooks.setdefault(subdevice, cook.HeldCook())
         try:
             if mode is None and temperature is None and duration is None:
-                plan = self._held_cook.plan(resources)
+                plan = held.plan(resources)
             else:
                 plan = cook.plan_start(resources, mode, temperature, duration)
         except cook.CookStartError as err:
@@ -2477,12 +2506,17 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 translation_key=err.key,
                 translation_placeholders=err.placeholders,
             ) from err
-        self._log.info("starting cook: %s", plan)
-        # No readback of /device/0 after the write: smartthings-local found
-        # the fetch-back itself is what reverts some boards, and neither
+        path = list(subdevice.seed_path)
+        # Inner hrefs as this cavity's reads and writes already spell them.
+        # Which spelling a lower cavity's batch wants is unmeasured; see
+        # docs/investigations/oven-cycle-start.md.
+        body = plan.batch(None if subdevice == MAIN else subdevice.to_actual)
+        self._log.info("starting cook on /%s: %s", "/".join(path), plan)
+        # No readback after the write: smartthings-local found the
+        # fetch-back itself is what reverts some boards, and neither
         # measured start had one.
-        await self._async_put(["device", "0"], plan.batch(), "/device/0")
-        self._held_cook.clear()
+        await self._async_put(path, body, "/" + "/".join(path))
+        held.clear()
         self._canonical_cache.clear()
         await self.async_request_refresh()
 

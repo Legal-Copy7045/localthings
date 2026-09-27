@@ -26,8 +26,10 @@ from custom_components.localthings.const import (
 from custom_components.localthings.coordinator import LocalThingsCoordinator
 from custom_components.localthings.registry.by_type import resolve
 from custom_components.localthings.registry.discovery import discover
+from custom_components.localthings.registry.subdevices import MAIN
 from custom_components.localthings.services import async_setup_services
 from custom_components.localthings.transport import Transport
+from tests.conftest import _discover_full, _load_device_full
 from tests.test_cook_start import _idle
 
 ENTRY_DATA = {
@@ -59,7 +61,7 @@ def _load(coord: LocalThingsCoordinator, resources: dict) -> None:
 
 
 @pytest.fixture
-def coordinator(hass: HomeAssistant) -> LocalThingsCoordinator:
+def bare_coordinator(hass: HomeAssistant) -> LocalThingsCoordinator:
     entry = MockConfigEntry(domain=DOMAIN, data=ENTRY_DATA, unique_id="localthings_COOK-TEST")
     entry.add_to_hass(hass)
     coord = LocalThingsCoordinator(hass, entry)
@@ -67,8 +69,13 @@ def coordinator(hass: HomeAssistant) -> LocalThingsCoordinator:
     coord._session = cast(Transport, _FakeSession())
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coord
     async_setup_services(hass)
-    _load(coord, _idle("range_ne63a6111ss"))
     return coord
+
+
+@pytest.fixture
+def coordinator(bare_coordinator: LocalThingsCoordinator) -> LocalThingsCoordinator:
+    _load(bare_coordinator, _idle("range_ne63a6111ss"))
+    return bare_coordinator
 
 
 def _posts(coord):
@@ -118,7 +125,7 @@ async def test_start_sends_the_held_choices_in_one_write(coordinator) -> None:
             "rep": {"x.com.samsung.da.operationTime": "00:20:00", "x.com.samsung.da.state": "Run"},
         },
     ]
-    assert coordinator._held_cook.values == {}
+    assert coordinator._held_cooks[MAIN].values == {}
 
 
 async def test_a_mode_the_board_cannot_start_is_refused_while_idle(coordinator) -> None:
@@ -197,3 +204,41 @@ async def test_action_rejects_before_sending(hass, coordinator, device_id) -> No
 
     assert err.value.translation_key == "cook_duration_out_of_range"
     assert _posts(coordinator) == []
+
+
+async def test_a_lower_cavity_starts_from_its_own_collection(bare_coordinator) -> None:
+    """The NE9801T's lower cavity: held choices and the start stay on its
+    own hrefs, checked against the upper cavity's shared modeSpec."""
+    resources, oic_res, seeds = _load_device_full("range_tp1x_da_ks_range_0101x")
+    bound, subdevices, _skipped, full, _name = _discover_full(
+        resources, oic_res, seeds, ("oic.wk.d", "oic.d.range")
+    )
+    for href, rep in full.items():
+        bare_coordinator._observe.apply(href, rep, source="poll")
+    bare_coordinator._observe.apply(
+        "/remotectrl/vs/0", {"x.com.samsung.da.remoteControlEnabled": "true"}, source="poll"
+    )
+    bare_coordinator.subdevices = subdevices
+    bare_coordinator.bound = bound
+    (lower,) = subdevices
+    lower_mode = next(b for b in bound if b.desc.key == "oven_mode" and b.subdevice == lower)
+    lower_start = next(b for b in bound if b.desc.key == "start_cooking" and b.subdevice == lower)
+
+    # The button's existence check sees the shared modeSpec.
+    lower_view = bare_coordinator.discovery_canonical(lower)
+    assert lower_start.desc.exists_fn is not None
+    assert lower_start.desc.exists_fn(lower_view.get("/operational/state/vs/0", {}), lower_view)
+
+    await bare_coordinator.async_send_command(lower_mode, "LowerBake")
+    upper_mode = bare_coordinator.canonical_resources(MAIN)["/mode/vs/0"]["x.com.samsung.da.modes"]
+    await bare_coordinator.async_send_command(lower_start, "")
+
+    assert upper_mode == ["NoOperation"]
+    path, body = _posts(bare_coordinator)[-1]
+    assert path == ["device", "1"]
+    assert [e["href"] for e in body] == [
+        "/mode/vs/1",
+        "/temperatures/vs/1",
+        "/operational/state/vs/1",
+    ]
+    assert body[0]["rep"] == {"x.com.samsung.da.modes": ["LowerBake"]}

@@ -12,7 +12,8 @@ from custom_components.localthings.registry.adapter import flatten
 from custom_components.localthings.registry.by_type import resolve
 from custom_components.localthings.registry.capabilities import cook, oven
 from custom_components.localthings.registry.discovery import discover
-from tests.conftest import _load_device
+from custom_components.localthings.registry.subdevices import canonical_view
+from tests.conftest import _discover_full, _load_device, _load_device_full
 
 _TRANSLATIONS = Path(__file__).parent.parent / "custom_components/localthings/translations"
 
@@ -49,12 +50,10 @@ def _running(resources):
             "range_ne6516a",
             ["Bake", "ConvectionBake", "ConvectionRoast", "AirFryer", "Dehydrate"],
         ),
-        # Upper/Lower modes declare Start&Setting, but no dual-cavity start
-        # has been measured.
-        (
-            "range_tp1x_da_ks_range_0101x",
-            ["Bake", "ConvectionBake", "ConvectionRoast", "AirFryer", "Dehydrate"],
-        ),
+        # The upper cavity of a dual-cavity range: its modeSpec declares
+        # 13 startable modes across both cavities and the whole oven, but it
+        # supports only the Upper ones now, and UpperBroil is Setting-only.
+        ("range_tp1x_da_ks_range_0101x", ["UpperConvectionBake", "UpperConvectionRoast"]),
         # Gas: every mode is Setting-only, and its manual forbids a remote start.
         ("range_nx60t8311ss", []),
         # No MicroWave* mode is startable.
@@ -146,11 +145,15 @@ class TestPlan:
 
         assert err.value.placeholders == {"mode": "Bake", "min": "175°F", "max": "500°F"}
 
-    def test_a_dual_cavity_mode_is_refused_for_its_own_reason(self):
+    @pytest.mark.parametrize("mode", ["LowerBake", "Bake"])
+    def test_a_startable_mode_this_cavity_does_not_offer_is_refused(self, mode):
+        """The lower cavity's mode, and a whole-oven one while the upper
+        cavity offers only its own."""
         with pytest.raises(cook.CookStartError) as err:
-            cook.plan_start(_load_device("range_tp1x_da_ks_range_0101x"), mode="LowerBake")
+            cook.plan_start(_load_device("range_tp1x_da_ks_range_0101x"), mode=mode)
 
-        assert err.value.key == "cook_mode_cavity_unsupported"
+        assert err.value.key == "cook_mode_unavailable"
+        assert err.value.placeholders["startable"] == "UpperConvectionBake, UpperConvectionRoast"
 
     def test_a_temperature_for_a_mode_without_one_is_refused(self):
         with pytest.raises(cook.CookStartError) as err:
@@ -159,9 +162,14 @@ class TestPlan:
         assert err.value.key == "cook_temperature_not_supported"
 
     def test_no_mode_and_no_startable_default(self):
-        # This board's defaultMode is UpperConvectionBake, an Upper mode.
+        resources = _idle("range_ne63a6111ss")
+        resources["/mode/vs/0"] = {
+            **resources["/mode/vs/0"],
+            "x.com.samsung.da.defaultMode": "Broil",
+        }
+
         with pytest.raises(cook.CookStartError) as err:
-            cook.plan_start(_load_device("range_tp1x_da_ks_range_0101x"))
+            cook.plan_start(resources)
 
         assert err.value.key == "cook_mode_required"
 
@@ -187,6 +195,55 @@ class TestPlan:
         with pytest.raises(cook.CookStartError) as err:
             cook.plan_start(resources, mode="Bake")
         assert err.value.key == "cook_start_not_idle"
+
+
+def _lower_cavity():
+    """The NE9801T's lower cavity as the coordinator sees it: its own
+    canonical view, with the upper cavity's modeSpec shared."""
+    resources, oic_res, seeds = _load_device_full("range_tp1x_da_ks_range_0101x")
+    _bound, subdevices, _skipped, full, _name = _discover_full(
+        resources, oic_res, seeds, ("oic.wk.d", "oic.d.range")
+    )
+    (lower,) = subdevices
+    shared = cook.share_mode_spec(full, [lower.to_actual(cook.MODE_HREF)])
+    return lower, canonical_view(lower, shared, subdevices)
+
+
+class TestLowerCavity:
+    def test_it_starts_its_own_modes(self):
+        _lower, resources = _lower_cavity()
+
+        assert cook.startable_modes(resources) == ["LowerBake", "LowerConvectionBake"]
+
+    def test_without_the_shared_modespec_it_could_not_start(self):
+        lower, _resources = _lower_cavity()
+        resources, oic_res, seeds = _load_device_full("range_tp1x_da_ks_range_0101x")
+        _bound, subdevices, _skipped, full, _name = _discover_full(
+            resources, oic_res, seeds, ("oic.wk.d", "oic.d.range")
+        )
+
+        assert cook.startable_modes(canonical_view(lower, full, subdevices)) == []
+
+    def test_its_batch_uses_its_own_hrefs_and_no_marker(self):
+        lower, resources = _lower_cavity()
+
+        plan = cook.plan_start(resources)
+        batch = plan.batch(lower.to_actual)
+
+        assert plan.mode == "LowerConvectionBake"
+        assert [e["href"] for e in batch] == [
+            "/mode/vs/1",
+            "/temperatures/vs/1",
+            "/operational/state/vs/1",
+        ]
+
+    def test_the_upper_cavitys_mode_is_refused(self):
+        _lower, resources = _lower_cavity()
+
+        with pytest.raises(cook.CookStartError) as err:
+            cook.plan_start(resources, mode="UpperConvectionBake")
+
+        assert err.value.key == "cook_mode_unavailable"
 
 
 class TestBounds:

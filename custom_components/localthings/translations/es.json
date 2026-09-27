@@ -261,8 +261,8 @@
     "cook_mode_not_startable": {
       "message": "{mode} no se puede iniciar a distancia en este aparato. Se puede iniciar en: {startable}."
     },
-    "cook_mode_cavity_unsupported": {
-      "message": "{mode} usa una de las dos cavidades del horno, que Home Assistant aún no puede iniciar."
+    "cook_mode_unavailable": {
+      "message": "{mode} no está disponible ahora en esta cavidad. Se puede iniciar: {startable}."
     },
     "cook_temperature_not_supported": {
       "message": "{mode} no admite temperatura."

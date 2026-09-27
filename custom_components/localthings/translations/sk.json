@@ -2049,8 +2049,8 @@
     "cook_mode_not_startable": {
       "message": "Režim {mode} nemožno na tomto spotrebiči spustiť na diaľku. Možno spustiť: {startable}."
     },
-    "cook_mode_cavity_unsupported": {
-      "message": "Režim {mode} používa jeden priestor dvojitej rúry, ktorý Home Assistant zatiaľ nevie spustiť."
+    "cook_mode_unavailable": {
+      "message": "Režim {mode} teraz v tomto priestore rúry nie je k dispozícii. Možno spustiť: {startable}."
     },
     "cook_temperature_not_supported": {
       "message": "Režim {mode} nemá nastavenie teploty."

@@ -6,8 +6,9 @@ go to the device collection in a single write, not to each resource
 separately, which is the one shape none of the attempts below used.
 
 LocalThings now starts a cook this way (`registry/capabilities/cook.py`),
-only in a mode the board's own `modeSpec` declares `Start&Setting` and
-within that mode's limits. A board with no `modeSpec` gets no start.
+only in a mode the board's own `modeSpec` declares `Start&Setting`, that
+the cavity's live `supportedModes` lists, and within that mode's limits.
+A board with no `modeSpec` gets no start.
 
 This file keeps the earlier results, because they still bound what the
 answer can be, and revises what they mean. The probe ladder at the end is
@@ -99,6 +100,64 @@ from on any cook under 100 minutes.
 
 Full write-up, including what a single run does not establish:
 https://github.com/QuiteYellow/SmartThings-Local/blob/main/docs/oven-cook-start.md
+
+## A dual-cavity range
+
+The NE9801T (#324, `range_tp1x_da_ks_range_0101x`) is two subdevices. The
+upper cavity is the master, with `/device/0`, `/mode/vs/0`,
+`/temperatures/vs/0` and `/operational/state/vs/0`. The lower one is the
+indexed sibling, with `/device/1` and the same three at `/vs/1`. Each
+cavity's temperatures item 0 is its setpoint; item 1 is its probe.
+
+Only the upper cavity's `/mode/vs/0` carries a `modeSpec`, and it lists
+all 15 modes: Upper, Lower and whole-oven ones such as Bake. What each
+cavity can run now is its own `supportedModes`: Upper modes on the master
+and `LowerBake`/`LowerConvectionBake` on `/mode/vs/1` in that dump. The
+whole-oven modes are in neither, presumably because the divider was in.
+
+So each cavity starts from its own collection: the measured batch to
+`/device/0` for the upper one, and to `/device/1` for the lower one with
+its elements at `/mode/vs/1`, `/temperatures/vs/1` and
+`/operational/state/vs/1` -- the spelling every read and write of that
+cavity already uses. **That inner spelling is the one unmeasured part.** A
+batch's inner hrefs go out verbatim, and whether `/device/1` wants `/vs/1`
+or `/vs/0` inside it is untested (the `/device/1` seed in the fixture is
+reconstructed, not captured). The lower cavity's batch also leaves out the
+`/devices/0` marker rather than guess its spelling; neither measured board
+needed it.
+
+To settle it on the hardware, with the lower oven empty and Remote
+Control on, try the spelling LocalThings sends first:
+
+```yaml
+action: localthings.write_resource
+data:
+  device_id: PUT_YOUR_DEVICE_ID_HERE
+  verify_after: 30
+  writes:
+    - href: /device/1
+      readback: false
+      payload:
+        - href: /mode/vs/1
+          rep:
+            x.com.samsung.da.modes: ["LowerBake"]
+        - href: /temperatures/vs/1
+          rep:
+            x.com.samsung.da.items:
+              - x.com.samsung.da.id: "0"
+                x.com.samsung.da.desired: "350"
+                x.com.samsung.da.unit: "Fahrenheit"
+        - href: /operational/state/vs/1
+          rep:
+            x.com.samsung.da.operationTime: "00:10:00"
+            x.com.samsung.da.state: "Run"
+```
+
+`device_id` is the master's here: `write_resource` translates only the
+write's own href for a subdevice, never a batch's inner ones, so naming
+the master keeps `/device/1` as written. If that does not start the lower
+oven, the same batch with the three inner hrefs at `/vs/0` is the other
+spelling.
 
 ## What is measured
 

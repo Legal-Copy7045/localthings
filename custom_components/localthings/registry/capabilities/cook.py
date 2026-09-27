@@ -13,11 +13,20 @@ docs/investigations/oven-cycle-start.md.
 (`control`), and its temperature, time and power limits. A board without
 one gets no start at all: nothing else tells a startable mode from a
 Setting-only one, and the gas range that declares none cannot be started.
+What a cavity can run right now is its own live `supportedModes`, which
+is narrower: the NE9801T's modeSpec lists all 15 modes of both cavities
+while its upper cavity supports only the three Upper ones (#324).
+
+A dual-cavity range is two subdevices, each with its own collection and
+its own mode, temperatures and operational state; only the upper
+cavity's `/mode/vs/0` carries the modeSpec (share_mode_spec). Each cavity
+starts from its own collection.
 """
 
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -29,6 +38,8 @@ OPERATION_HREF = "/operational/state/vs/0"
 CAVITY_HREF = "/oven/vs/0"
 
 _MODES = "x.com.samsung.da.modes"
+_MODE_SPEC = "x.com.samsung.da.modeSpec"
+_SUPPORTED_MODES = "x.com.samsung.da.supportedModes"
 _ITEMS = "x.com.samsung.da.items"
 _DESIRED = "x.com.samsung.da.desired"
 _STATE = "x.com.samsung.da.state"
@@ -36,12 +47,6 @@ _OPERATION_TIME = "x.com.samsung.da.operationTime"
 
 START_CONTROL = "Start&Setting"
 IDLE_STATE = "Ready"
-
-# Modes carrying cavity Upper/Lower (a flex-duo range, #183) are startable
-# by their own declaration, but no dual-cavity start has been measured and
-# which temperatures item each cavity takes is unknown, so only a
-# single-cavity mode is started.
-_STARTABLE_CAVITY = "Single"
 
 _UNIT_KEYS = {"Celsius": "C", "Fahrenheit": "F"}
 
@@ -73,7 +78,6 @@ class TempSpec:
 class ModeSpec:
     mode: str
     control: str
-    cavity: str
     temps: dict[str, TempSpec] = field(default_factory=dict)
     # Seconds.
     time_min: int | None = None
@@ -82,7 +86,7 @@ class ModeSpec:
 
     @property
     def startable(self) -> bool:
-        return self.control == START_CONTROL and self.cavity == _STARTABLE_CAVITY
+        return self.control == START_CONTROL
 
 
 def parse_hms(value: Any) -> int | None:
@@ -125,7 +129,7 @@ def _temp_spec(entry: dict, unit: str) -> TempSpec | None:
 def mode_specs(resources: dict) -> dict[str, ModeSpec]:
     """{mode: ModeSpec} from `/mode/vs/0`'s modeSpec, which arrives as a
     JSON string; {} when the board reports none."""
-    raw = (resources.get(MODE_HREF) or {}).get("x.com.samsung.da.modeSpec")
+    raw = (resources.get(MODE_HREF) or {}).get(_MODE_SPEC)
     if isinstance(raw, str):
         try:
             raw = json.loads(raw)
@@ -139,7 +143,6 @@ def mode_specs(resources: dict) -> dict[str, ModeSpec]:
         specs[entry["mode"]] = ModeSpec(
             mode=entry["mode"],
             control=str(entry.get("control")),
-            cavity=str(entry.get("cavity")),
             temps=temps,
             time_min=parse_hms(entry.get("timeMin")),
             time_max=parse_hms(entry.get("timeMax")),
@@ -148,8 +151,31 @@ def mode_specs(resources: dict) -> dict[str, ModeSpec]:
     return specs
 
 
+def share_mode_spec(resources: dict, mode_hrefs: list[str]) -> dict:
+    """`resources` with the upper cavity's modeSpec copied onto each of
+    `mode_hrefs` (a sibling cavity's actual `/mode` href) that has none.
+    It is one board-wide list -- the upper cavity's names the Lower modes
+    too -- so a lower cavity is checked against it rather than getting no
+    start. Returns `resources` itself when there is nothing to share."""
+    spec = (resources.get(MODE_HREF) or {}).get(_MODE_SPEC)
+    targets = [h for h in mode_hrefs if h in resources and _MODE_SPEC not in resources[h]]
+    if spec is None or not targets:
+        return resources
+    shared = dict(resources)
+    for href in targets:
+        shared[href] = {**resources[href], _MODE_SPEC: spec}
+    return shared
+
+
 def startable_modes(resources: dict) -> list[str]:
-    return [name for name, spec in mode_specs(resources).items() if spec.startable]
+    """Modes this cavity can start now: declared startable, and in its own
+    live supportedModes when it reports one."""
+    live = (resources.get(MODE_HREF) or {}).get(_SUPPORTED_MODES)
+    return [
+        name
+        for name, spec in mode_specs(resources).items()
+        if spec.startable and (not isinstance(live, list) or name in live)
+    ]
 
 
 def can_start(rep: dict, resources: dict) -> bool:
@@ -222,18 +248,22 @@ class CookPlan:
     unit: str | None
     duration: int | None
 
-    def batch(self) -> list[dict]:
-        """The Collection payload for `/device/0`. The bare `/devices/0`
-        marker is not required on either board measured, but it is what
-        both measured payloads carried."""
-        elements: list[dict] = [
-            {"href": "/devices/0"},
-            {"href": MODE_HREF, "rep": {_MODES: [self.mode]}},
-        ]
+    def batch(self, to_actual: Callable[[str], str] | None = None) -> list[dict]:
+        """The Collection payload for the cavity's own collection, with
+        `to_actual` spelling each element's href as that cavity's reads and
+        writes already do (`/mode/vs/1` for a lower cavity).
+
+        The bare `/devices/0` marker is not required on either board
+        measured, but both measured payloads carried it, so the upper
+        cavity keeps it. A lower cavity leaves it out rather than guess
+        its spelling."""
+        actual = to_actual or (lambda href: href)
+        elements: list[dict] = [{"href": "/devices/0"}] if to_actual is None else []
+        elements.append({"href": actual(MODE_HREF), "rep": {_MODES: [self.mode]}})
         if self.temperature is not None:
             elements.append(
                 {
-                    "href": TEMPERATURES_HREF,
+                    "href": actual(TEMPERATURES_HREF),
                     "rep": {
                         _ITEMS: [
                             {
@@ -249,7 +279,7 @@ class CookPlan:
         if self.duration is not None:
             operation[_OPERATION_TIME] = format_hms(self.duration)
         operation[_STATE] = "Run"
-        elements.append({"href": OPERATION_HREF, "rep": operation})
+        elements.append({"href": actual(OPERATION_HREF), "rep": operation})
         return elements
 
 
@@ -264,9 +294,9 @@ def plan_start(
     own unit and is rounded to the mode's step; `duration` is seconds.
     Raises CookStartError naming what the board allows."""
     specs = mode_specs(resources)
-    startable = [name for name, spec in specs.items() if spec.startable]
-    if not startable:
+    if not any(spec.startable for spec in specs.values()):
         raise CookStartError("cook_start_not_supported")
+    startable = startable_modes(resources)
     if not is_idle(resources):
         raise CookStartError("cook_start_not_idle")
 
@@ -277,9 +307,11 @@ def plan_start(
         mode = default
     spec = specs.get(mode)
     if spec is None or not spec.startable:
-        if spec is not None and spec.control == START_CONTROL:
-            raise CookStartError("cook_mode_cavity_unsupported", mode=mode)
         raise CookStartError("cook_mode_not_startable", mode=mode, startable=", ".join(startable))
+    if mode not in startable:
+        # Declared startable, but not a mode this cavity offers now: the
+        # other cavity's, or a whole-oven mode while the divider is in.
+        raise CookStartError("cook_mode_unavailable", mode=mode, startable=", ".join(startable))
 
     unit = device_unit(resources)
     temp = spec.temps.get(_UNIT_KEYS.get(unit or "", ""))
@@ -406,8 +438,9 @@ class HeldCook:
         view = dict(resources)
         # Without a held mode the start uses the board's default mode, so
         # that is what reads back.
-        mode = self.values.get(PARAM_MODE) or (resources.get(MODE_HREF) or {}).get(
-            "x.com.samsung.da.defaultMode"
+        default = (resources.get(MODE_HREF) or {}).get("x.com.samsung.da.defaultMode")
+        mode = self.values.get(PARAM_MODE) or (
+            default if default in startable_modes(resources) else None
         )
         if mode and MODE_HREF in view:
             view[MODE_HREF] = {**view[MODE_HREF], _MODES: [mode]}

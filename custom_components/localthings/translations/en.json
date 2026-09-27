@@ -2049,8 +2049,8 @@
     "cook_mode_not_startable": {
       "message": "{mode} can't be started remotely on this appliance. It can be started in: {startable}."
     },
-    "cook_mode_cavity_unsupported": {
-      "message": "{mode} cooks in one cavity of a dual-cavity oven, which Home Assistant can't start yet."
+    "cook_mode_unavailable": {
+      "message": "{mode} isn't available on this cavity right now. It can start: {startable}."
     },
     "cook_temperature_not_supported": {
       "message": "{mode} doesn't take a temperature."

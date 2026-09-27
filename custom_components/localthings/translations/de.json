@@ -2049,8 +2049,8 @@
     "cook_mode_not_startable": {
       "message": "{mode} kann auf diesem Gerät nicht aus der Ferne gestartet werden. Möglich sind: {startable}."
     },
-    "cook_mode_cavity_unsupported": {
-      "message": "{mode} gart in einem Garraum eines Doppelbackofens, den Home Assistant noch nicht starten kann."
+    "cook_mode_unavailable": {
+      "message": "{mode} ist in diesem Garraum gerade nicht verfügbar. Starten lässt sich: {startable}."
     },
     "cook_temperature_not_supported": {
       "message": "{mode} hat keine Temperatureinstellung."

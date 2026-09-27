@@ -2049,8 +2049,8 @@
     "cook_mode_not_startable": {
       "message": "이 기기에서는 {mode} 모드를 원격으로 시작할 수 없습니다. 시작 가능한 모드: {startable}."
     },
-    "cook_mode_cavity_unsupported": {
-      "message": "{mode} 모드는 듀얼 오븐의 한쪽 조리실을 사용하며, Home Assistant에서 아직 시작할 수 없습니다."
+    "cook_mode_unavailable": {
+      "message": "{mode} 모드는 지금 이 조리실에서 사용할 수 없습니다. 시작 가능한 모드: {startable}."
     },
     "cook_temperature_not_supported": {
       "message": "{mode} 모드는 온도를 설정하지 않습니다."

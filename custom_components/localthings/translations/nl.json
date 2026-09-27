@@ -2049,8 +2049,8 @@
     "cook_mode_not_startable": {
       "message": "{mode} kan op dit apparaat niet op afstand gestart worden. Wel mogelijk: {startable}."
     },
-    "cook_mode_cavity_unsupported": {
-      "message": "{mode} gebruikt één ovenruimte van een dubbele oven, die Home Assistant nog niet kan starten."
+    "cook_mode_unavailable": {
+      "message": "{mode} is nu niet beschikbaar in deze ovenruimte. Wel te starten: {startable}."
     },
     "cook_temperature_not_supported": {
       "message": "{mode} heeft geen temperatuurinstelling."
