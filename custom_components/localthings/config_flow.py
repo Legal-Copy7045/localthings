@@ -477,15 +477,24 @@ def _resolve_alert(exc: Exception, host: str, port: int, cert_pem: str, key_pem:
         return None
     # How far the appliance got is the evidence a bare timeout lacks: no
     # reply at all, a cookie exchange and then silence, or its whole flight
-    # and then silence after ours (#504).
+    # and then silence after ours (#504). The counts include resends, so a
+    # re-issued HelloVerifyRequest shows as two where the names show one.
+    server_sent = getattr(result, "handshake_msgs", None)
     _LOGGER.debug(
-        "diagnostic handshake on port %d: outcome=%s server_sent=%s alert=%s",
+        "diagnostic handshake on port %d: outcome=%s server_sent=%s counts=%s alert=%s",
         port,
         getattr(result, "outcome", None),
-        getattr(result, "handshake_msgs", None),
+        server_sent,
+        dict(getattr(result, "handshake_counts", None) or {}),
         result.alert,
     )
     if result.alert is None:
+        return None
+    if isinstance(exc, TimeoutError) and server_sent is not None and not server_sent:
+        # A bare alert with nothing ahead of it, after the real handshake
+        # timed out, is the appliance refusing every new peer by then: it
+        # never got as far as our certificate, so it is not why the
+        # handshake failed (#504).
         return None
     level, name = result.alert
     # ProbeResult.alert is set for a *received* alert record of either
