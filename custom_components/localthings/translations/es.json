@@ -607,7 +607,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Temperatura del enfriador"
+        "name": "Temperatura del frigorífico"
       },
       "day_brightness": {
         "name": "Brillo del armario",

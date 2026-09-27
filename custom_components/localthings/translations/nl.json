@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Temperatuur koelgedeelte"
+        "name": "Koelkasttemperatuur"
       },
       "day_brightness": {
         "name": "Helderheid kast",

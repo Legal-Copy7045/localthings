@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Cooler temperature"
+        "name": "Fridge temperature"
       },
       "day_brightness": {
         "name": "Cabinet brightness",

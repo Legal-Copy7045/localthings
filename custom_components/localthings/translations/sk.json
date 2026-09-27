@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Teplota chladiacej zóny"
+        "name": "Teplota chladničky"
       },
       "day_brightness": {
         "name": "Jas skrine",

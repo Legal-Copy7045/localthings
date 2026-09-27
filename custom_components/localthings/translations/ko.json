@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "냉각실 온도"
+        "name": "냉장실 온도"
       },
       "day_brightness": {
         "name": "수납장 밝기",

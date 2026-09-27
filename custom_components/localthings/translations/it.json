@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Temperatura cooler"
+        "name": "Temperatura frigorifero"
       },
       "day_brightness": {
         "name": "Luminosità vano",
