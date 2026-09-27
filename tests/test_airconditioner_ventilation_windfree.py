@@ -2,20 +2,11 @@
 from PR #316 (Samsung "System Fresh Air Ventilator", model
 ACA-KR-TP2-21-AN9000, vid DA-AC-DIFFUSER-01001).
 
-No raw diagnostics dump for this model was available -- PR #316 never
-attached one, only Korean code comments describing field shapes the
-contributor said they observed. Per this project's fixture-integrity rule
-(a fixture must record what hardware actually did, not a third party's
-prose about it), there's no `airconditioner_*_device.json` fixture for
-this model here. These tests instead exercise the gating logic directly
-against hand-built reps matching those quoted shapes, clearly distinct
-from this suite's fixture-backed tests, and check the new gate doesn't
-false-positive against every real AC fixture already in the corpus.
-
-If a real diagnostics dump for this model ever surfaces (tracked as a
-follow-up device-support issue), replace this file with a proper
-fixture + golden + capability test per the usual workflow, and drop the
-disclaimer above.
+These tests exercise the gating logic against hand-built reps in the
+shapes PR #316 described, and check the gate doesn't false-positive on any
+real AC fixture. The real dump (issue #522) is
+`airconditioner_aca_kr_tp2_21_an9000`, covered with its golden in
+test_airconditioner_aca_kr_tp2_21_an9000.py.
 """
 
 import glob

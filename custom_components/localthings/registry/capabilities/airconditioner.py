@@ -203,11 +203,11 @@ def _mode_options(rep):
 # Samsung's "System Fresh Air Ventilator" (PR #316, model
 # ACA-KR-TP2-21-AN9000, vid DA-AC-DIFFUSER-01001) self-reports oic.d.
 # airconditioner and routes through this same CLIMATE capability, but its
-# /mode/vs/0 supportedModes are Purification/Ventilation/SmartVentilation --
-# none of which climate.py's HVAC-mode table knows, so hvac_mode collapses
-# to a single stuck value with no way to tell the three apart. Gated to
-# devices whose *entire* supported-mode set is this vocabulary, so it can't
-# false-positive on a real AC's Cool/Heat/Dry list.
+# /mode/vs/0 supportedModes are Purification/Ventilation/SmartVentilation.
+# climate.py maps all three to fan-only (#522), which can't tell them apart,
+# so this select does. Gated to devices whose *entire* supported-mode set is
+# this vocabulary, so it can't false-positive on a real AC's Cool/Heat/Dry
+# list.
 _VENTILATION_MODE_VALUES = frozenset(("Purification", "Ventilation", "SmartVentilation"))
 
 

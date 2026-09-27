@@ -98,6 +98,13 @@ _SUPPORTED_FIELD = "x.com.samsung.da.supportedModes"
 _DEVICE_TO_HVAC: dict[str, HVACMode] = {
     "Cool": HVACMode.COOL,
     "Dry": HVACMode.DRY,
+    # The fresh-air ventilator's only modes (ACA-KR-TP2-21-AN9000, #522).
+    # Fan-only gives its climate card an on state; the ventilation_mode
+    # select picks among the three. Listed before 'Fan'/'Wind' so neither
+    # becomes the reverse map's fallback.
+    "Purification": HVACMode.FAN_ONLY,
+    "Ventilation": HVACMode.FAN_ONLY,
+    "SmartVentilation": HVACMode.FAN_ONLY,
     # Fan-only is spelled 'Wind' on some boards and 'Fan' on others; both map
     # to FAN_ONLY. _device_code_for_hvac() resolves the write-side code from
     # the unit's own supportedModes, so this reverse map is only a fallback
@@ -664,7 +671,12 @@ class LocalThingsClimate(LocalThingsEntity, ClimateEntity):
         """Device mode code for an HA hvac_mode, chosen from this unit's own
         supportedModes -- fan-only is 'Wind' on some boards and 'Fan' on
         others, so the reverse map alone can't pick the code this unit
-        accepts."""
+        accepts. The current mode wins when it already is one: a
+        ventilator's three modes are all fan-only, and turning it on must not
+        swap SmartVentilation for Purification."""
+        current = _first(self._rep(MODE_HREF).get(_MODES_FIELD))
+        if _DEVICE_TO_HVAC.get(current) == hvac_mode:
+            return current
         for code in self._supported(MODE_HREF):
             if _DEVICE_TO_HVAC.get(code) == hvac_mode:
                 return code

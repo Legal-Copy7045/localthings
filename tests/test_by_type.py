@@ -829,7 +829,8 @@ class TestResolve:
         """A strong live-resource signature wins over model metadata.
 
         Across the fixture corpus the only intentional disagreements are
-        oven-badged microwaves (Qooker, NQ7000B): an OVEN model token says oven
+        oven-badged microwaves (Qooker, NQ7000B, the NW9300MD combo's microwave
+        cavity): an OVEN model token says oven
         while the /oven + MicroWave surface says microwave. Locking the
         disagreement set keeps resource-first routing from silently becoming
         greedy as new signatures or fixtures land.
@@ -856,6 +857,7 @@ class TestResolve:
 
         assert disagreements == {
             "microwave_nq7000b": ("microwave", "oven"),  # issue #496
+            "microwave_nw9300md": ("microwave", "oven"),  # issue #525
             "qooker_mw7500a": ("microwave", "oven"),
         }
 
