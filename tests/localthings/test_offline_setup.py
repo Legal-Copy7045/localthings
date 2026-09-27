@@ -12,6 +12,7 @@ rather than repeating both every cycle (issue #269).
 
 from __future__ import annotations
 
+import json
 import logging
 import time
 from contextlib import contextmanager
@@ -21,6 +22,7 @@ from unittest.mock import patch
 import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -29,8 +31,10 @@ from smartthings_local.errors import SessionTimeoutError
 
 from custom_components.localthings.const import DOMAIN, SUMMARY_INTERVAL_S
 from custom_components.localthings.coordinator import LocalThingsCoordinator
+from custom_components.localthings.registry.batch import parse_device0_batch
 from custom_components.localthings.registry.identity import DeviceIdentity
 
+from .conftest import FIXTURES
 from .conftest import _load_fridge_resources as _load_fridge
 
 _COORD = "custom_components.localthings.coordinator.LocalThingsCoordinator"
@@ -405,6 +409,58 @@ async def test_reconcile_is_quiet_when_live_discovery_agrees(
         await _tick(hass)
 
     reload.assert_not_called()
+
+
+def _load_washer() -> dict:
+    data = json.loads((FIXTURES / "washer_device.json").read_text())
+    return parse_device0_batch(data["device0"])
+
+
+def _cycle_entry(hass: HomeAssistant, entry) -> er.RegistryEntry:
+    ent_reg = er.async_get(hass)
+    (cycle,) = (
+        e
+        for e in er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+        if e.domain == "select" and e.unique_id.endswith("_cycle")
+    )
+    return cycle
+
+
+async def test_offline_load_registers_the_course_table_translation_key(
+    hass: HomeAssistant, mock_entry
+) -> None:
+    """HA writes an entity's translation_key to the registry only when it is
+    added, and the frontend translates state from that copy. An offline load
+    that resolved the cycle's key against the still-empty live cache stored
+    the generic 'cycle', so courses showed as raw codes like '1d' once the
+    washer came back (issue #531)."""
+    resources = _load_washer()
+    await _setup_online_then_unload(hass, mock_entry, resources)
+    assert _cycle_entry(hass, mock_entry).translation_key == "washer_cycle_table_02"
+
+    with _unreachable():
+        await hass.config_entries.async_setup(mock_entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert _cycle_entry(hass, mock_entry).translation_key == "washer_cycle_table_02"
+
+
+async def test_stale_registry_translation_key_is_corrected_live(
+    hass: HomeAssistant, mock_entry
+) -> None:
+    """A registry key that disagrees with what live data resolves to --
+    whatever wrote it -- is repaired on the next update rather than lasting
+    until the entry reloads (issue #531)."""
+    resources = _load_washer()
+    with _reachable(resources):
+        await hass.config_entries.async_setup(mock_entry.entry_id)
+        await hass.async_block_till_done()
+        er.async_get(hass).async_update_entity(
+            _cycle_entry(hass, mock_entry).entity_id, translation_key="cycle"
+        )
+        await _tick(hass)
+
+    assert _cycle_entry(hass, mock_entry).translation_key == "washer_cycle_table_02"
 
 
 def test_coverage_gap_repair_is_live_only(hass: HomeAssistant, mock_entry) -> None:
