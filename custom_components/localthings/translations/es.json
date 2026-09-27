@@ -2070,5 +2070,29 @@
         "name": "Agua caliente"
       }
     }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Congelador",
+        "cooler": "Enfriador",
+        "top": "Compartimento superior",
+        "middle": "Compartimento central",
+        "bottom": "Compartimento inferior",
+        "onedoor": "Compartimento de una puerta",
+        "winecellar_top": "Vinoteca superior",
+        "winecellar_bottom": "Vinoteca inferior",
+        "door_freezer": "Puerta del congelador",
+        "door_cooler": "Puerta del enfriador",
+        "door_cvroom": "Puerta de la zona flexible",
+        "door_winecellar": "Puerta de la vinoteca",
+        "door_onedoorfreezer": "Puerta del congelador",
+        "door_onedoorkimchi": "Puerta del frigorífico de kimchi",
+        "ice_maker": "Máquina de hielo",
+        "cubed_ice": "Hielo en cubitos",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Bolas de hielo para whisky"
+      }
+    }
   }
 }

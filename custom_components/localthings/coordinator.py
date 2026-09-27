@@ -435,6 +435,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # climate.py's frequent per-property reads don't rebuild it from
         # scratch each time.
         self._canonical_cache: dict[tuple[str, str], dict] = {}
+        # Localized {instance_name} labels keyed by instance-name id, loaded
+        # at setup by entity.async_load_instance_names (issue #533).
+        self.instance_names: dict[str, str] = {}
         self._cache = StateCache(_NoOpDescriptor())
         self._cache.set_on_change(self._on_cache_changed)
         self._observe = ObserveManager(self._cache, logger=self._log)

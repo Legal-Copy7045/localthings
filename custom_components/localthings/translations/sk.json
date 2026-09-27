@@ -2070,5 +2070,29 @@
     "cook_duration_out_of_range": {
       "message": "Režim {mode} prijíma čas prípravy od {min} do {max}."
     }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Mraznička",
+        "cooler": "Chladiaca zóna",
+        "top": "Horný priečinok",
+        "middle": "Stredný priečinok",
+        "bottom": "Dolný priečinok",
+        "onedoor": "Jednodverový priečinok",
+        "winecellar_top": "Vinotéka horná",
+        "winecellar_bottom": "Vinotéka dolná",
+        "door_freezer": "Dvierka mrazničky",
+        "door_cooler": "Dvierka chladiacej zóny",
+        "door_cvroom": "Dvierka flexibilnej zóny",
+        "door_winecellar": "Dvierka vinotéky",
+        "door_onedoorfreezer": "Dvierka mrazničky",
+        "door_onedoorkimchi": "Dvierka kimči chladničky",
+        "ice_maker": "Výrobník ľadu",
+        "cubed_ice": "Kockový ľad",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Ľadové gule na whisky"
+      }
+    }
   }
 }

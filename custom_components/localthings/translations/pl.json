@@ -2070,5 +2070,29 @@
     "cook_duration_out_of_range": {
       "message": "Tryb {mode} przyjmuje czas gotowania od {min} do {max}."
     }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Zamrażarka",
+        "cooler": "Chłodziarka",
+        "top": "Górna komora",
+        "middle": "Środkowa komora",
+        "bottom": "Dolna komora",
+        "onedoor": "Komora jednodrzwiowa",
+        "winecellar_top": "Winiarka górna",
+        "winecellar_bottom": "Winiarka dolna",
+        "door_freezer": "Drzwi zamrażarki",
+        "door_cooler": "Drzwi chłodziarki",
+        "door_cvroom": "Drzwi strefy Flex",
+        "door_winecellar": "Drzwi winiarki",
+        "door_onedoorfreezer": "Drzwi zamrażarki",
+        "door_onedoorkimchi": "Drzwi lodówki do kimchi",
+        "ice_maker": "Kostkarka do lodu",
+        "cubed_ice": "Kostki lodu",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Kule lodu do whisky"
+      }
+    }
   }
 }

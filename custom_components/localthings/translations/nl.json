@@ -2070,5 +2070,29 @@
     "cook_duration_out_of_range": {
       "message": "{mode} accepteert een bereidingstijd van {min} tot {max}."
     }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Vriezer",
+        "cooler": "Koelgedeelte",
+        "top": "Bovenvak",
+        "middle": "Middenvak",
+        "bottom": "Ondervak",
+        "onedoor": "Eendeursvak",
+        "winecellar_top": "Wijnvak boven",
+        "winecellar_bottom": "Wijnvak onder",
+        "door_freezer": "Vriezerdeur",
+        "door_cooler": "Deur koelgedeelte",
+        "door_cvroom": "Deur FlexZone",
+        "door_winecellar": "Deur wijnvak",
+        "door_onedoorfreezer": "Vriezerdeur",
+        "door_onedoorkimchi": "Deur kimchikoelkast",
+        "ice_maker": "IJsmaker",
+        "cubed_ice": "IJsblokjes",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Whisky-ijsbollen"
+      }
+    }
   }
 }

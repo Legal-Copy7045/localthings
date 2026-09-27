@@ -2070,5 +2070,29 @@
     "cook_duration_out_of_range": {
       "message": "{mode} 모드의 조리 시간 범위는 {min}~{max}입니다."
     }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "냉동실",
+        "cooler": "냉각실",
+        "top": "상칸",
+        "middle": "중칸",
+        "bottom": "하칸",
+        "onedoor": "원도어칸",
+        "winecellar_top": "와인셀러 상단",
+        "winecellar_bottom": "와인셀러 하단",
+        "door_freezer": "냉동실 문",
+        "door_cooler": "냉각실 문",
+        "door_cvroom": "맞춤 보관실 문",
+        "door_winecellar": "와인셀러 문",
+        "door_onedoorfreezer": "냉동실 문",
+        "door_onedoorkimchi": "김치냉장고 문",
+        "ice_maker": "제빙기",
+        "cubed_ice": "각얼음",
+        "ice_bites": "아이스 바이트",
+        "whiskey_ice_ball": "위스키 볼 얼음"
+      }
+    }
   }
 }

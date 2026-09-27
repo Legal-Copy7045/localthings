@@ -2070,5 +2070,29 @@
     "cook_duration_out_of_range": {
       "message": "{mode} accetta un tempo di cottura da {min} a {max}."
     }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Congelatore",
+        "cooler": "Cooler",
+        "top": "Scomparto superiore",
+        "middle": "Scomparto centrale",
+        "bottom": "Scomparto inferiore",
+        "onedoor": "Scomparto a una porta",
+        "winecellar_top": "Cantinetta superiore",
+        "winecellar_bottom": "Cantinetta inferiore",
+        "door_freezer": "Sportello congelatore",
+        "door_cooler": "Sportello cooler",
+        "door_cvroom": "Sportello zona flessibile",
+        "door_winecellar": "Sportello cantinetta",
+        "door_onedoorfreezer": "Sportello congelatore",
+        "door_onedoorkimchi": "Sportello frigorifero kimchi",
+        "ice_maker": "Produttore di ghiaccio",
+        "cubed_ice": "Ghiaccio a cubetti",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Sfere di ghiaccio per whisky"
+      }
+    }
   }
 }

@@ -759,3 +759,32 @@ def test_every_kimchi_zone_supportmode_code_has_a_state_label():
                 if code.lower() not in state_labels
             )
     assert missing == []
+
+
+def test_every_fixture_instance_name_has_a_catalog_entry():
+    """Every {instance_name} a captured device produces is translatable, and
+    its English entry is exactly the name shown before it was (issue #533).
+
+    A new compartment or ice-maker name fails here until it is added to
+    ``selector.instance_name.options`` in every language.
+    """
+    from custom_components.localthings.entity import _instance_display_name
+    from custom_components.localthings.registry.adapter import _key
+    from custom_components.localthings.registry.batch import parse_device0_batch
+    from custom_components.localthings.registry.by_type import resolve
+    from custom_components.localthings.registry.discovery import discover
+
+    table = _load("en")["selector"]["instance_name"]["options"]
+    missing = {}
+    for fixture in sorted((Path(__file__).parent / "fixtures").glob("*_device.json")):
+        resources = parse_device0_batch(json.loads(fixture.read_text())["device0"])
+        registry = resolve(resources)
+        if registry is None:
+            continue
+        for bound in discover(resources, registry.capabilities, registry.pattern_capabilities):
+            if not bound.desc.use_instance_name:
+                continue
+            name = _instance_display_name(bound, _key(bound))
+            if table.get(name.lower().replace(" ", "_")) != name:
+                missing[name] = fixture.name
+    assert missing == {}

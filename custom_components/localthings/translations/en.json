@@ -2070,5 +2070,29 @@
     "cook_duration_out_of_range": {
       "message": "{mode} takes a cook time from {min} to {max}."
     }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Freezer",
+        "cooler": "Cooler",
+        "top": "Top",
+        "middle": "Middle",
+        "bottom": "Bottom",
+        "onedoor": "Onedoor",
+        "winecellar_top": "Winecellar Top",
+        "winecellar_bottom": "Winecellar Bottom",
+        "door_freezer": "Door Freezer",
+        "door_cooler": "Door Cooler",
+        "door_cvroom": "Door Cvroom",
+        "door_winecellar": "Door Winecellar",
+        "door_onedoorfreezer": "Door Onedoorfreezer",
+        "door_onedoorkimchi": "Door Onedoorkimchi",
+        "ice_maker": "Ice Maker",
+        "cubed_ice": "Cubed Ice",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Whiskey Ice Ball"
+      }
+    }
   }
 }

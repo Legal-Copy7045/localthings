@@ -468,6 +468,7 @@ class TestKimchiZone:
 
         class _FakeCoordinator:
             device_key = "TEST-SERIAL"
+            instance_names: ClassVar[dict] = {}
 
             def __init__(self, resources, data):
                 self.last_resources = resources
