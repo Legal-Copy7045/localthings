@@ -300,7 +300,6 @@ OPTION_KIND_SPIN = 0xA
 OPTION_KIND_SOIL = 0xC
 OPTION_KIND_DRY = 0xD
 
-
 # Named on one board, but not on "it decodes against supportedDryTime"
 # alone: on the DV6800N -- the only dump carrying both -- every record holds
 # a 0xD and a 0xE group, no course carries values for both, and the only

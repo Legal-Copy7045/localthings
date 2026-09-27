@@ -520,30 +520,28 @@ class TestWashOptionToggleValidation:
         translation_key = self._desc("bubble_soak").validate_fn("On", rep, _EDIT_COURSE_RESOURCES)
         assert translation_key == "bubble_soak_unavailable_for_cycle"
 
-    def test_supported_options_table_is_used_for_course_alignment(self):
-        rep = {
-            "x.com.samsung.da.options": [
-                "Course_1B",
-                "BubbleSoakSet_0000F000F00000F000F0F0F0F0000000F0F00000F000000000",
-            ]
-        }
-        resources = {
-            "/course/vs/0": {
-                "x.com.samsung.da.options": ["Course_1B"],
-                "x.com.samsung.da.supportedOptions": [
-                    "41C8410923FA67FB03F2B8410923FA37FB03F1B847E923FA37FB03F1E831E933FA33FB03F1D841E923FA67FB03F96841E920FA37FB0008F8102923FA57FB03F25843E933FA57FB03F26831E920FA207B03F33857E933FA67FB00024841E930FA30FB00032833E923FA37FB00020857E943FA67FB03F22841E920FA30FB00023831E930FA57FB03F21841E943FA57FB0002D841E923FA30FB00030843E923FA67FB000278000913FA67FB03F2880009000A67EB03F368410923FA640B13E3880009000A000B13E3980009000A000B13E2985209204A520B0003780009000A000B000"
-                ],
-            },
-            "/wm/editcourse/vs/0": {
-                "x.com.samsung.da.editCourseList": [
-                    "EditCourseList_1C1B1E26281D29243321272B25203822322339302D36378F96"
-                ]
-            },
-        }
-        assert self._desc("bubble_soak").validate_fn("On", rep, resources) is None
-        assert self._desc("bubble_soak").extra_state_attributes_fn(rep, resources) == {
-            "course_supported": True
-        }
+    def test_bytes_follow_supported_options_order_not_edit_course_list(self):
+        """On the WW90DG the two orders differ; editCourseList order would
+        gray out pre-wash on Cotton and allow bubble soak on Drain/Spin."""
+        cotton = _on_course("washer_ww90dg6u25le", "1B")
+        drain_spin = _on_course("washer_ww90dg6u25le", "28")
+
+        for key in ("bubble_soak", "pre_wash", "intensive"):
+            desc = self._desc(key)
+            assert desc.validate_fn("On", cotton["/course/vs/0"], cotton) is None
+            assert (
+                desc.validate_fn("On", drain_spin["/course/vs/0"], drain_spin)
+                == f"{key}_unavailable_for_cycle"
+            )
+
+    def test_course_supported_attribute(self):
+        cotton = _on_course("washer_ww90dg6u25le", "1B")
+        drain_spin = _on_course("washer_ww90dg6u25le", "28")
+        attributes = self._desc("pre_wash").extra_state_attributes_fn
+
+        assert attributes(cotton["/course/vs/0"], cotton) == {"course_supported": True}
+        assert attributes(drain_spin["/course/vs/0"], drain_spin) == {"course_supported": False}
+        assert attributes({}, {}) == {"course_supported": None}
 
     def test_pre_wash_and_intensive_use_their_own_availableset_field(self):
         rep = {"x.com.samsung.da.options": ["Course_30", _PRE_WASH_AVAILABLE_SET]}
@@ -649,7 +647,11 @@ def _settings(key):
 def _ww6500(course=None, **washer_fields):
     """The WW6500 dump, optionally on another course or with other live
     wash settings."""
-    resources = _load_device("washer_ww6500")
+    return _on_course("washer_ww6500", course, **washer_fields)
+
+
+def _on_course(name, course=None, **washer_fields):
+    resources = _load_device(name)
     course_rep = dict(resources["/course/vs/0"])
     if course is not None:
         course_rep["x.com.samsung.da.options"] = [
@@ -691,6 +693,50 @@ class TestCourseNarrowedWashSettings:
         resources = _ww6500("63", waterTemperature="30")
 
         assert _settings("wash_temperature").options(resources) == ["30", "60"]
+
+
+class TestCourseNarrowedSoilLevel:
+    """Soil level is kind 0xC: its masks match each board's own
+    supportedSoilLevel on the flexwash and the WA55A7700AV."""
+
+    def test_flexwash_never_offers_none(self):
+        resources = _on_course("washer_flexwash", "01")
+
+        assert _settings("soil_level").options(resources) == ["Light", "Normal", "Heavy"]
+
+    def test_a_course_with_a_narrower_mask(self):
+        resources = _on_course("washer_wa55a7700av", "55")
+
+        assert _settings("soil_level").options(resources) == ["ExtraLight", "Light", "Normal"]
+
+    def test_a_course_with_no_soil_choice_keeps_only_the_live_value(self):
+        resources = _on_course("washer_wa55a7700av", "7E")
+
+        assert _settings("soil_level").options(resources) == ["Normal"]
+
+
+class TestCourseNarrowedWW90DG:
+    """A Table_02 front-loader (#511), where the records are a different
+    width from the WW6500's."""
+
+    def test_cotton_offers_every_temperature(self):
+        resources = _on_course("washer_ww90dg6u25le", "1B")
+
+        assert _settings("wash_temperature").options(resources) == [
+            "Cold",
+            "20",
+            "30",
+            "40",
+            "60",
+            "90",
+        ]
+
+    def test_delicates_narrows_temperature_spin_and_rinses(self):
+        resources = _on_course("washer_ww90dg6u25le", "26", waterTemperature="30", spinLevel="400")
+
+        assert _settings("wash_temperature").options(resources) == ["Cold", "20", "30", "40"]
+        assert _settings("spin_speed").options(resources) == ["RinseHold", "NoSpin", "400"]
+        assert _settings("rinse_cycles").options(resources) == ["0", "1", "2", "3"]
 
 
 class TestHotWashRinses:

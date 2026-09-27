@@ -58,8 +58,6 @@ need more than a byte.
 | `0xD` | dry | DV5000T owner's per-course panel report, corroborated by the DV6800N on a different board and code space |
 | `0xE` | dry time | the DV6800N again: it complements `0xD` course for course, and decodes against `supportedDryTime` |
 
-**`0xC`.** Validated on `flexwash` and `wa55a7700av` devices. The bitmask values match the indices inside `supportedSoilLevel` for active washer courses.
-
 **`0xD`.** A DV5000T owner reported what their panel offers per course, and
 its fourteen records reproduce that exactly. The DV6800N (`dryer_dv6800n`) is
 the independent check — different board family, different code space, courses

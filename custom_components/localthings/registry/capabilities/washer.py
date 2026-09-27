@@ -81,7 +81,7 @@ from .operational import OPERATIONAL_STATE
 # overlapping hex values.
 # ---------------------------------------------------------------------------
 
-# /washer/vs/0 -- wash temperature, spin speed, rinse cycle count.
+# /washer/vs/0 -- wash temperature, spin speed, rinse cycle count, soil level.
 # Despite the shared href, this is unrelated to dryer.DRYER_SETTINGS (also
 # bound to '/washer/vs/0') -- an artifact of Samsung reusing the same OCF
 # path for different device families. Only one of the two ever binds for a
@@ -371,34 +371,25 @@ def _dosing_low(prefix):
 # token, confirmed against a dump taken with Bubble Soak switched on in the
 # app -- the same shape as AiOption/KidsLockBypass in this array.
 #
-# Each also has a hex-pair availability field positional with
-# editCourseList (BubbleSoakSet, PreWashAvailableSet,
-# IntensiveAvailableSet): on the reporter's dump 'F0' at a course's
-# position matched the app enabling the control there, '00' matched it
-# grayed out. exists_fn only runs once at setup, so it can't do this
-# per-course check -- validate_fn runs on every write attempt instead,
-# rejecting an on-write for a course whose byte isn't 'F0' with a
-# user-facing error rather than silently no-opping. The read/write/
-# presence machinery is laundry.bool_option_switch, shared with
-# dishwasher's storm-wash/auto-release-dry toggles; only this per-course
-# gating is washer-only.
+# Each also has a hex-pair availability field (BubbleSoakSet,
+# PreWashAvailableSet, IntensiveAvailableSet) with one byte per course: 'F0'
+# where the app enables the control, '00' where it is grayed out. The bytes
+# follow supportedOptions' course order, not editCourseList's (#511): on the
+# three dumps where the orders differ, editCourseList order would enable
+# bubble soak on Drain/Spin and gray out pre-wash on Cotton. exists_fn only
+# runs once at setup, so validate_fn does this per-course check on every
+# write instead, rejecting an on-write with a user-facing error rather than
+# silently no-opping. The read/write/presence machinery is
+# laundry.bool_option_switch, shared with dishwasher's toggles.
 def _bool_option_switch(key, icon, prefix, availability_field):
     def course_supported(rep, resources):
-        """Whether the selected course supports this washer toggle.
-
-        The bytes in BubbleSoakSet / PreWashAvailableSet /
-        IntensiveAvailableSet are keyed to the course order derived from the
-        device's supportedOptions table, not to x.com.samsung.da.editCourseList.
-        Some boards report a mismatched editCourseList order, so the supported
-        options table is the only reliable source for the current course's
-        availability slot.
-        """
+        """Whether the selected course allows this toggle; None when the
+        availability data can't be resolved (unrecognized course, missing
+        or mismatched-length bitmap)."""
         opts = rep.get("x.com.samsung.da.options") or []
         current = option_value(opts, "Course")
         course_rep = resources.get("/course/vs/0") or {}
-        courses = _course_codes_from_supported_options(course_rep)
-        if not courses:
-            courses = cycle_options(resources)
+        courses = _course_codes_from_supported_options(course_rep) or cycle_options(resources)
         if not current or current not in courses:
             return None
         raw = option_value(opts, availability_field)
@@ -407,17 +398,13 @@ def _bool_option_switch(key, icon, prefix, availability_field):
         pairs = hex_pairs(raw)
         if len(pairs) != len(courses):
             return None
-        try:
-            return pairs[courses.index(current)] == "F0"
-        except ValueError:
-            return None
+        return pairs[courses.index(current)] == "F0"
 
     def validate(p, rep, resources):
         """Reject turning on when the selected course's byte in
-        `availability_field` isn't 'F0'. Turning off is never blocked.
-        Falls back to allowing the write whenever the availability data
-        can't be resolved (unrecognized course, missing/mismatched-length
-        bitmap) -- a false rejection is worse than an occasional no-op."""
+        `availability_field` isn't 'F0'. Turning off is never blocked, and
+        unresolvable data allows the write -- a false rejection is worse
+        than an occasional no-op."""
         if p != "On":
             return None
         supported = course_supported(rep, resources)
