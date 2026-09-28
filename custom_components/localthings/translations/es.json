@@ -1362,6 +1362,14 @@
           "left_narrow": "Izquierda estrecha",
           "left_wide": "Izquierda amplia"
         }
+      },
+      "lamp_level": {
+        "name": "Nivel de la lámpara",
+        "state": {
+          "off": "Apagada",
+          "low": "Baja",
+          "high": "Alta"
+        }
       }
     },
     "sensor": {

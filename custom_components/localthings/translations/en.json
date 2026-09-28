@@ -1024,6 +1024,14 @@
           "left_narrow": "Left narrow",
           "left_wide": "Left wide"
         }
+      },
+      "lamp_level": {
+        "name": "Lamp level",
+        "state": {
+          "off": "Off",
+          "low": "Low",
+          "high": "High"
+        }
       }
     },
     "sensor": {

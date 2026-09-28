@@ -1024,6 +1024,14 @@
           "left_narrow": "Vľavo úzko",
           "left_wide": "Vľavo široko"
         }
+      },
+      "lamp_level": {
+        "name": "Úroveň osvetlenia",
+        "state": {
+          "off": "Vypnuté",
+          "low": "Nízka",
+          "high": "Vysoká"
+        }
       }
     },
     "sensor": {

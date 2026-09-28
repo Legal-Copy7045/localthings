@@ -1024,6 +1024,14 @@
           "left_narrow": "W lewo, wąsko",
           "left_wide": "W lewo, szeroko"
         }
+      },
+      "lamp_level": {
+        "name": "Poziom oświetlenia",
+        "state": {
+          "off": "Wył.",
+          "low": "Niska",
+          "high": "Wysoka"
+        }
       }
     },
     "sensor": {

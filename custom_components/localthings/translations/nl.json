@@ -1024,6 +1024,14 @@
           "left_narrow": "Links smal",
           "left_wide": "Links breed"
         }
+      },
+      "lamp_level": {
+        "name": "Lampniveau",
+        "state": {
+          "off": "Uit",
+          "low": "Laag",
+          "high": "Hoog"
+        }
       }
     },
     "sensor": {

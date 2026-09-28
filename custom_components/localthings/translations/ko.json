@@ -1024,6 +1024,14 @@
           "left_narrow": "왼쪽 좁게",
           "left_wide": "왼쪽 넓게"
         }
+      },
+      "lamp_level": {
+        "name": "램프 단계",
+        "state": {
+          "off": "꺼짐",
+          "low": "약",
+          "high": "강"
+        }
       }
     },
     "sensor": {

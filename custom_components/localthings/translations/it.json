@@ -1024,6 +1024,14 @@
           "left_narrow": "Sinistra stretta",
           "left_wide": "Sinistra ampia"
         }
+      },
+      "lamp_level": {
+        "name": "Livello lampada",
+        "state": {
+          "off": "Spenta",
+          "low": "Bassa",
+          "high": "Alta"
+        }
       }
     },
     "sensor": {
