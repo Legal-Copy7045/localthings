@@ -978,6 +978,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         port = self._entry.data[CONF_PORT]
         try:
             self._open_session(port)
+            # The stored port answered, so a port followed earlier but never
+            # proven by a poll must not be written over it.
+            self._moved_port = None
         except (DeviceIdentityMismatch, InvalidCredentialConfig):
             raise
         except Exception:

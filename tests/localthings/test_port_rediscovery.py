@@ -185,6 +185,21 @@ async def test_a_successful_connect_resets_the_backoff(
     assert appliance.dialled[-2:] == [OLD_PORT, NEW_PORT]
 
 
+async def test_a_followed_port_is_dropped_if_the_stored_one_answers_again(
+    hass: HomeAssistant, appliance
+) -> None:
+    """Followed to the new port, but the next connect lands on the stored
+    one: the unproven port must not be written on the next good poll."""
+    coordinator = _coordinator(hass)
+    coordinator._connect_session()
+    coordinator._close_session()
+
+    appliance.live_port = OLD_PORT
+    coordinator._connect_session()
+    coordinator._mark_device_answered()
+    assert coordinator._entry.data[CONF_PORT] == OLD_PORT
+
+
 async def test_the_new_port_still_has_to_pass_the_binding_check(
     hass: HomeAssistant, appliance
 ) -> None:
