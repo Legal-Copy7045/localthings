@@ -1831,7 +1831,7 @@
         "title": "Certyfikat nadal odrzucony",
         "description": "{host} odrzucił również certyfikat podpisany przez to CA. Albo nie jest to CA AC14K_M, któremu ufa to urządzenie, albo urządzenie używa klucza współdzielonego. Dokładny alert znajdziesz w logu Home Assistant.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Spróbuj innego CA AC14K_M",
+          "fallback_ca": "Wprowadź CA ponownie",
           "psk_owner": "Zaimportuj klucz współdzielony właściciela",
           "psk_peer": "Zaimportuj klucz współdzielony peera"
         }

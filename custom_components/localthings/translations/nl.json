@@ -1831,7 +1831,7 @@
         "title": "Certificaat nog steeds geweigerd",
         "description": "{host} heeft ook het certificaat geweigerd dat met die CA is ondertekend. Of het is niet de AC14K_M-CA die dit apparaat vertrouwt, of het apparaat gebruikt een pre-shared key. Het Home Assistant-logboek bevat de exacte alert.\n\nApparaten met een pre-shared key proberen we nog te begrijpen, en je loopt er waarschijnlijk tegen problemen aan. Ons plan, wat we tot nu toe hebben ontdekt en een plek om feedback te geven staan in [issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Een andere AC14K_M-CA proberen",
+          "fallback_ca": "De CA opnieuw invoeren",
           "psk_owner": "Een owner-pre-shared key importeren",
           "psk_peer": "Een peer-pre-shared key importeren"
         }

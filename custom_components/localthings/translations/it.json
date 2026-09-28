@@ -1831,7 +1831,7 @@
         "title": "Certificato ancora rifiutato",
         "description": "{host} ha rifiutato anche il certificato firmato da quella CA. O non è la CA AC14K_M di cui si fida questo elettrodomestico, oppure l'elettrodomestico usa una chiave precondivisa. Il log di Home Assistant riporta l'avviso esatto.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Prova un'altra CA AC14K_M",
+          "fallback_ca": "Inserisci di nuovo la CA",
           "psk_owner": "Importa una chiave precondivisa del proprietario",
           "psk_peer": "Importa una chiave precondivisa peer"
         }

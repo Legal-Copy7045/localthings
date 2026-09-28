@@ -1831,7 +1831,7 @@
         "title": "Certifikát stále odmítnut",
         "description": "{host} odmítl i certifikát podepsaný touto CA. Buď to není CA AC14K_M, které tento spotřebič důvěřuje, nebo spotřebič používá předsdílený klíč. Přesný alert je v logu Home Assistant.\n\nSpotřebiče s předsdíleným klíčem se teprve snažíme pochopit a pravděpodobně s nimi narazíte na problémy. Náš plán, dosavadní zjištění a místo pro zpětnou vazbu najdete v [issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Zkusit jinou CA AC14K_M",
+          "fallback_ca": "Zadat CA znovu",
           "psk_owner": "Importovat předsdílený klíč vlastníka",
           "psk_peer": "Importovat předsdílený klíč peeru"
         }
