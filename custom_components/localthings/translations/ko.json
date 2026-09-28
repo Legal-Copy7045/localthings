@@ -663,7 +663,9 @@
         "state": {
           "fdr_wine": "와인",
           "fdr_deli": "델리",
-          "fdr_drinks": "음료"
+          "fdr_drinks": "음료",
+          "ttype_meat_fish": "육류/생선",
+          "ttype_rf9000a_fridge": "냉장"
         }
       },
       "winecellar_pantry_zone_mode": {

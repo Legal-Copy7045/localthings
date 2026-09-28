@@ -663,7 +663,9 @@
         "state": {
           "fdr_wine": "Wine",
           "fdr_deli": "Deli",
-          "fdr_drinks": "Drinks"
+          "fdr_drinks": "Drinks",
+          "ttype_meat_fish": "Meat/Fish",
+          "ttype_rf9000a_fridge": "Fridge"
         }
       },
       "winecellar_pantry_zone_mode": {

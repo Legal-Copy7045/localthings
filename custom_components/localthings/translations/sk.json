@@ -663,7 +663,9 @@
         "state": {
           "fdr_wine": "Víno",
           "fdr_deli": "Lahôdky",
-          "fdr_drinks": "Nápoje"
+          "fdr_drinks": "Nápoje",
+          "ttype_meat_fish": "Mäso/ryby",
+          "ttype_rf9000a_fridge": "Chladenie"
         }
       },
       "winecellar_pantry_zone_mode": {
