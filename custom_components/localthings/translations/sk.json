@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Teplota chladiacej zóny"
+        "name": "Teplota chladničky"
       },
       "day_brightness": {
         "name": "Jas skrine",
@@ -2123,6 +2123,30 @@
     },
     "cook_duration_out_of_range": {
       "message": "Režim {mode} prijíma čas prípravy od {min} do {max}."
+    }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Mraznička",
+        "cooler": "Chladnička",
+        "top": "Horný priečinok",
+        "middle": "Stredný priečinok",
+        "bottom": "Dolný priečinok",
+        "onedoor": "Priečinok na kimči",
+        "winecellar_top": "Horná zóna na víno",
+        "winecellar_bottom": "Dolná zóna na víno",
+        "door_freezer": "Dvierka mrazničky",
+        "door_cooler": "Dvierka chladničky",
+        "door_cvroom": "Dvierka flexibilnej zóny",
+        "door_winecellar": "Dvierka vinotéky",
+        "door_onedoorfreezer": "Hlavné dvierka",
+        "door_onedoorkimchi": "Hlavné dvierka",
+        "ice_maker": "Výrobník ľadu",
+        "cubed_ice": "Kocky ľadu",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Ľadové gule"
+      }
     }
   }
 }

@@ -5,9 +5,10 @@ from __future__ import annotations
 import re
 
 from homeassistant.const import EntityCategory
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -81,6 +82,28 @@ def _instance_display_name(bound: BoundEntity, state_key: str) -> str:
     return _derive_name(source)
 
 
+# hassfest rejects an unknown top-level translation section, and `selector`
+# is the one that holds free-standing string tables.
+_INSTANCE_NAMES_PREFIX = f"component.{DOMAIN}.selector.instance_name.options."
+
+
+async def async_load_instance_names(hass: HomeAssistant) -> dict[str, str]:
+    """The {instance_name} labels in HA's language, keyed by the slug of
+    the name Python derives for them (issue #533)."""
+    strings = await async_get_translations(hass, hass.config.language, "selector", {DOMAIN})
+    return {
+        key.removeprefix(_INSTANCE_NAMES_PREFIX): value
+        for key, value in strings.items()
+        if key.startswith(_INSTANCE_NAMES_PREFIX)
+    }
+
+
+def _localized_instance_name(name: str, localized: dict[str, str]) -> str:
+    """An unlisted name -- a numbered instance or an ice maker name no
+    fixture has shown yet -- keeps its derived English form."""
+    return localized.get(name.lower().replace(" ", "_"), name)
+
+
 class LocalThingsEntity(CoordinatorEntity[LocalThingsCoordinator]):
     """Base class for all Local Things entities."""
 
@@ -95,7 +118,9 @@ class LocalThingsEntity(CoordinatorEntity[LocalThingsCoordinator]):
             self._attr_translation_placeholders = dict(bound.desc.translation_placeholders)
         elif bound.desc.use_instance_name:
             self._attr_translation_placeholders = {
-                "instance_name": _instance_display_name(bound, self._state_key)
+                "instance_name": _localized_instance_name(
+                    _instance_display_name(bound, self._state_key), coordinator.instance_names
+                )
             }
 
         # _attr_name is deliberately left unset: HA gives an explicitly-set

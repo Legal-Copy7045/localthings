@@ -257,7 +257,7 @@
         "name": "Good Sleep"
       },
       "instance_setpoint": {
-        "name": "Instelpunt {instance_name}"
+        "name": "{instance_name} instelpunt"
       },
       "oven_setpoint": {
         "name": "Instelpunt"
@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Temperatuur koelgedeelte"
+        "name": "Koelkasttemperatuur"
       },
       "day_brightness": {
         "name": "Helderheid kast",
@@ -549,7 +549,7 @@
         "name": "Temperatuur warm water"
       },
       "ice_type": {
-        "name": "Type {instance_name}",
+        "name": "{instance_name} type",
         "state": {
           "off": "Uit",
           "whiskey_iceball_3": "3 ijsballen per dag",
@@ -1284,7 +1284,7 @@
         "name": "Filterverbruik"
       },
       "instance_temperature": {
-        "name": "Temperatuur {instance_name}"
+        "name": "{instance_name} temperatuur"
       },
       "job_beginning_status": {
         "name": "Status programmastart"
@@ -2123,6 +2123,30 @@
     },
     "cook_duration_out_of_range": {
       "message": "{mode} accepteert een bereidingstijd van {min} tot {max}."
+    }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Vriezer",
+        "cooler": "Koelkast",
+        "top": "Bovenste vak",
+        "middle": "Middelste vak",
+        "bottom": "Onderste vak",
+        "onedoor": "Kimchivak",
+        "winecellar_top": "Bovenste wijnzone",
+        "winecellar_bottom": "Onderste wijnzone",
+        "door_freezer": "Vriezerdeur",
+        "door_cooler": "Koelkastdeur",
+        "door_cvroom": "Flexzonedeur",
+        "door_winecellar": "Wijnkoelerdeur",
+        "door_onedoorfreezer": "Hoofddeur",
+        "door_onedoorkimchi": "Hoofddeur",
+        "ice_maker": "IJsmaker",
+        "cubed_ice": "IJsblokjes",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "IJsballen"
+      }
     }
   }
 }

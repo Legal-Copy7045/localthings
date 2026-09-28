@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Kühlertemperatur"
+        "name": "Kühlschranktemperatur"
       },
       "day_brightness": {
         "name": "Schrankhelligkeit",
@@ -1266,7 +1266,7 @@
         "name": "{instance_name} verbleibende Reifezeit"
       },
       "kimchi_rack_count": {
-        "name": "{instance_name} Fachanzahl"
+        "name": "{instance_name} Anzahl Ablagen"
       },
       "hood_filter_capacity": {
         "name": "Filterkapazität"
@@ -2123,6 +2123,30 @@
     },
     "cook_duration_out_of_range": {
       "message": "{mode} erlaubt eine Garzeit von {min} bis {max}."
+    }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Gefrierschrank",
+        "cooler": "Kühlschrank",
+        "top": "Oberes Fach",
+        "middle": "Mittleres Fach",
+        "bottom": "Unteres Fach",
+        "onedoor": "Kimchi-Fach",
+        "winecellar_top": "Obere Weinzone",
+        "winecellar_bottom": "Untere Weinzone",
+        "door_freezer": "Gefrierschranktür",
+        "door_cooler": "Kühlschranktür",
+        "door_cvroom": "Flex-Zonen-Tür",
+        "door_winecellar": "Weinkühlschranktür",
+        "door_onedoorfreezer": "Haupttür",
+        "door_onedoorkimchi": "Haupttür",
+        "ice_maker": "Eisbereiter",
+        "cubed_ice": "Eiswürfel",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Eiskugeln"
+      }
     }
   }
 }

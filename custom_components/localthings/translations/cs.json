@@ -68,7 +68,7 @@
         "name": "Dostupná aktualizace firmwaru"
       },
       "instance_open": {
-        "name": "{instance_name} otevřeno"
+        "name": "{instance_name} – otevřeno"
       },
       "paired_hood_connected": {
         "name": "Spárovaný odsavač připojen"
@@ -257,7 +257,7 @@
         "name": "Klidný spánek"
       },
       "instance_setpoint": {
-        "name": "{instance_name} požadovaná teplota"
+        "name": "{instance_name} – požadovaná teplota"
       },
       "oven_setpoint": {
         "name": "Požadovaná teplota"
@@ -323,7 +323,7 @@
         }
       },
       "cooler_temperature_setpoint": {
-        "name": "Teplota chladicí zóny"
+        "name": "Teplota chladničky"
       },
       "day_brightness": {
         "name": "Jas skříně",
@@ -549,7 +549,7 @@
         "name": "Teplota horké vody"
       },
       "ice_type": {
-        "name": "{instance_name} typ",
+        "name": "{instance_name} – typ",
         "state": {
           "off": "Vypnuto",
           "whiskey_iceball_3": "3 kuličky/den",
@@ -612,7 +612,7 @@
         "name": "Provozní režim"
       },
       "kimchi_zone_mode": {
-        "name": "{instance_name} režim uskladnění",
+        "name": "{instance_name} – režim uskladnění",
         "state": {
           "off": "Vypnuto",
           "kimchi_storage_normal": "Kimči",
@@ -1266,13 +1266,13 @@
         "name": "Teplota chladničky"
       },
       "kimchi_ripening_status": {
-        "name": "{instance_name} stav zrání"
+        "name": "{instance_name} – stav zrání"
       },
       "kimchi_ripening_remaining": {
-        "name": "{instance_name} zbývající čas zrání"
+        "name": "{instance_name} – zbývající čas zrání"
       },
       "kimchi_rack_count": {
-        "name": "{instance_name} počet přihrádek"
+        "name": "{instance_name} – počet přihrádek"
       },
       "hood_filter_capacity": {
         "name": "Kapacita filtru"
@@ -1284,7 +1284,7 @@
         "name": "Využití filtru"
       },
       "instance_temperature": {
-        "name": "{instance_name} teplota"
+        "name": "{instance_name} – teplota"
       },
       "job_beginning_status": {
         "name": "Stav zahájení úlohy"
@@ -1428,7 +1428,7 @@
         }
       },
       "ice_making_status": {
-        "name": "{instance_name} stav výroby",
+        "name": "{instance_name} – stav výroby",
         "state": {
           "icestatus_stop": "Nečinný",
           "icestatus_run": "Vyrábí led"
@@ -1635,7 +1635,7 @@
         "name": "Noční tichý režim výroby ledu"
       },
       "instance_enabled": {
-        "name": "{instance_name} zapnuto"
+        "name": "{instance_name} – zapnuto"
       },
       "intensive": {
         "name": "Intenzivní"
@@ -2123,6 +2123,30 @@
     },
     "cook_duration_out_of_range": {
       "message": "Režim {mode} přijímá dobu přípravy od {min} do {max}."
+    }
+  },
+  "selector": {
+    "instance_name": {
+      "options": {
+        "freezer": "Mrazák",
+        "cooler": "Chladnička",
+        "top": "Horní oddíl",
+        "middle": "Střední oddíl",
+        "bottom": "Dolní oddíl",
+        "onedoor": "Oddíl na kimči",
+        "winecellar_top": "Horní vinná zóna",
+        "winecellar_bottom": "Dolní vinná zóna",
+        "door_freezer": "Dvířka mrazáku",
+        "door_cooler": "Dvířka chladničky",
+        "door_cvroom": "Dvířka flexibilní zóny",
+        "door_winecellar": "Dvířka vinotéky",
+        "door_onedoorfreezer": "Hlavní dvířka",
+        "door_onedoorkimchi": "Hlavní dvířka",
+        "ice_maker": "Výrobník ledu",
+        "cubed_ice": "Kostky ledu",
+        "ice_bites": "Ice Bites",
+        "whiskey_ice_ball": "Ledové koule"
+      }
     }
   }
 }
