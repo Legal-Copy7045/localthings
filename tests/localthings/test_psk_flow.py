@@ -135,9 +135,7 @@ async def _choose(hass: HomeAssistant, result, option: str):
     )
 
 
-async def test_psk_hint_puts_the_psk_options_first(
-    hass: HomeAssistant, monkeypatch, appliance
-) -> None:
+async def test_psk_hint_says_so_on_the_menu(hass: HomeAssistant, monkeypatch, appliance) -> None:
     _hint(monkeypatch, CredentialHint(sct=1))
     result = await _refused(hass)
     assert result["type"] == FlowResultType.MENU
@@ -146,15 +144,15 @@ async def test_psk_hint_puts_the_psk_options_first(
 
 
 @pytest.mark.parametrize("sct", [None, 8, 9])
-async def test_no_psk_hint_keeps_the_certificate_first(
+async def test_no_psk_hint_still_puts_the_ca_last(
     hass: HomeAssistant, monkeypatch, appliance, sct
 ) -> None:
-    """Unknown, certificate-only and mixed bits all leave the CA first, but
-    PSK is still offered -- the hint is unauthenticated."""
+    """Unknown, certificate-only and mixed bits change the wording, not the
+    order: no refusing appliance has been reported to accept AC14K_M."""
     _hint(monkeypatch, CredentialHint(sct=sct))
     result = await _refused(hass)
     assert result["step_id"] == "credential"
-    assert result["menu_options"] == ["fallback_ca", "psk_owner", "psk_peer"]
+    assert result["menu_options"] == ["psk_owner", "psk_peer", "fallback_ca"]
 
 
 async def test_owner_psk_creates_a_psk_entry_bound_to_the_proven_di(

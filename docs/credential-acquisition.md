@@ -12,9 +12,11 @@ security resources.
 ## Importing a credential
 
 Add the appliance by IP as usual. If it refuses the automatic certificate, setup
-offers an AC14K_M CA certificate, an owner pre-shared key and a peer pre-shared
-key. When the appliance's unencrypted `/oic/sec/doxm` reports a PSK credential
-type (`sct` with bit `1` set and bit `8` clear), the PSK options come first.
+offers an owner pre-shared key, a peer pre-shared key and, last, an AC14K_M CA
+certificate. No appliance that refused the automatic certificate has been
+reported to accept AC14K_M. When the appliance's unencrypted `/oic/sec/doxm`
+reports a PSK credential type (`sct` with bit `1` set and bit `8` clear), the
+menu says so.
 
 - **Owner** is an OwnerPSK. Its identity is the OCF owner UUID, which setup
   fills in from `devowneruuid` when the appliance reports one.

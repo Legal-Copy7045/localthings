@@ -1811,33 +1811,33 @@
       },
       "credential": {
         "title": "Certificato rifiutato",
-        "description": "{host} ha rifiutato il certificato automatico. Un elettrodomestico che verifica la catena di certificati richiede la CA AC14K_M. Alcuni elettrodomestici usano una chiave precondivisa invece di un certificato. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
+        "description": "{host} ha rifiutato il certificato automatico. Alcuni elettrodomestici usano una chiave precondivisa invece di un certificato. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già. Viene offerto anche un certificato CA AC14K_M, ma non è stato segnalato alcun elettrodomestico che, dopo aver rifiutato il certificato automatico, lo abbia accettato.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Usa un certificato CA AC14K_M",
           "psk_owner": "Importa una chiave precondivisa del proprietario",
-          "psk_peer": "Importa una chiave precondivisa peer"
+          "psk_peer": "Importa una chiave precondivisa peer",
+          "fallback_ca": "Prova un certificato CA AC14K_M"
         }
       },
       "credential_psk": {
         "title": "Questo elettrodomestico probabilmente usa una chiave precondivisa",
-        "description": "{host} ha rifiutato il certificato automatico e i suoi metadati di sicurezza non cifrati indicano che si autentica invece con una chiave precondivisa. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già. Se l'indicazione è errata, il certificato AC14K_M resta disponibile qui sotto.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
+        "description": "{host} ha rifiutato il certificato automatico e i suoi metadati di sicurezza non cifrati indicano che si autentica invece con una chiave precondivisa. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già. Viene offerto anche un certificato CA AC14K_M, ma non è stato segnalato alcun elettrodomestico che, dopo aver rifiutato il certificato automatico, lo abbia accettato.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Importa una chiave precondivisa del proprietario",
           "psk_peer": "Importa una chiave precondivisa peer",
-          "fallback_ca": "Usa un certificato CA AC14K_M"
+          "fallback_ca": "Prova un certificato CA AC14K_M"
         }
       },
       "ca_rejected": {
         "title": "Certificato ancora rifiutato",
-        "description": "{host} ha rifiutato anche il certificato firmato da quella CA. O non è la CA AC14K_M di cui si fida questo elettrodomestico, oppure l'elettrodomestico usa una chiave precondivisa. Il log di Home Assistant riporta l'avviso esatto.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
+        "description": "{host} ha rifiutato anche il certificato firmato da quella CA. Corrisponde a tutte le segnalazioni finora: nessun elettrodomestico che ha rifiutato il certificato automatico ha accettato una CA AC14K_M. Potrebbe usare una chiave precondivisa. Il log di Home Assistant riporta l'avviso esatto.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Inserisci di nuovo la CA",
           "psk_owner": "Importa una chiave precondivisa del proprietario",
-          "psk_peer": "Importa una chiave precondivisa peer"
+          "psk_peer": "Importa una chiave precondivisa peer",
+          "fallback_ca": "Inserisci di nuovo la CA"
         }
       },
       "fallback_ca": {
-        "title": "Certificato AC14K_M richiesto",
+        "title": "Certificato CA AC14K_M",
         "description": "Incolla il certificato della CA AC14K_M e la relativa chiave privata. LocalThings li usa per firmare un certificato di dispositivo per {host}.",
         "data": {
           "ca_cert_pem": "Certificato CA (PEM)",

@@ -1072,11 +1072,11 @@ async def test_self_signed_rejection_advances_to_the_fallback_ca_step(
         result["flow_id"], {CONF_HOST: MOCK_HOST}
     )
 
-    # Not an error on the host form: the next step offers the CA, first
-    # when doxm hints nothing (fake_dtls stubs it empty).
+    # Not an error on the host form: a menu that still offers the CA, last
+    # (#435: no refusing appliance has been reported to accept it).
     assert result["type"] == FlowResultType.MENU
     assert result["step_id"] == "credential"
-    assert result["menu_options"] == ["fallback_ca", "psk_owner", "psk_peer"]
+    assert result["menu_options"] == ["psk_owner", "psk_peer", "fallback_ca"]
     result = await _choose(hass, result, "fallback_ca")
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "fallback_ca"
@@ -1118,7 +1118,7 @@ async def test_fallback_ca_rejection_offers_another_ca_or_a_psk(
     )
     assert result["type"] == FlowResultType.MENU
     assert result["step_id"] == "ca_rejected"
-    assert result["menu_options"] == ["fallback_ca", "psk_owner", "psk_peer"]
+    assert result["menu_options"] == ["psk_owner", "psk_peer", "fallback_ca"]
 
     result = await _choose(hass, result, "psk_owner")
     assert result["type"] == FlowResultType.FORM

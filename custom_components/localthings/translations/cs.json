@@ -1811,33 +1811,33 @@
       },
       "credential": {
         "title": "Certifikát odmítnut",
-        "description": "{host} odmítl automatický certifikát. Spotřebič, který ověřuje řetězec certifikátů, potřebuje CA AC14K_M. Některé spotřebiče místo certifikátu používají předsdílený klíč (PSK). LocalThings tento klíč nedokáže získat sám, proto importujte klíč, který už máte.\n\nSpotřebiče s předsdíleným klíčem se teprve snažíme pochopit a pravděpodobně s nimi narazíte na problémy. Náš plán, dosavadní zjištění a místo pro zpětnou vazbu najdete v [issue #435]({issue_url}).",
+        "description": "{host} odmítl automatický certifikát. Některé spotřebiče místo certifikátu používají předsdílený klíč (PSK). LocalThings tento klíč nedokáže získat sám, proto importujte klíč, který už máte. Nabízí se i certifikát CA AC14K_M, ale zatím nebyl nahlášen žádný spotřebič, který by odmítl automatický certifikát a tento přijal.\n\nSpotřebiče s předsdíleným klíčem se teprve snažíme pochopit a pravděpodobně s nimi narazíte na problémy. Náš plán, dosavadní zjištění a místo pro zpětnou vazbu najdete v [issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Použít certifikát CA AC14K_M",
           "psk_owner": "Importovat předsdílený klíč vlastníka",
-          "psk_peer": "Importovat předsdílený klíč peeru"
+          "psk_peer": "Importovat předsdílený klíč peeru",
+          "fallback_ca": "Zkusit certifikát CA AC14K_M"
         }
       },
       "credential_psk": {
         "title": "Tento spotřebič pravděpodobně používá předsdílený klíč",
-        "description": "{host} odmítl automatický certifikát a jeho nešifrovaná bezpečnostní metadata uvádějí, že se místo toho ověřuje předsdíleným klíčem (PSK). LocalThings tento klíč nedokáže získat sám, proto importujte klíč, který už máte. Pokud je nápověda chybná, certifikát AC14K_M je níže stále k dispozici.\n\nSpotřebiče s předsdíleným klíčem se teprve snažíme pochopit a pravděpodobně s nimi narazíte na problémy. Náš plán, dosavadní zjištění a místo pro zpětnou vazbu najdete v [issue #435]({issue_url}).",
+        "description": "{host} odmítl automatický certifikát a jeho nešifrovaná bezpečnostní metadata uvádějí, že se místo toho ověřuje předsdíleným klíčem (PSK). LocalThings tento klíč nedokáže získat sám, proto importujte klíč, který už máte. Nabízí se i certifikát CA AC14K_M, ale zatím nebyl nahlášen žádný spotřebič, který by odmítl automatický certifikát a tento přijal.\n\nSpotřebiče s předsdíleným klíčem se teprve snažíme pochopit a pravděpodobně s nimi narazíte na problémy. Náš plán, dosavadní zjištění a místo pro zpětnou vazbu najdete v [issue #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Importovat předsdílený klíč vlastníka",
           "psk_peer": "Importovat předsdílený klíč peeru",
-          "fallback_ca": "Použít certifikát CA AC14K_M"
+          "fallback_ca": "Zkusit certifikát CA AC14K_M"
         }
       },
       "ca_rejected": {
         "title": "Certifikát stále odmítnut",
-        "description": "{host} odmítl i certifikát podepsaný touto CA. Buď to není CA AC14K_M, které tento spotřebič důvěřuje, nebo spotřebič používá předsdílený klíč. Přesný alert je v logu Home Assistant.\n\nSpotřebiče s předsdíleným klíčem se teprve snažíme pochopit a pravděpodobně s nimi narazíte na problémy. Náš plán, dosavadní zjištění a místo pro zpětnou vazbu najdete v [issue #435]({issue_url}).",
+        "description": "{host} odmítl i certifikát podepsaný touto CA. To odpovídá všem dosavadním hlášením: žádný spotřebič, který odmítl automatický certifikát, nepřijal CA AC14K_M. Možná používá předsdílený klíč. Přesný alert je v logu Home Assistant.\n\nSpotřebiče s předsdíleným klíčem se teprve snažíme pochopit a pravděpodobně s nimi narazíte na problémy. Náš plán, dosavadní zjištění a místo pro zpětnou vazbu najdete v [issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Zadat CA znovu",
           "psk_owner": "Importovat předsdílený klíč vlastníka",
-          "psk_peer": "Importovat předsdílený klíč peeru"
+          "psk_peer": "Importovat předsdílený klíč peeru",
+          "fallback_ca": "Zadat CA znovu"
         }
       },
       "fallback_ca": {
-        "title": "Vyžadován certifikát AC14K_M",
+        "title": "Certifikát CA AC14K_M",
         "description": "Vložte certifikát CA AC14K_M a soukromý klíč. LocalThings jimi podepíše certifikát zařízení pro {host}.",
         "data": {
           "ca_cert_pem": "Certifikát CA (PEM)",

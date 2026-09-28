@@ -1811,33 +1811,33 @@
       },
       "credential": {
         "title": "Certificate refused",
-        "description": "{host} refused the automatic certificate. An appliance that checks the certificate chain needs the AC14K_M CA. Some appliances take a pre-shared key instead of a certificate. LocalThings can't obtain that key itself, so import one you already hold.\n\nAppliances that use a pre-shared key are ones we're still working to understand, and you're likely to run into problems with them. Our plan, what we've found so far, and a place to leave feedback are in [issue #435]({issue_url}).",
+        "description": "{host} refused the automatic certificate. Some appliances take a pre-shared key instead of a certificate. LocalThings can't obtain that key itself, so import one you already hold. An AC14K_M CA certificate is also offered, but no appliance that refused the automatic certificate has been reported to accept one.\n\nAppliances that use a pre-shared key are ones we're still working to understand, and you're likely to run into problems with them. Our plan, what we've found so far, and a place to leave feedback are in [issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Use an AC14K_M CA certificate",
           "psk_owner": "Import an owner pre-shared key",
-          "psk_peer": "Import a peer pre-shared key"
+          "psk_peer": "Import a peer pre-shared key",
+          "fallback_ca": "Try an AC14K_M CA certificate"
         }
       },
       "credential_psk": {
         "title": "This appliance likely uses a pre-shared key",
-        "description": "{host} refused the automatic certificate, and its unencrypted security metadata says it authenticates with a pre-shared key instead. LocalThings can't obtain that key itself, so import one you already hold. If the hint is wrong, the AC14K_M certificate is still offered below.\n\nAppliances that use a pre-shared key are ones we're still working to understand, and you're likely to run into problems with them. Our plan, what we've found so far, and a place to leave feedback are in [issue #435]({issue_url}).",
+        "description": "{host} refused the automatic certificate, and its unencrypted security metadata says it authenticates with a pre-shared key instead. LocalThings can't obtain that key itself, so import one you already hold. An AC14K_M CA certificate is also offered, but no appliance that refused the automatic certificate has been reported to accept one.\n\nAppliances that use a pre-shared key are ones we're still working to understand, and you're likely to run into problems with them. Our plan, what we've found so far, and a place to leave feedback are in [issue #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Import an owner pre-shared key",
           "psk_peer": "Import a peer pre-shared key",
-          "fallback_ca": "Use an AC14K_M CA certificate"
+          "fallback_ca": "Try an AC14K_M CA certificate"
         }
       },
       "ca_rejected": {
         "title": "Certificate still refused",
-        "description": "{host} also refused the certificate signed by that CA. Either it isn't the AC14K_M CA this appliance trusts, or the appliance takes a pre-shared key instead. The Home Assistant log records the exact alert.\n\nAppliances that use a pre-shared key are ones we're still working to understand, and you're likely to run into problems with them. Our plan, what we've found so far, and a place to leave feedback are in [issue #435]({issue_url}).",
+        "description": "{host} also refused the certificate signed by that CA. That matches every report so far: no appliance that refused the automatic certificate has accepted an AC14K_M CA. It may take a pre-shared key instead. The Home Assistant log records the exact alert.\n\nAppliances that use a pre-shared key are ones we're still working to understand, and you're likely to run into problems with them. Our plan, what we've found so far, and a place to leave feedback are in [issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Enter the CA again",
           "psk_owner": "Import an owner pre-shared key",
-          "psk_peer": "Import a peer pre-shared key"
+          "psk_peer": "Import a peer pre-shared key",
+          "fallback_ca": "Enter the CA again"
         }
       },
       "fallback_ca": {
-        "title": "AC14K_M certificate required",
+        "title": "AC14K_M CA certificate",
         "description": "Paste the AC14K_M CA certificate and private key. LocalThings signs a device certificate for {host} with them.",
         "data": {
           "ca_cert_pem": "CA certificate (PEM)",

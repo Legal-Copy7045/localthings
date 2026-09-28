@@ -1811,33 +1811,33 @@
       },
       "credential": {
         "title": "Certyfikat odrzucony",
-        "description": "{host} odrzucił automatyczny certyfikat. Urządzenie, które sprawdza łańcuch certyfikatów, wymaga CA AC14K_M. Niektóre urządzenia zamiast certyfikatu używają klucza współdzielonego (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "description": "{host} odrzucił automatyczny certyfikat. Niektóre urządzenia zamiast certyfikatu używają klucza współdzielonego (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz. Dostępny jest też certyfikat CA AC14K_M, ale nie zgłoszono żadnego urządzenia, które odrzuciło automatyczny certyfikat, a przyjęło taki.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Użyj certyfikatu CA AC14K_M",
           "psk_owner": "Zaimportuj klucz współdzielony właściciela",
-          "psk_peer": "Zaimportuj klucz współdzielony peera"
+          "psk_peer": "Zaimportuj klucz współdzielony peera",
+          "fallback_ca": "Spróbuj certyfikatu CA AC14K_M"
         }
       },
       "credential_psk": {
         "title": "To urządzenie prawdopodobnie używa klucza współdzielonego",
-        "description": "{host} odrzucił automatyczny certyfikat, a jego nieszyfrowane metadane bezpieczeństwa wskazują, że uwierzytelnia się zamiast tego kluczem współdzielonym (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz. Jeśli ta wskazówka jest błędna, certyfikat AC14K_M nadal jest dostępny poniżej.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "description": "{host} odrzucił automatyczny certyfikat, a jego nieszyfrowane metadane bezpieczeństwa wskazują, że uwierzytelnia się zamiast tego kluczem współdzielonym (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz. Dostępny jest też certyfikat CA AC14K_M, ale nie zgłoszono żadnego urządzenia, które odrzuciło automatyczny certyfikat, a przyjęło taki.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Zaimportuj klucz współdzielony właściciela",
           "psk_peer": "Zaimportuj klucz współdzielony peera",
-          "fallback_ca": "Użyj certyfikatu CA AC14K_M"
+          "fallback_ca": "Spróbuj certyfikatu CA AC14K_M"
         }
       },
       "ca_rejected": {
         "title": "Certyfikat nadal odrzucony",
-        "description": "{host} odrzucił również certyfikat podpisany przez to CA. Albo nie jest to CA AC14K_M, któremu ufa to urządzenie, albo urządzenie używa klucza współdzielonego. Dokładny alert znajdziesz w logu Home Assistant.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "description": "{host} odrzucił również certyfikat podpisany przez to CA. To zgadza się ze wszystkimi dotychczasowymi zgłoszeniami: żadne urządzenie, które odrzuciło automatyczny certyfikat, nie przyjęło CA AC14K_M. Możliwe, że używa klucza współdzielonego. Dokładny alert znajdziesz w logu Home Assistant.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "Wprowadź CA ponownie",
           "psk_owner": "Zaimportuj klucz współdzielony właściciela",
-          "psk_peer": "Zaimportuj klucz współdzielony peera"
+          "psk_peer": "Zaimportuj klucz współdzielony peera",
+          "fallback_ca": "Wprowadź CA ponownie"
         }
       },
       "fallback_ca": {
-        "title": "Wymagany certyfikat AC14K_M",
+        "title": "Certyfikat CA AC14K_M",
         "description": "Wklej certyfikat CA AC14K_M i klucz prywatny. LocalThings podpisze nimi certyfikat urządzenia dla {host}.",
         "data": {
           "ca_cert_pem": "Certyfikat CA (PEM)",

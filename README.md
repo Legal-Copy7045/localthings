@@ -76,7 +76,7 @@ When you add your first appliance, LocalThings contacts Samsung's servers once t
 
 A few appliances need one more step:
 
-- **Some newer models ask for a CA certificate and key.** These are the public `AC14K_M` credentials, which LocalThings doesn't ship. The `smartthings-local` project's [`setup_cert.py`](https://github.com/QuiteYellow/SmartThings-Local/blob/main/setup_cert.py) shows one way to get them, with `python setup_cert.py --fallback`. Paste them in when setup asks. You only do this once.
+- **Some appliances refuse the automatic certificate.** Setup then offers to import a pre-shared key, which LocalThings can't obtain for you. [Credential acquisition](docs/credential-acquisition.md) covers where one comes from. We're still working to understand these appliances, and [#435](https://github.com/mbillow/localthings/issues/435) has the plan, what we've found so far, and a place to report how it went. Setup also offers the public `AC14K_M` CA certificate, which the `smartthings-local` project's [`setup_cert.py --fallback`](https://github.com/QuiteYellow/SmartThings-Local/blob/main/setup_cert.py) shows how to get, but no appliance that refused the automatic certificate has been reported to accept it.
 - **Older washers on TCP 8888 ask for a device token.** See [Older appliances on TCP 8888](#older-appliances-on-tcp-8888).
 
 You can rename devices. LocalThings identifies each appliance by its OCF device ID, not by its name or serial number. Some models ship the same serial number on every unit.

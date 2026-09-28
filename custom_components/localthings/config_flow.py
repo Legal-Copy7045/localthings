@@ -1216,9 +1216,10 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Ask for the AC14K_M CA after a device rejects the self-signed leaf.
 
-        Reached from the credential menu, for the minority of appliances that
-        validate the client certificate chain. The pasted CA cert and key mint
-        a chain-signed leaf, which is then stored on the entry so the retry is
+        Reached from the credential menu. Kept for an appliance that checks
+        the chain against AC14K_M, though none has been confirmed since the
+        self-signed default landed (#435). The pasted CA cert and key mint a
+        chain-signed leaf, which is then stored on the entry so the retry is
         never needed again for this appliance. A refusal goes back to a menu
         (async_step_ca_rejected), since a PSK appliance refuses every CA.
         """
@@ -1275,9 +1276,10 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Choose the next credential after the automatic certificate is refused.
 
-        Every option stays offered: plaintext doxm only decides which comes
-        first and what the description says, because it is unauthenticated
-        and a wrong guess should cost one extra click, not a dead end.
+        Every option stays offered. Plaintext doxm only decides what the
+        description says, because it is unauthenticated. The AC14K_M CA goes
+        last on every menu: no appliance that refused the self-signed leaf
+        has been reported to accept it (#435, #494, #520).
         """
         self._credential_hint = await self.hass.async_add_executor_job(
             probing.read_credential_hint, self._host
@@ -1286,14 +1288,14 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_credential_psk()
         return self.async_show_menu(
             step_id="credential",
-            menu_options=["fallback_ca", "psk_owner", "psk_peer"],
+            menu_options=["psk_owner", "psk_peer", "fallback_ca"],
             description_placeholders=self._psk_placeholders(),
         )
 
     async def async_step_credential_psk(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """The same choice, PSK first, when doxm says the device takes one."""
+        """The same choice, described as PSK, when doxm says the device takes one."""
         return self.async_show_menu(
             step_id="credential_psk",
             menu_options=["psk_owner", "psk_peer", "fallback_ca"],
@@ -1310,7 +1312,7 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         return self.async_show_menu(
             step_id="ca_rejected",
-            menu_options=["fallback_ca", "psk_owner", "psk_peer"],
+            menu_options=["psk_owner", "psk_peer", "fallback_ca"],
             description_placeholders=self._psk_placeholders(),
         )
 

@@ -1811,33 +1811,33 @@
       },
       "credential": {
         "title": "Zertifikat abgelehnt",
-        "description": "{host} hat das automatische Zertifikat abgelehnt. Ein Gerät, das die Zertifikatskette prüft, benötigt die AC14K_M-CA. Manche Geräte verwenden statt eines Zertifikats einen Pre-Shared Key. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
+        "description": "{host} hat das automatische Zertifikat abgelehnt. Manche Geräte verwenden statt eines Zertifikats einen Pre-Shared Key. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen. Ein AC14K_M-CA-Zertifikat wird ebenfalls angeboten, aber bisher wurde kein Gerät gemeldet, das das automatische Zertifikat ablehnte und ein solches annahm.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "AC14K_M-CA-Zertifikat verwenden",
           "psk_owner": "Owner-Pre-Shared-Key importieren",
-          "psk_peer": "Peer-Pre-Shared-Key importieren"
+          "psk_peer": "Peer-Pre-Shared-Key importieren",
+          "fallback_ca": "AC14K_M-CA-Zertifikat versuchen"
         }
       },
       "credential_psk": {
         "title": "Dieses Gerät verwendet vermutlich einen Pre-Shared Key",
-        "description": "{host} hat das automatische Zertifikat abgelehnt, und seine unverschlüsselten Sicherheitsmetadaten besagen, dass es sich stattdessen mit einem Pre-Shared Key authentifiziert. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen. Falls der Hinweis falsch ist, steht das AC14K_M-Zertifikat unten weiterhin zur Wahl.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
+        "description": "{host} hat das automatische Zertifikat abgelehnt, und seine unverschlüsselten Sicherheitsmetadaten besagen, dass es sich stattdessen mit einem Pre-Shared Key authentifiziert. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen. Ein AC14K_M-CA-Zertifikat wird ebenfalls angeboten, aber bisher wurde kein Gerät gemeldet, das das automatische Zertifikat ablehnte und ein solches annahm.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Owner-Pre-Shared-Key importieren",
           "psk_peer": "Peer-Pre-Shared-Key importieren",
-          "fallback_ca": "AC14K_M-CA-Zertifikat verwenden"
+          "fallback_ca": "AC14K_M-CA-Zertifikat versuchen"
         }
       },
       "ca_rejected": {
         "title": "Zertifikat weiterhin abgelehnt",
-        "description": "{host} hat auch das von dieser CA signierte Zertifikat abgelehnt. Entweder ist es nicht die AC14K_M-CA, der dieses Gerät vertraut, oder das Gerät verwendet stattdessen einen Pre-Shared Key. Das Home-Assistant-Protokoll enthält den genauen Alert.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
+        "description": "{host} hat auch das von dieser CA signierte Zertifikat abgelehnt. Das deckt sich mit allen bisherigen Berichten: Kein Gerät, das das automatische Zertifikat ablehnte, hat eine AC14K_M-CA angenommen. Möglicherweise verwendet es stattdessen einen Pre-Shared Key. Das Home-Assistant-Protokoll enthält den genauen Alert.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
         "menu_options": {
-          "fallback_ca": "CA erneut eingeben",
           "psk_owner": "Owner-Pre-Shared-Key importieren",
-          "psk_peer": "Peer-Pre-Shared-Key importieren"
+          "psk_peer": "Peer-Pre-Shared-Key importieren",
+          "fallback_ca": "CA erneut eingeben"
         }
       },
       "fallback_ca": {
-        "title": "AC14K_M-Zertifikat erforderlich",
+        "title": "AC14K_M-CA-Zertifikat",
         "description": "Fügen Sie das AC14K_M-CA-Zertifikat und den privaten Schlüssel ein. LocalThings signiert damit ein Gerätezertifikat für {host}.",
         "data": {
           "ca_cert_pem": "CA-Zertifikat (PEM)",
