@@ -169,6 +169,13 @@ class TestWasherCourse:
         assert {"51", "56", "5a", "5b", "64", "85", "8c"} <= codes
         assert codes <= translated_states("select", "washer_cycle_table_02")
 
+    def test_table_02_quick_wash_on_a_lower_end_model(self):
+        """8B = Quick Wash, read back on the panel of a lower-end model that
+        also reports Table_02 (issue #464). Not in the WF8900B's own list."""
+        from custom_components.localthings.catalog import translated_states
+
+        assert "8b" in translated_states("select", "washer_cycle_table_02")
+
     def test_reported_table_00_course_codes_are_translated(self):
         """The reporter confirmed these codes on a WF45R6300AW/US by
         selecting each cycle and reading back the raw course code
