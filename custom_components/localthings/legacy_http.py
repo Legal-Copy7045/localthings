@@ -191,6 +191,36 @@ _COURSE_TABLE_FIELD = PREFIX + "st.courseTable"
 FAMILY_COURSE_TABLES: dict[str, str] = {"TP6X_WASHER": "Table_00"}
 
 
+# Where model_allows_power_on_off reads whether remote power on/off works.
+SETINFO_HREF = "/wm/setinfo/vs/0"
+_POWER_ON_OFF_FIELD = PREFIX + "isModelSettingPowerOnOff"
+
+
+def model_settings(bodies: Mapping[str, Any]) -> dict[str, dict]:
+    """A `/wm/setinfo/vs/0` rep carrying the power on/off flag this family
+    states in Information.modelID, which CoAP boards serve as a resource of
+    its own; empty when the model id doesn't carry it.
+
+    The third `|` field of modelID is a hex feature string. Samsung's own
+    washer plugin reads remote power control from bit 0 of the byte at
+    offset 26 (`isPowerControlSupportedModel`). Measured on a TP6X_WW6500,
+    whose byte is 00: `Operation.power = Off` answers
+    `400 Control fail, <Operation.power=Off>` and the washer stays on.
+    """
+    info = bodies.get("Information")
+    model_id = info.get("modelID") if isinstance(info, Mapping) else None
+    if not isinstance(model_id, str):
+        return {}
+    parts = model_id.split("|")
+    if len(parts) < 3 or len(parts[2]) < 28:
+        return {}
+    try:
+        flags = int(parts[2][26:28], 16)
+    except ValueError:
+        return {}
+    return {SETINFO_HREF: {_POWER_ON_OFF_FIELD: "true" if flags & 1 else "false"}}
+
+
 def course_table(family: str) -> dict[str, dict]:
     """A `/st/washercourse/vs/0` rep for `family`; empty (raw course codes)
     for a family nobody has walked the dial on."""
