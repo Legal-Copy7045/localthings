@@ -1092,13 +1092,6 @@
           "low": "Niska",
           "high": "Wysoka"
         }
-      },
-      "extra_rinse": {
-        "name": "Dodatkowe płukanie",
-        "state": {
-          "on": "Wł.",
-          "off": "Wył."
-        }
       }
     },
     "sensor": {
@@ -1835,6 +1828,9 @@
       },
       "damp_alert": {
         "name": "Alert wilgotnego wsadu"
+      },
+      "extra_rinse": {
+        "name": "Dodatkowe płukanie"
       }
     },
     "time": {

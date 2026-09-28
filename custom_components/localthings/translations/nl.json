@@ -1092,13 +1092,6 @@
           "low": "Laag",
           "high": "Hoog"
         }
-      },
-      "extra_rinse": {
-        "name": "Extra spoelen",
-        "state": {
-          "on": "Aan",
-          "off": "Uit"
-        }
       }
     },
     "sensor": {
@@ -1835,6 +1828,9 @@
       },
       "damp_alert": {
         "name": "Waarschuwing vochtige was"
+      },
+      "extra_rinse": {
+        "name": "Extra spoelen"
       }
     },
     "time": {

@@ -1092,13 +1092,6 @@
           "low": "Low",
           "high": "High"
         }
-      },
-      "extra_rinse": {
-        "name": "Extra rinse",
-        "state": {
-          "on": "On",
-          "off": "Off"
-        }
       }
     },
     "sensor": {
@@ -1835,6 +1828,9 @@
       },
       "damp_alert": {
         "name": "Damp Alert"
+      },
+      "extra_rinse": {
+        "name": "Extra rinse"
       }
     },
     "time": {

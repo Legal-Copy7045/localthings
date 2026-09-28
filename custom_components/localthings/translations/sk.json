@@ -1092,13 +1092,6 @@
           "low": "Nízka",
           "high": "Vysoká"
         }
-      },
-      "extra_rinse": {
-        "name": "Extra plákanie",
-        "state": {
-          "on": "Zapnuté",
-          "off": "Vypnuté"
-        }
       }
     },
     "sensor": {
@@ -1835,6 +1828,9 @@
       },
       "damp_alert": {
         "name": "Upozornenie na vlhké prádlo"
+      },
+      "extra_rinse": {
+        "name": "Extra plákanie"
       }
     },
     "time": {

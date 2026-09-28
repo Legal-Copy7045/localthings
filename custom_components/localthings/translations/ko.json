@@ -1092,13 +1092,6 @@
           "low": "약",
           "high": "강"
         }
-      },
-      "extra_rinse": {
-        "name": "헹굼 추가",
-        "state": {
-          "on": "켜기",
-          "off": "끄기"
-        }
       }
     },
     "sensor": {
@@ -1835,6 +1828,9 @@
       },
       "damp_alert": {
         "name": "다림질 알림"
+      },
+      "extra_rinse": {
+        "name": "헹굼 추가"
       }
     },
     "time": {

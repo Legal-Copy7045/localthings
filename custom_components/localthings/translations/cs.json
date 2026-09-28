@@ -1092,13 +1092,6 @@
           "low": "Nízká",
           "high": "Vysoká"
         }
-      },
-      "extra_rinse": {
-        "name": "Extra máchání",
-        "state": {
-          "on": "Zapnuto",
-          "off": "Vypnuto"
-        }
       }
     },
     "sensor": {
@@ -1835,6 +1828,9 @@
       },
       "damp_alert": {
         "name": "Upozornění na vlhké prádlo"
+      },
+      "extra_rinse": {
+        "name": "Extra máchání"
       }
     },
     "time": {

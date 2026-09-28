@@ -1433,13 +1433,6 @@
           "low": "Baja",
           "high": "Alta"
         }
-      },
-      "extra_rinse": {
-        "name": "Aclarado extra",
-        "state": {
-          "on": "Encendido",
-          "off": "Apagado"
-        }
       }
     },
     "sensor": {
@@ -2176,6 +2169,9 @@
       },
       "damp_alert": {
         "name": "Alerta de humedad"
+      },
+      "extra_rinse": {
+        "name": "Aclarado extra"
       }
     },
     "time": {

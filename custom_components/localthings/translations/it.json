@@ -1092,13 +1092,6 @@
           "low": "Bassa",
           "high": "Alta"
         }
-      },
-      "extra_rinse": {
-        "name": "Risciacquo extra",
-        "state": {
-          "on": "Acceso",
-          "off": "Spento"
-        }
       }
     },
     "sensor": {
@@ -1835,6 +1828,9 @@
       },
       "damp_alert": {
         "name": "Avviso di umidità"
+      },
+      "extra_rinse": {
+        "name": "Risciacquo extra"
       }
     },
     "time": {
