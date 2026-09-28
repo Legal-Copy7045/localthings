@@ -272,6 +272,43 @@ class TestWrites:
         assert code == 0x84
         assert _FakeConnection.log == []
 
+    def test_stop_on_an_idle_appliance_sends_nothing(self, transport):
+        """`Ready` on an idle WW6500 is not a no-op: it moves the appliance
+        to `Pause` and resets the dialled-in settings to the course's
+        defaults. The fixture's operation reads `Ready`."""
+        code, _ = transport.write(
+            ["operational", "state", "vs", "0"], {PREFIX + "state": "Ready"}, timeout=8.0
+        )
+
+        assert code == 0x44
+        assert [method for method, *_ in _FakeConnection.log] == ["GET"]
+
+    def test_stop_on_a_running_cycle_is_sent(self, transport):
+        _FakeConnection.routes["/devices/0/operation"] = (200, {"Operation": {"state": "Run"}})
+        _FakeConnection.routes[("PUT", "/devices/0")] = (204, None)
+
+        code, _ = transport.write(
+            ["operational", "state", "vs", "0"], {PREFIX + "state": "Ready"}, timeout=8.0
+        )
+
+        assert code == 0x44
+        assert _FakeConnection.log[-1][:3] == (
+            "PUT",
+            "/devices/0",
+            {"Device": {"Operation": {"state": "Ready"}}},
+        )
+
+    def test_stop_is_sent_when_the_state_cannot_be_read(self, transport):
+        """No fresh read, no reason to withhold it -- same as before."""
+        _FakeConnection.routes["/devices/0/operation"] = (500, None)
+        _FakeConnection.routes[("PUT", "/devices/0")] = (204, None)
+
+        transport.write(
+            ["operational", "state", "vs", "0"], {PREFIX + "state": "Ready"}, timeout=8.0
+        )
+
+        assert _FakeConnection.log[-1][0] == "PUT"
+
 
 class TestStartOnlyWrites:
     """A cycle and the washer's settings are taken by this firmware only in
@@ -574,6 +611,19 @@ class TestHeldCourseDefaults:
         assert puts == [
             {"Device": {"Operation": {"state": "Run"}, "Mode": {"options": ["Course_63"]}}}
         ]
+
+    def test_rinse_and_spin_reads_no_temperature(self, idle):
+        """Rinse+Spin has no temperature: its record allows none and points
+        the default at "None", which is what the appliance reports once the
+        course runs. Not the previous course's 40C."""
+        idle.write(["course", "vs", "0"], {PREFIX + "options": ["Course_64"]}, 8.0)
+
+        _, body = idle.read(["device", "0"], timeout=10.0)
+        washer = self._washer(body)
+
+        assert washer[PREFIX + "waterTemperature"] == "None"
+        assert washer[PREFIX + "rinseCycles"] == "1"
+        assert washer[PREFIX + "spinLevel"] == "1400"
 
     def test_nothing_held_reads_as_reported(self, idle):
         _, body = idle.read(["device", "0"], timeout=10.0)

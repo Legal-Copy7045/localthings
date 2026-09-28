@@ -71,6 +71,8 @@ _AUTH_HEADER = "Authorization"
 _START_SETTLE_S = 3.0
 
 _RUN = {"Device": {"Operation": {"state": "Run"}}}
+# What the stop button sends; see _already_ready.
+_READY = {"Device": {"Operation": {"state": "Ready"}}}
 
 # The option-token prefix a course is held under (see legacy_http.StagedKey).
 _COURSE_PREFIX = "Course"
@@ -206,6 +208,9 @@ class LegacyHttpTransport:
             return self._start(sendable, timeout)
         if not sendable["Device"]:
             return 0x44, None
+        if sendable == _READY and self._already_ready(timeout):
+            _LOGGER.debug("%s: already idle; stop not sent", self._host)
+            return 0x44, None
         # The body is the appliance's own account of a refusal (`"Control
         # fail, <...>"`), so it travels back with the code.
         status, response = self._request("PUT", "/devices/0", body=sendable, timeout=timeout)
@@ -214,6 +219,19 @@ class LegacyHttpTransport:
     def _idle(self) -> bool:
         operation = self._state.last_bodies.get("Operation") or {}
         return operation.get("state") == "Ready"
+
+    def _already_ready(self, timeout: float) -> bool:
+        """Whether a fresh read says the appliance is idle.
+
+        Measured on a TP6X_WW6500: `Ready` from `Run` cancels the cycle,
+        but on an idle appliance it is no no-op -- it moves it to `Pause`
+        and resets temperature, rinses and spin to the course's defaults,
+        throwing away what was dialled in at the panel. Read fresh rather
+        than from the last sweep, which can be a poll interval old.
+        """
+        status, state = self._request("GET", "/devices/0/operation", timeout=timeout)
+        operation = unwrap(state).get("Operation") if isinstance(state, dict) else None
+        return status == 200 and isinstance(operation, dict) and operation.get("state") == "Ready"
 
     def _start(self, aggregate: dict[str, Any], timeout: float) -> tuple[int, Any]:
         """Start with every held value in the same body -- the only way this
@@ -292,7 +310,13 @@ class LegacyHttpTransport:
             if mask is None or not isinstance(supported, list):
                 continue
             default, allowed = mask
-            if default in allowed and default < len(supported):
+            if default >= len(supported):
+                continue
+            # A course with no such setting allows nothing and points its
+            # default at the list's "None" -- Rinse+Spin's temperature, which
+            # the appliance itself reports as "None" once it runs. Without
+            # this the held course would show the previous course's value.
+            if default in allowed or (not allowed and supported[default] == "None"):
                 washer[name] = supported[default]
         return {**bodies, _WASHER_WRAPPER: washer}
 
