@@ -25,7 +25,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from smartthings_local.ocf.state_cache import StateCache
 
-from . import cloudcourse
+from . import cloudcourse, probing
 from .cloudcourse import CloudCourses
 from .cloudcourse import persist as cloud_persist
 from .const import (
@@ -43,15 +43,18 @@ from .const import (
     CONF_OCF_DEVICE_ID,
     CONF_PORT,
     CONF_SERIAL,
+    CONF_TRANSPORT,
     DEFAULT_CLOUD_COURSES_ENABLED,
     DEFAULT_LEARN_MODES,
     DEVICE_SUPPORT_ISSUE_URL,
     DOMAIN,
     SUMMARY_INTERVAL_S,
+    TRANSPORT_LEGACY_HTTP,
 )
 from .credentials import (
     DeviceBinding,
     DeviceIdentityMismatch,
+    InvalidCredentialConfig,
     check_device_binding,
     requires_authenticated_device_id,
 )
@@ -338,6 +341,10 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     _SUBPOLL_STEP_S: float = SUMMARY_INTERVAL_S / 10  # 3.0 s
     _OBSERVE_GRACE_PERIOD_S: float = GRACE_PERIOD_S
     _RECONNECT_PAUSE_S: float = 5.0
+    # Between plaintext lookups of a moved secure port, doubling from the
+    # first to the cap while the device stays unreachable.
+    _REDISCOVERY_BACKOFF_MIN_S: float = 60.0
+    _REDISCOVERY_BACKOFF_MAX_S: float = 1800.0
 
     # A single reconnect is normal appliance behavior (README's "Known
     # device behavior"); only escalate once they pile up in a trailing
@@ -485,6 +492,12 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # A switched-off appliance fails there every cycle, and there is no
         # session to tear down and re-establish -- see _async_update_data.
         self._handshake_failed = False
+        # Secure-port rediscovery after a failed handshake (see
+        # _connect_session): the next lookup's earliest time, the current
+        # backoff step, and a port followed but not yet written to the entry.
+        self._next_rediscovery_ts = 0.0
+        self._rediscovery_backoff_s = 0.0
+        self._moved_port: int | None = None
         # Consecutive cycles that ended with no data from the device, so an
         # outage is reported once rather than once per poll (issue #269).
         self._failed_cycles = 0
@@ -953,15 +966,67 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return self._observe.mode
 
     def _connect_session(self) -> None:
-        host = self._entry.data[CONF_HOST]
+        """Open a session on the stored port, following it if it moved.
+
+        A failed handshake on a DTLS entry asks the device, over plaintext,
+        which secure port it now advertises, and tries that one instead
+        (#435: laundry ports move across a power cycle). Backed off, so an
+        appliance that is simply off or asleep costs one lookup per backoff
+        step, not one per poll. The new port is written to the entry by
+        `_persist_moved_port` once a poll has come through on it.
+        """
         port = self._entry.data[CONF_PORT]
+        try:
+            self._open_session(port)
+        except (DeviceIdentityMismatch, InvalidCredentialConfig):
+            raise
+        except Exception:
+            moved = self._rediscover_port(port)
+            if moved is None:
+                raise
+            self._log.info("secure port moved from %d to %d; reconnecting there", port, moved)
+            self._open_session(moved)
+            self._moved_port = moved
+        self._rediscovery_backoff_s = 0.0
+        self._next_rediscovery_ts = 0.0
+
+    def _rediscover_port(self, current: int) -> int | None:
+        """The port the device now advertises, when a lookup is due. Blocking."""
+        if self._entry.data.get(CONF_TRANSPORT) == TRANSPORT_LEGACY_HTTP:
+            return None
+        now = time.monotonic()
+        if now < self._next_rediscovery_ts:
+            return None
+        self._rediscovery_backoff_s = min(
+            max(self._rediscovery_backoff_s * 2, self._REDISCOVERY_BACKOFF_MIN_S),
+            self._REDISCOVERY_BACKOFF_MAX_S,
+        )
+        self._next_rediscovery_ts = now + self._rediscovery_backoff_s
+        try:
+            return probing.moved_secure_port(self._entry.data[CONF_HOST], current)
+        except Exception as e:
+            self._log.debug("secure port lookup failed: %s", e)
+            return None
+
+    @callback
+    def _persist_moved_port(self) -> None:
+        """Record a port `_connect_session` followed, once a poll proved it."""
+        port, self._moved_port = self._moved_port, None
+        if port is None or self._entry.data.get(CONF_PORT) == port:
+            return
+        self.hass.config_entries.async_update_entry(
+            self._entry, data={**self._entry.data, CONF_PORT: port}
+        )
+
+    def _open_session(self, port: int) -> None:
+        host = self._entry.data[CONF_HOST]
 
         # Which credential this entry uses is decided from the entry
         # (transport.create_transport, session.py), not here -- adding a
         # carrier must not mean editing every place that opens a session
         # (issue #435).
         sess = create_transport(
-            self._entry.data,
+            {**self._entry.data, CONF_PORT: port},
             on_notification=self._observe.on_notification,
             local_port=_local_source_port(host),
         )
@@ -2038,6 +2103,7 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _mark_device_answered(self) -> None:
         """Clear the bookkeeping a poll getting through invalidates."""
+        self._persist_moved_port()
         self._consecutive_poll_timeouts = 0
         if self._failed_cycles:
             self._log.info("device answered again after %d failed cycles", self._failed_cycles)

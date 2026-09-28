@@ -412,6 +412,19 @@ def _discover_advertised_ports(host: str) -> tuple[tuple[int, ...], int | None]:
     return tuple(ports), answered
 
 
+def moved_secure_port(host: str, current: int) -> int | None:
+    """The secure port the device now advertises, if it isn't `current`.
+
+    For a reconnect whose handshake failed: ports are kernel-assigned and
+    move across a power cycle (WD86 58227 -> 41820, #435), so the stored
+    one can go stale while the device is fine. One sequential plaintext
+    lookup, nothing scanned. 5684 is never returned: it answers on any
+    board, and on the S61B it served no PSK session at all (#435).
+    """
+    advertised, _ = _discover_advertised_ports(host)
+    return next((port for port in advertised if port not in (current, MULTICAST_SECURE_PORT)), None)
+
+
 def _read_plaintext_identity(host: str, port: int) -> PlaintextIdentity | None:
     """/oic/d and /oic/p, unauthenticated, on the port that just answered."""
     import cbor2

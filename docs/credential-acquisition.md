@@ -26,6 +26,11 @@ appliance only after the key completes a handshake and the appliance reports its
 `/oic/d` `di` over that session. That `di` is recorded, and later connections
 must match it.
 
+The secure port can change when the appliance restarts. When a handshake on
+the stored port fails, LocalThings asks the appliance which port it now
+advertises and reconnects there, waiting longer between lookups while it stays
+unreachable.
+
 ## WD86 washer/dryer
 
 An OwnerPSK recovered after SmartThings removal and re-registration authenticated

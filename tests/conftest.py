@@ -7,6 +7,16 @@ import pytest
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
+@pytest.fixture(autouse=True)
+def _no_live_port_rediscovery(monkeypatch):
+    """A failed handshake asks the device which port it moved to, over the
+    real network. Tests that drive a failed connect would otherwise wait out
+    that lookup against an address nothing answers on."""
+    monkeypatch.setattr(
+        "custom_components.localthings.probing.moved_secure_port", lambda host, current: None
+    )
+
+
 def _resources_from_dump(dump: dict) -> dict[str, dict]:
     from custom_components.localthings.registry.batch import parse_device0_batch
 
