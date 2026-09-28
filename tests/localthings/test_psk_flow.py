@@ -345,3 +345,17 @@ def test_psk_alerts_are_not_read_as_a_certificate_rejection() -> None:
         assert isinstance(err, config_flow.PskRejected), alert
     err = config_flow._classify_handshake_failure(MOCK_HOST, scan, failure, {PORT: "decrypt_error"})
     assert isinstance(err, config_flow.CertRejected)
+
+
+async def test_every_psk_screen_links_the_tracking_issue(
+    hass: HomeAssistant, monkeypatch, appliance
+) -> None:
+    """Each PSK screen's text links #435 through {issue_url}, so every one
+    of them has to be given it."""
+    from custom_components.localthings.const import PSK_TRACKING_ISSUE_URL
+
+    _hint(monkeypatch, CredentialHint(sct=1))
+    menu = await _refused(hass)
+    assert menu["description_placeholders"]["issue_url"] == PSK_TRACKING_ISSUE_URL
+    form = await _choose(hass, menu, "psk_peer")
+    assert form["description_placeholders"]["issue_url"] == PSK_TRACKING_ISSUE_URL

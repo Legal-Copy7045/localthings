@@ -77,6 +77,7 @@ from .const import (
     PROBE_PORT_RANGE,
     PSK_PROFILE_OWNER,
     PSK_PROFILE_PEER,
+    PSK_TRACKING_ISSUE_URL,
     SERVICE_WRITE_RESOURCE,
     TRANSPORT_LEGACY_HTTP,
 )
@@ -1215,11 +1216,11 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Ask for the AC14K_M CA after a device rejects the self-signed leaf.
 
-        Only reached when the automatic self-signed certificate (or a reused
-        leaf) failed to authenticate -- the small minority of appliances that
+        Reached from the credential menu, for the minority of appliances that
         validate the client certificate chain. The pasted CA cert and key mint
         a chain-signed leaf, which is then stored on the entry so the retry is
-        never needed again for this appliance.
+        never needed again for this appliance. A refusal goes back to a menu
+        (async_step_ca_rejected), since a PSK appliance refuses every CA.
         """
         existing = self.hass.config_entries.async_entries(DOMAIN)
         errors: dict[str, str] = {}
@@ -1238,10 +1239,10 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     None,
                     self._setup_source_port(self._host),
                 )
+            except CertRejected as exc:
+                _LOGGER.warning("Probe of %s failed [%s]: %s", self._host, exc.error_key, exc)
+                return await self.async_step_ca_rejected()
             except (CannotConnect, InvalidCA) as exc:
-                # CertRejected lands here too (it is a CannotConnect): the CA
-                # the user pasted still didn't authenticate, so re-show the
-                # form with cert_rejected rather than looping back to host.
                 _LOGGER.warning("Probe of %s failed [%s]: %s", self._host, exc.error_key, exc)
                 errors["base"] = exc.error_key
                 self._error_placeholders = getattr(exc, "placeholders", {})
@@ -1286,7 +1287,7 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_menu(
             step_id="credential",
             menu_options=["fallback_ca", "psk_owner", "psk_peer"],
-            description_placeholders={"host": self._host},
+            description_placeholders=self._psk_placeholders(),
         )
 
     async def async_step_credential_psk(
@@ -1296,8 +1297,25 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_menu(
             step_id="credential_psk",
             menu_options=["psk_owner", "psk_peer", "fallback_ca"],
-            description_placeholders={"host": self._host},
+            description_placeholders=self._psk_placeholders(),
         )
+
+    async def async_step_ca_rejected(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """The pasted CA was refused too: another CA, or a pre-shared key.
+
+        A menu rather than the CA form again, so an appliance that was never
+        on the certificate carrier doesn't leave the user stuck pasting CAs.
+        """
+        return self.async_show_menu(
+            step_id="ca_rejected",
+            menu_options=["fallback_ca", "psk_owner", "psk_peer"],
+            description_placeholders=self._psk_placeholders(),
+        )
+
+    def _psk_placeholders(self) -> dict[str, str]:
+        return {"host": self._host, "issue_url": PSK_TRACKING_ISSUE_URL}
 
     async def async_step_psk_owner(
         self, user_input: dict[str, Any] | None = None
@@ -1375,7 +1393,7 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=self.add_suggested_values_to_schema(schema, suggested),
             errors=errors,
             description_placeholders={
-                "host": self._host,
+                **self._psk_placeholders(),
                 "model": "unknown",
                 "port": "unknown",
                 **self._error_placeholders,
@@ -1669,6 +1687,8 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ),
             errors=errors,
             description_placeholders={
+                # identity_unproven links the tracking issue.
+                "issue_url": PSK_TRACKING_ISSUE_URL,
                 "model": "unknown",
                 "port": "unknown",
                 **self._error_placeholders,

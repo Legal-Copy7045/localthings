@@ -1096,11 +1096,12 @@ async def test_self_signed_rejection_advances_to_the_fallback_ca_step(
     assert [s.cert_pem for s in FakeSession.instances] == ["SELFSIGNED", "FULLCHAIN"]
 
 
-async def test_fallback_ca_rejection_surfaces_cert_rejected_in_the_form(
+async def test_fallback_ca_rejection_offers_another_ca_or_a_psk(
     hass: HomeAssistant, monkeypatch, fake_dtls
 ) -> None:
-    """When even the pasted AC14K_M CA is refused, the fallback step re-shows
-    with the certificate error rather than the blanket connectivity message."""
+    """When even the pasted AC14K_M CA is refused, the flow goes back to a
+    menu rather than the CA form: a PSK appliance refuses every CA, so
+    re-showing the form would leave its owner no way out but restarting."""
     _patch_clienthello(monkeypatch, {49154})
     FakeSession.reject_certs = {"SELFSIGNED", "FULLCHAIN"}
 
@@ -1115,11 +1116,13 @@ async def test_fallback_ca_rejection_surfaces_cert_rejected_in_the_form(
         result["flow_id"],
         {CONF_CA_CERT_PEM: MOCK_CA_CERT_PEM, CONF_CA_KEY_PEM: MOCK_CA_KEY_PEM},
     )
+    assert result["type"] == FlowResultType.MENU
+    assert result["step_id"] == "ca_rejected"
+    assert result["menu_options"] == ["fallback_ca", "psk_owner", "psk_peer"]
+
+    result = await _choose(hass, result, "psk_owner")
     assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "fallback_ca"
-    errors = result["errors"]
-    assert errors is not None
-    assert errors["base"] == "cert_rejected"
+    assert result["step_id"] == "psk_owner"
 
 
 async def test_unreachable_cloud_gateway_is_reported_separately(

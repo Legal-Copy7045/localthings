@@ -1811,7 +1811,7 @@
       },
       "credential": {
         "title": "Zertifikat abgelehnt",
-        "description": "{host} hat das automatische Zertifikat abgelehnt. Ein Gerät, das die Zertifikatskette prüft, benötigt die AC14K_M-CA. Manche Geräte verwenden statt eines Zertifikats einen Pre-Shared Key. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen.",
+        "description": "{host} hat das automatische Zertifikat abgelehnt. Ein Gerät, das die Zertifikatskette prüft, benötigt die AC14K_M-CA. Manche Geräte verwenden statt eines Zertifikats einen Pre-Shared Key. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
         "menu_options": {
           "fallback_ca": "AC14K_M-CA-Zertifikat verwenden",
           "psk_owner": "Owner-Pre-Shared-Key importieren",
@@ -1820,16 +1820,25 @@
       },
       "credential_psk": {
         "title": "Dieses Gerät verwendet vermutlich einen Pre-Shared Key",
-        "description": "{host} hat das automatische Zertifikat abgelehnt, und seine unverschlüsselten Sicherheitsmetadaten besagen, dass es sich mit einem Pre-Shared Key statt mit einem Zertifikat authentifiziert. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen. Falls der Hinweis falsch ist, steht das AC14K_M-Zertifikat unten weiterhin zur Wahl.",
+        "description": "{host} hat das automatische Zertifikat abgelehnt, und seine unverschlüsselten Sicherheitsmetadaten besagen, dass es sich stattdessen mit einem Pre-Shared Key authentifiziert. LocalThings kann diesen Schlüssel nicht selbst beschaffen, importieren Sie also einen, den Sie bereits besitzen. Falls der Hinweis falsch ist, steht das AC14K_M-Zertifikat unten weiterhin zur Wahl.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Owner-Pre-Shared-Key importieren",
           "psk_peer": "Peer-Pre-Shared-Key importieren",
           "fallback_ca": "AC14K_M-CA-Zertifikat verwenden"
         }
       },
+      "ca_rejected": {
+        "title": "Zertifikat weiterhin abgelehnt",
+        "description": "{host} hat auch das von dieser CA signierte Zertifikat abgelehnt. Entweder ist es nicht die AC14K_M-CA, der dieses Gerät vertraut, oder das Gerät verwendet stattdessen einen Pre-Shared Key. Das Home-Assistant-Protokoll enthält den genauen Alert.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
+        "menu_options": {
+          "fallback_ca": "Eine andere AC14K_M-CA versuchen",
+          "psk_owner": "Owner-Pre-Shared-Key importieren",
+          "psk_peer": "Peer-Pre-Shared-Key importieren"
+        }
+      },
       "fallback_ca": {
         "title": "AC14K_M-Zertifikat erforderlich",
-        "description": "{host} hat das automatische Zertifikat abgelehnt und benötigt daher AC14K_M-CA-Zugangsdaten, um ein Gerätezertifikat zu erstellen. Fügen Sie sie unten ein.",
+        "description": "Fügen Sie das AC14K_M-CA-Zertifikat und den privaten Schlüssel ein. LocalThings signiert damit ein Gerätezertifikat für {host}.",
         "data": {
           "ca_cert_pem": "CA-Zertifikat (PEM)",
           "ca_key_pem": "CA-Privatschlüssel (PEM)"
@@ -1841,7 +1850,7 @@
       },
       "psk_owner": {
         "title": "Owner-Pre-Shared-Key",
-        "description": "Geben Sie den OwnerPSK für {host} ein. Die Identität ist die OCF-Owner-UUID; sie ist vorausgefüllt, wenn das Gerät eine meldet. LocalThings prüft den Schlüssel am Gerät und hält fest, welches Gerät geantwortet hat, bevor es hinzugefügt wird.",
+        "description": "Geben Sie den Owner-Pre-Shared-Key für {host} ein. Die Identität ist die OCF-Owner-UUID; sie ist vorausgefüllt, wenn das Gerät eine meldet. LocalThings prüft den Schlüssel am Gerät und hält fest, welches Gerät geantwortet hat, bevor es hinzugefügt wird.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
         "data": {
           "psk_identity": "Identität (Owner-UUID)",
           "psk_key": "Schlüssel"
@@ -1852,7 +1861,7 @@
       },
       "psk_peer": {
         "title": "Peer-Pre-Shared-Key",
-        "description": "Geben Sie die paarweise Peer-Anmeldung ein, die neben Samsungs Eigentümerschaft auf {host} installiert wurde, genau so, wie das installierende Werkzeug sie ausgegeben hat. Weder Identität noch Schlüssel lassen sich vom Gerät auslesen. LocalThings prüft den Schlüssel am Gerät und hält fest, welches Gerät geantwortet hat, bevor es hinzugefügt wird.",
+        "description": "Geben Sie die paarweise Peer-Anmeldung ein, die neben Samsungs Eigentümerschaft auf {host} installiert wurde, genau so, wie das installierende Werkzeug sie ausgegeben hat. Weder Identität noch Schlüssel lassen sich vom Gerät auslesen. LocalThings prüft den Schlüssel am Gerät und hält fest, welches Gerät geantwortet hat, bevor es hinzugefügt wird.\n\nGeräte mit Pre-Shared Key versuchen wir noch zu verstehen, und Sie werden damit wahrscheinlich auf Probleme stoßen. Unseren Plan, unsere bisherigen Erkenntnisse und einen Ort für Rückmeldungen finden Sie in [Issue #435]({issue_url}).",
         "data": {
           "psk_identity": "Identität (Peer-UUID)",
           "psk_key": "Schlüssel"
@@ -1898,7 +1907,7 @@
       "handshake_timeout": "Das Gerät hat auf seinem lokalen API-Port geantwortet, den DTLS-Handshake aber auch nach einem erneuten Versuch nicht abgeschlossen. Versuchen Sie es noch einmal. Schlägt es weiter fehl, gibt ein Neustart des Geräts die Verbindungen frei, die es noch hält; den genauen Fehler finden Sie im Home-Assistant-Protokoll.",
       "cert_rejected": "Das Gerät hat das Zertifikat abgelehnt. Das CA-Zertifikat und der Schlüssel sind höchstwahrscheinlich nicht die AC14K_M-CA, der dieses Gerät vertraut, oder sie passen nicht zueinander. Weitere Informationen in den Logs.",
       "psk_rejected": "Das Gerät hat den Pre-Shared Key abgelehnt. Identität oder Schlüssel sind falsch, oder sie gehören zu einem anderen Gerät oder zu einem inzwischen geänderten Eigentümer. Das Home-Assistant-Protokoll enthält den genauen Alert.",
-      "identity_unproven": "Der Schlüssel hat funktioniert, aber das Gerät hat seine OCF-Geräte-ID nicht über die verschlüsselte Verbindung gemeldet. LocalThings kann daher nicht bestätigen, welches Gerät den Schlüssel besitzt, und fügt es nicht hinzu. Versuchen Sie es erneut, während das Gerät wach ist. Tritt das weiterhin auf, eröffnen Sie ein Issue mit dem Home-Assistant-Protokoll.",
+      "identity_unproven": "Der Schlüssel hat funktioniert, aber das Gerät hat seine OCF-Geräte-ID nicht über die verschlüsselte Verbindung gemeldet. LocalThings kann daher nicht bestätigen, welches Gerät den Schlüssel besitzt, und fügt es nicht hinzu. Versuchen Sie es erneut, während das Gerät wach ist. Tritt das weiterhin auf, melden Sie es in [Issue #435]({issue_url}) zusammen mit dem Home-Assistant-Protokoll.",
       "invalid_psk_identity": "Geben Sie die Identität als UUID ein, zum Beispiel 12345678-1234-1234-1234-123456789abc.",
       "psk_identity_zero_byte": "Diese UUID enthält ein Null-Byte, das DTLS nicht als Identität übertragen kann. Wenn Sie diese Peer-Identität erzeugt haben, erzeugen Sie eine neue.",
       "invalid_psk_key": "Geben Sie den Schlüssel als 32 oder 64 Hexadezimalzeichen ein.",

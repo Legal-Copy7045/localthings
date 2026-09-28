@@ -1811,7 +1811,7 @@
       },
       "credential": {
         "title": "Certyfikat odrzucony",
-        "description": "{host} odrzucił automatyczny certyfikat. Urządzenie, które sprawdza łańcuch certyfikatów, wymaga CA AC14K_M. Niektóre urządzenia zamiast certyfikatu używają klucza współdzielonego (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz.",
+        "description": "{host} odrzucił automatyczny certyfikat. Urządzenie, które sprawdza łańcuch certyfikatów, wymaga CA AC14K_M. Niektóre urządzenia zamiast certyfikatu używają klucza współdzielonego (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "menu_options": {
           "fallback_ca": "Użyj certyfikatu CA AC14K_M",
           "psk_owner": "Zaimportuj klucz współdzielony właściciela",
@@ -1820,16 +1820,25 @@
       },
       "credential_psk": {
         "title": "To urządzenie prawdopodobnie używa klucza współdzielonego",
-        "description": "{host} odrzucił automatyczny certyfikat, a jego nieszyfrowane metadane bezpieczeństwa wskazują, że uwierzytelnia się kluczem współdzielonym (PSK) zamiast certyfikatem. LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz. Jeśli ta wskazówka jest błędna, certyfikat AC14K_M nadal jest dostępny poniżej.",
+        "description": "{host} odrzucił automatyczny certyfikat, a jego nieszyfrowane metadane bezpieczeństwa wskazują, że uwierzytelnia się zamiast tego kluczem współdzielonym (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz. Jeśli ta wskazówka jest błędna, certyfikat AC14K_M nadal jest dostępny poniżej.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Zaimportuj klucz współdzielony właściciela",
           "psk_peer": "Zaimportuj klucz współdzielony peera",
           "fallback_ca": "Użyj certyfikatu CA AC14K_M"
         }
       },
+      "ca_rejected": {
+        "title": "Certyfikat nadal odrzucony",
+        "description": "{host} odrzucił również certyfikat podpisany przez to CA. Albo nie jest to CA AC14K_M, któremu ufa to urządzenie, albo urządzenie używa klucza współdzielonego. Dokładny alert znajdziesz w logu Home Assistant.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "menu_options": {
+          "fallback_ca": "Spróbuj innego CA AC14K_M",
+          "psk_owner": "Zaimportuj klucz współdzielony właściciela",
+          "psk_peer": "Zaimportuj klucz współdzielony peera"
+        }
+      },
       "fallback_ca": {
         "title": "Wymagany certyfikat AC14K_M",
-        "description": "Urządzenie {host} odrzuciło automatyczny certyfikat, więc do wystawienia certyfikatu urządzenia potrzebne są poświadczenia CA AC14K_M. Wklej je poniżej.",
+        "description": "Wklej certyfikat CA AC14K_M i klucz prywatny. LocalThings podpisze nimi certyfikat urządzenia dla {host}.",
         "data": {
           "ca_cert_pem": "Certyfikat CA (PEM)",
           "ca_key_pem": "Klucz prywatny CA (PEM)"
@@ -1841,7 +1850,7 @@
       },
       "psk_owner": {
         "title": "Klucz współdzielony właściciela",
-        "description": "Wprowadź OwnerPSK dla {host}. Tożsamość to UUID właściciela OCF, uzupełniany automatycznie, jeśli urządzenie go podaje. Przed dodaniem LocalThings sprawdza klucz na urządzeniu i zapisuje, które urządzenie odpowiedziało.",
+        "description": "Wprowadź klucz współdzielony właściciela dla {host}. Tożsamość to UUID właściciela OCF, uzupełniany automatycznie, jeśli urządzenie go podaje. Przed dodaniem LocalThings sprawdza klucz na urządzeniu i zapisuje, które urządzenie odpowiedziało.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "data": {
           "psk_identity": "Tożsamość (UUID właściciela)",
           "psk_key": "Klucz"
@@ -1852,7 +1861,7 @@
       },
       "psk_peer": {
         "title": "Klucz współdzielony peera",
-        "description": "Wprowadź parowe poświadczenie peera zainstalowane na {host} obok własności Samsunga, dokładnie tak, jak podało je narzędzie, które je zainstalowało. Ani tożsamości, ani klucza nie da się odczytać z urządzenia. Przed dodaniem LocalThings sprawdza klucz na urządzeniu i zapisuje, które urządzenie odpowiedziało.",
+        "description": "Wprowadź parowe poświadczenie peera zainstalowane na {host} obok własności Samsunga, dokładnie tak, jak podało je narzędzie, które je zainstalowało. Ani tożsamości, ani klucza nie da się odczytać z urządzenia. Przed dodaniem LocalThings sprawdza klucz na urządzeniu i zapisuje, które urządzenie odpowiedziało.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
         "data": {
           "psk_identity": "Tożsamość (UUID peera)",
           "psk_key": "Klucz"
@@ -1898,7 +1907,7 @@
       "handshake_timeout": "Urządzenie odpowiedziało na porcie lokalnego API, ale nie ukończyło uzgadniania DTLS. Zwykle oznacza to, że wciąż utrzymuje sesję z poprzedniej próby — odczekaj około minuty i spróbuj ponownie.",
       "cert_rejected": "Urządzenie odrzuciło certyfikat. Najprawdopodobniej certyfikat i klucz CA nie pochodzą z CA AC14K_M, któremu ufa to urządzenie, albo do siebie nie pasują. Dokładny alert wysłany przez urządzenie znajdziesz w dzienniku Home Assistant.",
       "psk_rejected": "Urządzenie odrzuciło klucz współdzielony. Tożsamość lub klucz są nieprawidłowe albo należą do innego urządzenia lub do właściciela, który się od tego czasu zmienił. Dokładny alert znajdziesz w logu Home Assistant.",
-      "identity_unproven": "Klucz zadziałał, ale urządzenie nie podało swojego identyfikatora urządzenia OCF przez szyfrowane połączenie, więc LocalThings nie może potwierdzić, które urządzenie ma ten klucz, i go nie doda. Spróbuj ponownie, gdy urządzenie jest wybudzone. Jeśli problem się powtarza, zgłoś issue z logiem Home Assistant.",
+      "identity_unproven": "Klucz zadziałał, ale urządzenie nie podało swojego identyfikatora urządzenia OCF przez szyfrowane połączenie, więc LocalThings nie może potwierdzić, które urządzenie ma ten klucz, i go nie doda. Spróbuj ponownie, gdy urządzenie jest wybudzone. Jeśli problem się powtarza, daj nam znać w [zgłoszeniu #435]({issue_url}) i dołącz log Home Assistant.",
       "invalid_psk_identity": "Wprowadź tożsamość jako UUID, na przykład 12345678-1234-1234-1234-123456789abc.",
       "psk_identity_zero_byte": "Ten UUID zawiera bajt zerowy, którego DTLS nie może przenieść jako tożsamości. Jeśli ta tożsamość peera została przez ciebie wygenerowana, wygeneruj nową.",
       "invalid_psk_key": "Wprowadź klucz jako 32 lub 64 znaki szesnastkowe.",

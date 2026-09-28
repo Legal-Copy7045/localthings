@@ -1811,7 +1811,7 @@
       },
       "credential": {
         "title": "Certifikát odmietnutý",
-        "description": "{host} odmietol automatický certifikát. Spotrebič, ktorý overuje reťazec certifikátov, potrebuje CA AC14K_M. Niektoré spotrebiče namiesto certifikátu používajú vopred zdieľaný kľúč (PSK). LocalThings tento kľúč nedokáže získať sám, preto importujte kľúč, ktorý už máte.",
+        "description": "{host} odmietol automatický certifikát. Spotrebič, ktorý overuje reťazec certifikátov, potrebuje CA AC14K_M. Niektoré spotrebiče namiesto certifikátu používajú vopred zdieľaný kľúč (PSK). LocalThings tento kľúč nedokáže získať sám, preto importujte kľúč, ktorý už máte.\n\nSpotrebiče s vopred zdieľaným kľúčom sa ešte len snažíme pochopiť a pravdepodobne s nimi narazíte na problémy. Náš plán, doterajšie zistenia a miesto na spätnú väzbu nájdete v [issue #435]({issue_url}).",
         "menu_options": {
           "fallback_ca": "Použiť certifikát CA AC14K_M",
           "psk_owner": "Importovať vopred zdieľaný kľúč vlastníka",
@@ -1820,16 +1820,25 @@
       },
       "credential_psk": {
         "title": "Tento spotrebič pravdepodobne používa vopred zdieľaný kľúč",
-        "description": "{host} odmietol automatický certifikát a jeho nešifrované bezpečnostné metadáta uvádzajú, že sa overuje vopred zdieľaným kľúčom (PSK), nie certifikátom. LocalThings tento kľúč nedokáže získať sám, preto importujte kľúč, ktorý už máte. Ak je nápoveda chybná, certifikát AC14K_M je nižšie stále k dispozícii.",
+        "description": "{host} odmietol automatický certifikát a jeho nešifrované bezpečnostné metadáta uvádzajú, že sa namiesto toho overuje vopred zdieľaným kľúčom (PSK). LocalThings tento kľúč nedokáže získať sám, preto importujte kľúč, ktorý už máte. Ak je nápoveda chybná, certifikát AC14K_M je nižšie stále k dispozícii.\n\nSpotrebiče s vopred zdieľaným kľúčom sa ešte len snažíme pochopiť a pravdepodobne s nimi narazíte na problémy. Náš plán, doterajšie zistenia a miesto na spätnú väzbu nájdete v [issue #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Importovať vopred zdieľaný kľúč vlastníka",
           "psk_peer": "Importovať vopred zdieľaný kľúč peera",
           "fallback_ca": "Použiť certifikát CA AC14K_M"
         }
       },
+      "ca_rejected": {
+        "title": "Certifikát stále odmietnutý",
+        "description": "{host} odmietol aj certifikát podpísaný touto CA. Buď to nie je CA AC14K_M, ktorej tento spotrebič dôveruje, alebo spotrebič používa vopred zdieľaný kľúč. Presný alert je v logu Home Assistant.\n\nSpotrebiče s vopred zdieľaným kľúčom sa ešte len snažíme pochopiť a pravdepodobne s nimi narazíte na problémy. Náš plán, doterajšie zistenia a miesto na spätnú väzbu nájdete v [issue #435]({issue_url}).",
+        "menu_options": {
+          "fallback_ca": "Skúsiť inú CA AC14K_M",
+          "psk_owner": "Importovať vopred zdieľaný kľúč vlastníka",
+          "psk_peer": "Importovať vopred zdieľaný kľúč peera"
+        }
+      },
       "fallback_ca": {
         "title": "Vyžaduje sa certifikát AC14K_M",
-        "description": "{host} odmietol automatický certifikát, preto na vytvorenie certifikátu zariadenia potrebuje prihlasovacie údaje CA AC14K_M. Vložte ich nižšie.",
+        "description": "Vložte certifikát CA AC14K_M a súkromný kľúč. LocalThings nimi podpíše certifikát zariadenia pre {host}.",
         "data": {
           "ca_cert_pem": "Certifikát CA (PEM)",
           "ca_key_pem": "Súkromný kľúč CA (PEM)"
@@ -1841,7 +1850,7 @@
       },
       "psk_owner": {
         "title": "Vopred zdieľaný kľúč vlastníka",
-        "description": "Zadajte OwnerPSK pre {host}. Identita je UUID vlastníka OCF, predvyplnené, ak ho spotrebič hlási. Pred pridaním LocalThings overí kľúč na spotrebiči a zaznamená, ktorý spotrebič odpovedal.",
+        "description": "Zadajte vopred zdieľaný kľúč vlastníka pre {host}. Identita je UUID vlastníka OCF, predvyplnené, ak ho spotrebič hlási. Pred pridaním LocalThings overí kľúč na spotrebiči a zaznamená, ktorý spotrebič odpovedal.\n\nSpotrebiče s vopred zdieľaným kľúčom sa ešte len snažíme pochopiť a pravdepodobne s nimi narazíte na problémy. Náš plán, doterajšie zistenia a miesto na spätnú väzbu nájdete v [issue #435]({issue_url}).",
         "data": {
           "psk_identity": "Identita (UUID vlastníka)",
           "psk_key": "Kľúč"
@@ -1852,7 +1861,7 @@
       },
       "psk_peer": {
         "title": "Vopred zdieľaný kľúč peera",
-        "description": "Zadajte párové poverenie peera nainštalované na {host} popri vlastníctve Samsungu presne tak, ako ho vypísal nástroj, ktorý ho nainštaloval. Identitu ani kľúč nemožno zo spotrebiča prečítať. Pred pridaním LocalThings overí kľúč na spotrebiči a zaznamená, ktorý spotrebič odpovedal.",
+        "description": "Zadajte párové poverenie peera nainštalované na {host} popri vlastníctve Samsungu presne tak, ako ho vypísal nástroj, ktorý ho nainštaloval. Identitu ani kľúč nemožno zo spotrebiča prečítať. Pred pridaním LocalThings overí kľúč na spotrebiči a zaznamená, ktorý spotrebič odpovedal.\n\nSpotrebiče s vopred zdieľaným kľúčom sa ešte len snažíme pochopiť a pravdepodobne s nimi narazíte na problémy. Náš plán, doterajšie zistenia a miesto na spätnú väzbu nájdete v [issue #435]({issue_url}).",
         "data": {
           "psk_identity": "Identita (UUID peera)",
           "psk_key": "Kľúč"
@@ -1898,7 +1907,7 @@
       "handshake_timeout": "Spotrebič odpovedal na porte lokálneho API, ale nedokončil nadviazanie spojenia DTLS ani po opakovanom pokuse. Skúste to znova. Ak to stále zlyháva, reštart spotrebiča uvoľní spojenia, ktoré ešte drží; presnú chybu nájdete v logu Home Assistantu.",
       "cert_rejected": "Spotrebič odmietol certifikát. Certifikát a kľúč CA pravdepodobne nepatria CA AC14K_M, ktorej tento spotrebič dôveruje, alebo sa navzájom nezhodujú. Presné upozornenie odoslané spotrebičom nájdete v protokole Home Assistant.",
       "psk_rejected": "Spotrebič odmietol vopred zdieľaný kľúč. Identita alebo kľúč sú nesprávne, alebo patria inému spotrebiču či vlastníkovi, ktorý sa medzitým zmenil. Presný alert je v logu Home Assistant.",
-      "identity_unproven": "Kľúč fungoval, ale spotrebič cez šifrované spojenie nenahlásil svoje ID zariadenia OCF, takže LocalThings nemôže potvrdiť, ktorý spotrebič kľúč drží, a nepridá ho. Skúste to znova, keď je spotrebič prebudený. Ak sa to opakuje, založte issue s logom Home Assistant.",
+      "identity_unproven": "Kľúč fungoval, ale spotrebič cez šifrované spojenie nenahlásil svoje ID zariadenia OCF, takže LocalThings nemôže potvrdiť, ktorý spotrebič kľúč drží, a nepridá ho. Skúste to znova, keď je spotrebič prebudený. Ak sa to opakuje, dajte nám vedieť v [issue #435]({issue_url}) a priložte log Home Assistant.",
       "invalid_psk_identity": "Zadajte identitu ako UUID, napríklad 12345678-1234-1234-1234-123456789abc.",
       "psk_identity_zero_byte": "Toto UUID obsahuje nulový bajt, ktorý DTLS nedokáže preniesť ako identitu. Ak ste túto identitu peera vygenerovali, vygenerujte inú.",
       "invalid_psk_key": "Zadajte kľúč ako 32 alebo 64 šestnástkových znakov.",

@@ -1811,7 +1811,7 @@
       },
       "credential": {
         "title": "Certificato rifiutato",
-        "description": "{host} ha rifiutato il certificato automatico. Un elettrodomestico che verifica la catena di certificati richiede la CA AC14K_M. Alcuni elettrodomestici usano una chiave precondivisa invece di un certificato. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già.",
+        "description": "{host} ha rifiutato il certificato automatico. Un elettrodomestico che verifica la catena di certificati richiede la CA AC14K_M. Alcuni elettrodomestici usano una chiave precondivisa invece di un certificato. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "menu_options": {
           "fallback_ca": "Usa un certificato CA AC14K_M",
           "psk_owner": "Importa una chiave precondivisa del proprietario",
@@ -1820,16 +1820,25 @@
       },
       "credential_psk": {
         "title": "Questo elettrodomestico probabilmente usa una chiave precondivisa",
-        "description": "{host} ha rifiutato il certificato automatico e i suoi metadati di sicurezza non cifrati indicano che si autentica con una chiave precondivisa anziché con un certificato. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già. Se l'indicazione è errata, il certificato AC14K_M resta disponibile qui sotto.",
+        "description": "{host} ha rifiutato il certificato automatico e i suoi metadati di sicurezza non cifrati indicano che si autentica invece con una chiave precondivisa. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già. Se l'indicazione è errata, il certificato AC14K_M resta disponibile qui sotto.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "menu_options": {
           "psk_owner": "Importa una chiave precondivisa del proprietario",
           "psk_peer": "Importa una chiave precondivisa peer",
           "fallback_ca": "Usa un certificato CA AC14K_M"
         }
       },
+      "ca_rejected": {
+        "title": "Certificato ancora rifiutato",
+        "description": "{host} ha rifiutato anche il certificato firmato da quella CA. O non è la CA AC14K_M di cui si fida questo elettrodomestico, oppure l'elettrodomestico usa una chiave precondivisa. Il log di Home Assistant riporta l'avviso esatto.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
+        "menu_options": {
+          "fallback_ca": "Prova un'altra CA AC14K_M",
+          "psk_owner": "Importa una chiave precondivisa del proprietario",
+          "psk_peer": "Importa una chiave precondivisa peer"
+        }
+      },
       "fallback_ca": {
         "title": "Certificato AC14K_M richiesto",
-        "description": "{host} ha rifiutato il certificato automatico, quindi sono necessarie le credenziali della CA AC14K_M per generare un certificato del dispositivo. Incollale qui sotto.",
+        "description": "Incolla il certificato della CA AC14K_M e la relativa chiave privata. LocalThings li usa per firmare un certificato di dispositivo per {host}.",
         "data": {
           "ca_cert_pem": "Certificato CA (PEM)",
           "ca_key_pem": "Chiave privata CA (PEM)"
@@ -1841,7 +1850,7 @@
       },
       "psk_owner": {
         "title": "Chiave precondivisa del proprietario",
-        "description": "Inserisci la OwnerPSK di {host}. L'identità è l'UUID del proprietario OCF, precompilato se l'elettrodomestico lo riporta. LocalThings verifica la chiave sull'elettrodomestico, e registra quale elettrodomestico ha risposto, prima di aggiungerlo.",
+        "description": "Inserisci la chiave precondivisa del proprietario di {host}. L'identità è l'UUID del proprietario OCF, precompilato se l'elettrodomestico lo riporta. LocalThings verifica la chiave sull'elettrodomestico, e registra quale elettrodomestico ha risposto, prima di aggiungerlo.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "data": {
           "psk_identity": "Identità (UUID del proprietario)",
           "psk_key": "Chiave"
@@ -1852,7 +1861,7 @@
       },
       "psk_peer": {
         "title": "Chiave precondivisa peer",
-        "description": "Inserisci la credenziale peer installata su {host} accanto alla proprietà di Samsung, esattamente come l'ha riportata lo strumento che l'ha installata. Né l'identità né la chiave si possono leggere dall'elettrodomestico. LocalThings verifica la chiave sull'elettrodomestico, e registra quale elettrodomestico ha risposto, prima di aggiungerlo.",
+        "description": "Inserisci la credenziale peer installata su {host} accanto alla proprietà di Samsung, esattamente come l'ha riportata lo strumento che l'ha installata. Né l'identità né la chiave si possono leggere dall'elettrodomestico. LocalThings verifica la chiave sull'elettrodomestico, e registra quale elettrodomestico ha risposto, prima di aggiungerlo.\n\nGli elettrodomestici che usano una chiave precondivisa sono qualcosa che stiamo ancora cercando di capire, ed è probabile che tu incontri problemi. Il nostro piano, quanto scoperto finora e un posto dove lasciare un riscontro sono nella [segnalazione #435]({issue_url}).",
         "data": {
           "psk_identity": "Identità (UUID del peer)",
           "psk_key": "Chiave"
@@ -1898,7 +1907,7 @@
       "handshake_timeout": "L'apparecchio ha risposto sulla sua porta dell'API locale ma non ha completato l'handshake DTLS, nemmeno dopo un nuovo tentativo. Riprova. Se continua a non riuscire, riavviare l'apparecchio libera le connessioni che sta ancora mantenendo; il log di Home Assistant riporta l'errore esatto.",
       "cert_rejected": "L'apparecchio ha rifiutato il certificato. Con ogni probabilità il certificato e la chiave della CA non sono quelli della CA AC14K_M di cui questo apparecchio si fida, oppure non corrispondono tra loro. Il log di Home Assistant riporta l'alert esatto inviato dall'apparecchio.",
       "psk_rejected": "L'elettrodomestico ha rifiutato la chiave precondivisa. L'identità o la chiave sono errate, oppure appartengono a un altro elettrodomestico o a un proprietario nel frattempo cambiato. Il log di Home Assistant riporta l'avviso esatto.",
-      "identity_unproven": "La chiave ha funzionato, ma l'elettrodomestico non ha riportato il proprio ID dispositivo OCF sulla connessione cifrata, quindi LocalThings non può confermare quale elettrodomestico possiede la chiave e non lo aggiungerà. Riprova mentre l'elettrodomestico è attivo. Se continua a succedere, apri una segnalazione con il log di Home Assistant.",
+      "identity_unproven": "La chiave ha funzionato, ma l'elettrodomestico non ha riportato il proprio ID dispositivo OCF sulla connessione cifrata, quindi LocalThings non può confermare quale elettrodomestico possiede la chiave e non lo aggiungerà. Riprova mentre l'elettrodomestico è attivo. Se continua a succedere, faccelo sapere nella [segnalazione #435]({issue_url}) allegando il log di Home Assistant.",
       "invalid_psk_identity": "Inserisci l'identità come UUID, ad esempio 12345678-1234-1234-1234-123456789abc.",
       "psk_identity_zero_byte": "Questo UUID contiene un byte zero, che DTLS non può trasportare come identità. Se hai generato questa identità peer, generane un'altra.",
       "invalid_psk_key": "Inserisci la chiave come 32 o 64 caratteri esadecimali.",
