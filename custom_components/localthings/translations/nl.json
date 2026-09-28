@@ -1809,9 +1809,36 @@
           "host": "Het lokale IP-adres van je Samsung-apparaat (bijvoorbeeld 192.168.1.50)."
         }
       },
+      "credential": {
+        "title": "Certificaat geweigerd",
+        "description": "{host} heeft het automatische certificaat geweigerd. Sommige apparaten gebruiken een pre-shared key in plaats van een certificaat. LocalThings kan die sleutel niet zelf verkrijgen, dus importeer er een die je al hebt. Er wordt ook een AC14K_M-CA-certificaat aangeboden, maar er is nog geen apparaat gemeld dat het automatische certificaat weigerde en dat wel accepteerde.\n\nApparaten met een pre-shared key proberen we nog te begrijpen, en je loopt er waarschijnlijk tegen problemen aan. Ons plan, wat we tot nu toe hebben ontdekt en een plek om feedback te geven staan in [issue #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Een owner-pre-shared key importeren",
+          "psk_peer": "Een peer-pre-shared key importeren",
+          "fallback_ca": "Een AC14K_M-CA-certificaat proberen"
+        }
+      },
+      "credential_psk": {
+        "title": "Dit apparaat gebruikt waarschijnlijk een pre-shared key",
+        "description": "{host} heeft het automatische certificaat geweigerd, en de onversleutelde beveiligingsgegevens geven aan dat het zich in plaats daarvan met een pre-shared key authenticeert. LocalThings kan die sleutel niet zelf verkrijgen, dus importeer er een die je al hebt. Er wordt ook een AC14K_M-CA-certificaat aangeboden, maar er is nog geen apparaat gemeld dat het automatische certificaat weigerde en dat wel accepteerde.\n\nApparaten met een pre-shared key proberen we nog te begrijpen, en je loopt er waarschijnlijk tegen problemen aan. Ons plan, wat we tot nu toe hebben ontdekt en een plek om feedback te geven staan in [issue #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Een owner-pre-shared key importeren",
+          "psk_peer": "Een peer-pre-shared key importeren",
+          "fallback_ca": "Een AC14K_M-CA-certificaat proberen"
+        }
+      },
+      "ca_rejected": {
+        "title": "Certificaat nog steeds geweigerd",
+        "description": "{host} heeft ook het certificaat geweigerd dat met die CA is ondertekend. Dat klopt met alle meldingen tot nu toe: geen apparaat dat het automatische certificaat weigerde, heeft een AC14K_M-CA geaccepteerd. Mogelijk gebruikt het een pre-shared key. Het Home Assistant-logboek bevat de exacte alert.\n\nApparaten met een pre-shared key proberen we nog te begrijpen, en je loopt er waarschijnlijk tegen problemen aan. Ons plan, wat we tot nu toe hebben ontdekt en een plek om feedback te geven staan in [issue #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Een owner-pre-shared key importeren",
+          "psk_peer": "Een peer-pre-shared key importeren",
+          "fallback_ca": "De CA opnieuw invoeren"
+        }
+      },
       "fallback_ca": {
-        "title": "AC14K_M-certificaat vereist",
-        "description": "{host} heeft het automatische certificaat geweigerd en heeft daarom AC14K_M CA-gegevens nodig om een apparaatcertificaat aan te maken. Plak ze hieronder.",
+        "title": "AC14K_M-CA-certificaat",
+        "description": "Plak het AC14K_M-CA-certificaat en de privésleutel. LocalThings ondertekent daarmee een apparaatcertificaat voor {host}.",
         "data": {
           "ca_cert_pem": "CA-certificaat (PEM)",
           "ca_key_pem": "Privésleutel van CA (PEM)"
@@ -1819,6 +1846,28 @@
         "data_description": {
           "ca_cert_pem": "De PEM-gecodeerde AC14K_M-CA-certificaatketen. Plak de volledige inhoud van je fullchain-PEM, inclusief alle blokken BEGIN CERTIFICATE en END CERTIFICATE.",
           "ca_key_pem": "De PEM-gecodeerde AC14K_M-privésleutel. Plak de volledige inhoud, inclusief de kop- en voettekst BEGIN PRIVATE KEY en END PRIVATE KEY."
+        }
+      },
+      "psk_owner": {
+        "title": "Owner-pre-shared key",
+        "description": "Voer de owner-pre-shared key voor {host} in. De identiteit is de OCF-owner-UUID, die wordt ingevuld als het apparaat er een meldt. LocalThings controleert de sleutel bij het apparaat, en legt vast welk apparaat antwoordde, voordat het wordt toegevoegd.\n\nApparaten met een pre-shared key proberen we nog te begrijpen, en je loopt er waarschijnlijk tegen problemen aan. Ons plan, wat we tot nu toe hebben ontdekt en een plek om feedback te geven staan in [issue #435]({issue_url}).",
+        "data": {
+          "psk_identity": "Identiteit (owner-UUID)",
+          "psk_key": "Sleutel"
+        },
+        "data_description": {
+          "psk_key": "32 of 64 hexadecimale tekens."
+        }
+      },
+      "psk_peer": {
+        "title": "Peer-pre-shared key",
+        "description": "Voer de paarsgewijze peer-referentie in die naast Samsungs eigendom op {host} is geïnstalleerd, precies zoals het installatieprogramma die meldde. Identiteit noch sleutel kan van het apparaat worden gelezen. LocalThings controleert de sleutel bij het apparaat, en legt vast welk apparaat antwoordde, voordat het wordt toegevoegd.\n\nApparaten met een pre-shared key proberen we nog te begrijpen, en je loopt er waarschijnlijk tegen problemen aan. Ons plan, wat we tot nu toe hebben ontdekt en een plek om feedback te geven staan in [issue #435]({issue_url}).",
+        "data": {
+          "psk_identity": "Identiteit (peer-UUID)",
+          "psk_key": "Sleutel"
+        },
+        "data_description": {
+          "psk_key": "32 of 64 hexadecimale tekens."
         }
       },
       "reconfigure": {
@@ -1857,6 +1906,11 @@
       "appliance_no_dtls": "Dat adres is van een Samsung-apparaat — het heeft zich via het onversleutelde ontdekkingskanaal geïdentificeerd als {model} en {port} als zijn beveiligde poort opgegeven — maar daar is nooit een DTLS-handshake voltooid. Het adres is niet het probleem. Controleer of Afstandsbediening of een vergelijkbare instelling op het bedieningspaneel van het apparaat is uitgeschakeld, en bekijk het Home Assistant-logboek voor de exacte fout.",
       "handshake_timeout": "Het apparaat antwoordde op zijn lokale API-poort, maar voltooide de DTLS-handshake ook na een nieuwe poging niet. Probeer het opnieuw. Blijft het mislukken, dan maakt een herstart van het apparaat de verbindingen vrij die het nog vasthoudt; de exacte fout staat in het Home Assistant-logboek.",
       "cert_rejected": "Het apparaat heeft het certificaat geweigerd. Het CA-certificaat en de sleutel zijn waarschijnlijk niet van de AC14K_M-CA die dit apparaat vertrouwt, of ze horen niet bij elkaar. Het Home Assistant-logboek bevat de precieze alert die het apparaat stuurde.",
+      "psk_rejected": "Het apparaat heeft de pre-shared key geweigerd. De identiteit of sleutel is onjuist, of hoort bij een ander apparaat of bij een eigenaar die inmiddels is gewijzigd. Het Home Assistant-logboek bevat de exacte alert.",
+      "identity_unproven": "De sleutel werkte, maar het apparaat meldde zijn OCF-apparaat-ID niet via de versleutelde verbinding. LocalThings kan dus niet bevestigen welk apparaat de sleutel heeft en voegt het niet toe. Probeer het opnieuw terwijl het apparaat wakker is. Blijft dit gebeuren, laat het ons dan weten in [issue #435]({issue_url}) met het Home Assistant-logboek erbij.",
+      "invalid_psk_identity": "Voer de identiteit in als UUID, bijvoorbeeld 12345678-1234-1234-1234-123456789abc.",
+      "psk_identity_zero_byte": "Deze UUID bevat een nulbyte, die DTLS niet als identiteit kan overbrengen. Heb je deze peer-identiteit zelf gegenereerd, genereer dan een nieuwe.",
+      "invalid_psk_key": "Voer de sleutel in als 32 of 64 hexadecimale tekens.",
       "handshake_failed": "Het apparaat weigerde de DTLS-handshake om een reden die niets met het certificaat te maken heeft, hoogstwaarschijnlijk een protocol- of cipher-mismatch. Het Home Assistant-logboek bevat de precieze alert die het stuurde.",
       "cloud_unreachable": "Kon de cloudgateway van Samsung niet bereiken om de UUID op te halen die nodig is om het certificaat van dit apparaat aan te maken. Controleer de internettoegang van Home Assistant en probeer het opnieuw.",
       "unexpected_response": "Verbinding met het apparaat is gelukt, maar het gaf geen bruikbare apparaatbeschrijving terug. Mogelijk is het geen apparaat dat deze integratie ondersteunt. Het Home Assistant-logboek bevat wat het stuurde.",

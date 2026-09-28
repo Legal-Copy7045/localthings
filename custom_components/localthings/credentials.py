@@ -72,6 +72,14 @@ class InvalidCredentialConfig(ValueError):
     """
 
 
+class PskIdentityZeroByte(InvalidCredentialConfig):
+    """A well-formed UUID that DTLS cannot carry as a PSK identity.
+
+    Its own type so setup can say so rather than call the UUID malformed --
+    see `normalize_psk_identity`.
+    """
+
+
 class DeviceIdentityMismatch(Exception):
     """A session authenticated, but against a different OCF device.
 
@@ -165,7 +173,7 @@ def normalize_psk_identity(value: Any) -> str:
     if parsed.int == 0:
         raise InvalidCredentialConfig("PSK identity is not a UUID")
     if b"\x00" in parsed.bytes:
-        raise InvalidCredentialConfig("PSK identity contains a zero byte, which DTLS cannot carry")
+        raise PskIdentityZeroByte("PSK identity contains a zero byte, which DTLS cannot carry")
     return str(parsed)
 
 

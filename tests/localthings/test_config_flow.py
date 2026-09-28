@@ -25,6 +25,7 @@ from custom_components.localthings.const import (
     CONF_SERIAL,
     DOMAIN,
 )
+from custom_components.localthings.probing import CredentialHint
 
 from .conftest import (
     ENTRY_DATA,
@@ -104,6 +105,7 @@ async def test_setup_normalizes_messy_pasted_pem(
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_HOST: MOCK_HOST}
     )
+    result = await _choose(hass, result, "fallback_ca")
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "fallback_ca"
 
@@ -194,6 +196,14 @@ class FakeSession:
         pass
 
 
+async def _choose(hass: HomeAssistant, result, option: str):
+    """Pick `option` from the menu shown after the certificate is refused."""
+    assert result["type"] == FlowResultType.MENU
+    return await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": option}
+    )
+
+
 def _probe_sessions() -> list:
     """Sessions the config flow's certificate probe opened.
 
@@ -244,6 +254,10 @@ def fake_dtls(monkeypatch):
     )
     monkeypatch.setattr(
         "custom_components.localthings.probing._legacy_http_open", lambda host: False
+    )
+    monkeypatch.setattr(
+        "custom_components.localthings.probing.read_credential_hint",
+        lambda host: CredentialHint(),
     )
     return FakeSession
 
@@ -494,7 +508,7 @@ async def test_rejected_reused_leaf_is_reminted_against_a_redacted_library(
 
     diagnosed: list[int] = []
 
-    def _diagnostic_alert(host, port, cert_pem, key_pem):
+    def _diagnostic_alert(host, port, cert_pem, key_pem, **kwargs):
         diagnosed.append(port)
         return _DiagnosticResult()
 
@@ -531,7 +545,7 @@ def test_diagnostic_handshake_runs_once_not_once_per_failing_port(monkeypatch) -
     class _DiagnosticResult:
         alert = (2, "bad_certificate")
 
-    def _diagnostic_alert(host, port, cert_pem, key_pem):
+    def _diagnostic_alert(host, port, cert_pem, key_pem, **kwargs):
         diagnosed.append(port)
         return _DiagnosticResult()
 
@@ -1058,7 +1072,12 @@ async def test_self_signed_rejection_advances_to_the_fallback_ca_step(
         result["flow_id"], {CONF_HOST: MOCK_HOST}
     )
 
-    # Not an error on the host form: the next step asks for the CA.
+    # Not an error on the host form: a menu that still offers the CA, last
+    # (#435: no refusing appliance has been reported to accept it).
+    assert result["type"] == FlowResultType.MENU
+    assert result["step_id"] == "credential"
+    assert result["menu_options"] == ["psk_owner", "psk_peer", "fallback_ca"]
+    result = await _choose(hass, result, "fallback_ca")
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "fallback_ca"
     data_schema = result["data_schema"]
@@ -1077,11 +1096,12 @@ async def test_self_signed_rejection_advances_to_the_fallback_ca_step(
     assert [s.cert_pem for s in FakeSession.instances] == ["SELFSIGNED", "FULLCHAIN"]
 
 
-async def test_fallback_ca_rejection_surfaces_cert_rejected_in_the_form(
+async def test_fallback_ca_rejection_offers_another_ca_or_a_psk(
     hass: HomeAssistant, monkeypatch, fake_dtls
 ) -> None:
-    """When even the pasted AC14K_M CA is refused, the fallback step re-shows
-    with the certificate error rather than the blanket connectivity message."""
+    """When even the pasted AC14K_M CA is refused, the flow goes back to a
+    menu rather than the CA form: a PSK appliance refuses every CA, so
+    re-showing the form would leave its owner no way out but restarting."""
     _patch_clienthello(monkeypatch, {49154})
     FakeSession.reject_certs = {"SELFSIGNED", "FULLCHAIN"}
 
@@ -1089,17 +1109,20 @@ async def test_fallback_ca_rejection_surfaces_cert_rejected_in_the_form(
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_HOST: MOCK_HOST}
     )
+    result = await _choose(hass, result, "fallback_ca")
     assert result["step_id"] == "fallback_ca"
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {CONF_CA_CERT_PEM: MOCK_CA_CERT_PEM, CONF_CA_KEY_PEM: MOCK_CA_KEY_PEM},
     )
+    assert result["type"] == FlowResultType.MENU
+    assert result["step_id"] == "ca_rejected"
+    assert result["menu_options"] == ["psk_owner", "psk_peer", "fallback_ca"]
+
+    result = await _choose(hass, result, "psk_owner")
     assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "fallback_ca"
-    errors = result["errors"]
-    assert errors is not None
-    assert errors["base"] == "cert_rejected"
+    assert result["step_id"] == "psk_owner"
 
 
 async def test_unreachable_cloud_gateway_is_reported_separately(
@@ -1173,6 +1196,7 @@ def test_every_error_key_the_flow_can_raise_has_a_message() -> None:
     keys.add("unknown")
     source = Path(config_flow.__file__).read_text()
     keys |= set(re.findall(r'errors\["base"\] = "(\w+)"', source))
+    keys |= set(re.findall(r'errors\[CONF_\w+\] = "(\w+)"', source))
     keys |= set(re.findall(r'_legacy_token_form\(\{"base": "(\w+)"\}\)', source))
 
     catalog = json.loads(
@@ -1914,7 +1938,7 @@ def _handshake_fixture(monkeypatch):
     class _NoAlert:
         alert = None
 
-    monkeypatch.setattr(config_flow, "_diagnostic_alert", lambda *a: _NoAlert())
+    monkeypatch.setattr(config_flow, "_diagnostic_alert", lambda *a, **k: _NoAlert())
     monkeypatch.setattr(config_flow, "_source_port_bindable", lambda host, port: True)
     return config_flow
 

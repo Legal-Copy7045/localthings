@@ -21,9 +21,36 @@
           "host": "Dirección IP local de tu electrodoméstico Samsung (p. ej. 192.168.1.50)."
         }
       },
+      "credential": {
+        "title": "Certificado rechazado",
+        "description": "{host} rechazó el certificado automático. Algunos electrodomésticos usan una clave precompartida en lugar de un certificado. LocalThings no puede obtener esa clave por sí mismo, así que importa una que ya tengas. También se ofrece un certificado de CA AC14K_M, pero no se ha informado de ningún electrodoméstico que rechazara el certificado automático y lo aceptara.\n\nLos electrodomésticos que usan una clave precompartida son algo que aún estamos intentando entender, y es probable que tengas problemas con ellos. Nuestro plan, lo que hemos descubierto hasta ahora y un lugar para dejar tus comentarios están en la [incidencia #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Importar una clave precompartida de propietario",
+          "psk_peer": "Importar una clave precompartida de par",
+          "fallback_ca": "Probar un certificado de CA AC14K_M"
+        }
+      },
+      "credential_psk": {
+        "title": "Este electrodoméstico probablemente usa una clave precompartida",
+        "description": "{host} rechazó el certificado automático, y sus metadatos de seguridad sin cifrar indican que se autentica con una clave precompartida. LocalThings no puede obtener esa clave por sí mismo, así que importa una que ya tengas. También se ofrece un certificado de CA AC14K_M, pero no se ha informado de ningún electrodoméstico que rechazara el certificado automático y lo aceptara.\n\nLos electrodomésticos que usan una clave precompartida son algo que aún estamos intentando entender, y es probable que tengas problemas con ellos. Nuestro plan, lo que hemos descubierto hasta ahora y un lugar para dejar tus comentarios están en la [incidencia #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Importar una clave precompartida de propietario",
+          "psk_peer": "Importar una clave precompartida de par",
+          "fallback_ca": "Probar un certificado de CA AC14K_M"
+        }
+      },
+      "ca_rejected": {
+        "title": "Certificado rechazado de nuevo",
+        "description": "{host} también rechazó el certificado firmado por esa CA. Coincide con todos los informes hasta ahora: ningún electrodoméstico que rechazó el certificado automático ha aceptado una CA AC14K_M. Puede que use una clave precompartida. El registro de Home Assistant contiene la alerta exacta.\n\nLos electrodomésticos que usan una clave precompartida son algo que aún estamos intentando entender, y es probable que tengas problemas con ellos. Nuestro plan, lo que hemos descubierto hasta ahora y un lugar para dejar tus comentarios están en la [incidencia #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Importar una clave precompartida de propietario",
+          "psk_peer": "Importar una clave precompartida de par",
+          "fallback_ca": "Introducir la CA de nuevo"
+        }
+      },
       "fallback_ca": {
-        "title": "Se requiere el certificado AC14K_M",
-        "description": "{host} rechazó el certificado automático, por lo que necesita las credenciales de la CA AC14K_M para emitir un certificado de dispositivo. Pégalas a continuación.",
+        "title": "Certificado de CA AC14K_M",
+        "description": "Pega el certificado de la CA AC14K_M y su clave privada. LocalThings los usa para firmar un certificado de dispositivo para {host}.",
         "data": {
           "ca_cert_pem": "Certificado CA (PEM)",
           "ca_key_pem": "Clave privada CA (PEM)"
@@ -31,6 +58,28 @@
         "data_description": {
           "ca_cert_pem": "Cadena de certificados CA AC14K_M codificada en PEM. Pega el contenido completo de tu PEM fullchain incluyendo todos los bloques BEGIN/END CERTIFICATE.",
           "ca_key_pem": "Clave privada AC14K_M codificada en PEM. Pega el contenido completo incluyendo la cabecera y el pie BEGIN/END PRIVATE KEY."
+        }
+      },
+      "psk_owner": {
+        "title": "Clave precompartida de propietario",
+        "description": "Introduce la clave precompartida de propietario de {host}. La identidad es el UUID del propietario OCF, que se rellena si el electrodoméstico lo indica. LocalThings comprueba la clave contra el electrodoméstico, y registra qué electrodoméstico respondió, antes de añadirlo.\n\nLos electrodomésticos que usan una clave precompartida son algo que aún estamos intentando entender, y es probable que tengas problemas con ellos. Nuestro plan, lo que hemos descubierto hasta ahora y un lugar para dejar tus comentarios están en la [incidencia #435]({issue_url}).",
+        "data": {
+          "psk_identity": "Identidad (UUID del propietario)",
+          "psk_key": "Clave"
+        },
+        "data_description": {
+          "psk_key": "32 o 64 caracteres hexadecimales."
+        }
+      },
+      "psk_peer": {
+        "title": "Clave precompartida de par",
+        "description": "Introduce la credencial de par instalada en {host} junto a la propiedad de Samsung, tal como la indicó la herramienta que la instaló. Ni la identidad ni la clave se pueden leer del electrodoméstico. LocalThings comprueba la clave contra el electrodoméstico, y registra qué electrodoméstico respondió, antes de añadirlo.\n\nLos electrodomésticos que usan una clave precompartida son algo que aún estamos intentando entender, y es probable que tengas problemas con ellos. Nuestro plan, lo que hemos descubierto hasta ahora y un lugar para dejar tus comentarios están en la [incidencia #435]({issue_url}).",
+        "data": {
+          "psk_identity": "Identidad (UUID del par)",
+          "psk_key": "Clave"
+        },
+        "data_description": {
+          "psk_key": "32 o 64 caracteres hexadecimales."
         }
       },
       "reconfigure": {
@@ -69,6 +118,11 @@
       "appliance_no_dtls": "Esa dirección es un electrodoméstico Samsung: se identificó como {model} por el canal de descubrimiento sin cifrar y anunció {port} como su puerto seguro, pero nunca completó un saludo DTLS en él. La dirección no es el problema. Comprueba si el Control remoto u otro ajuste similar está desactivado en el panel del electrodoméstico, y consulta el registro de Home Assistant para ver el fallo exacto.",
       "handshake_timeout": "El electrodoméstico respondió en su puerto de API local, pero no completó el saludo DTLS ni siquiera tras un reintento. Inténtalo de nuevo. Si sigue fallando, reiniciar el electrodoméstico libera las conexiones que aún mantiene; el registro de Home Assistant muestra el fallo exacto.",
       "cert_rejected": "El electrodoméstico rechazó el certificado. Lo más probable es que el certificado y la clave de la CA no sean los de la CA AC14K_M en la que confía este electrodoméstico, o que no se correspondan entre sí. El registro de Home Assistant recoge la alerta exacta que envió el electrodoméstico.",
+      "psk_rejected": "El electrodoméstico rechazó la clave precompartida. La identidad o la clave son incorrectas, o pertenecen a otro electrodoméstico o a un propietario que ha cambiado desde entonces. El registro de Home Assistant contiene la alerta exacta.",
+      "identity_unproven": "La clave funcionó, pero el electrodoméstico no indicó su ID de dispositivo OCF por la conexión cifrada, así que LocalThings no puede confirmar qué electrodoméstico tiene la clave y no lo añadirá. Inténtalo de nuevo mientras el electrodoméstico esté activo. Si sigue ocurriendo, cuéntanoslo en la [incidencia #435]({issue_url}) e incluye el registro de Home Assistant.",
+      "invalid_psk_identity": "Introduce la identidad como UUID, por ejemplo 12345678-1234-1234-1234-123456789abc.",
+      "psk_identity_zero_byte": "Este UUID contiene un byte cero, que DTLS no puede transmitir como identidad. Si generaste esta identidad de par, genera otra.",
+      "invalid_psk_key": "Introduce la clave como 32 o 64 caracteres hexadecimales.",
       "handshake_failed": "El electrodoméstico rechazó el saludo DTLS por un motivo no relacionado con el certificado, probablemente una incompatibilidad de protocolo o de cifrado. El registro de Home Assistant recoge la alerta exacta que envió.",
       "cloud_unreachable": "No se pudo contactar con la pasarela en la nube de Samsung para obtener el UUID necesario para emitir el certificado de este dispositivo. Comprueba el acceso a internet de Home Assistant e inténtalo de nuevo.",
       "unexpected_response": "La conexión con el dispositivo se estableció correctamente, pero no devolvió una descripción de dispositivo utilizable. Puede que no sea un electrodoméstico compatible con esta integración. El registro de Home Assistant recoge lo que envió.",

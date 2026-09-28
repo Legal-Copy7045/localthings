@@ -9,6 +9,30 @@ is to import an already-provisioned credential. Acquisition happens separately;
 the integration does not perform ownership transfer (OTM) or write `/oic/sec/*`
 security resources.
 
+## Importing a credential
+
+Add the appliance by IP as usual. If it refuses the automatic certificate, setup
+offers an owner pre-shared key, a peer pre-shared key and, last, an AC14K_M CA
+certificate. No appliance that refused the automatic certificate has been
+reported to accept AC14K_M. When the appliance's unencrypted `/oic/sec/doxm`
+reports a PSK credential type (`sct` with bit `1` set and bit `8` clear), the
+menu says so.
+
+- **Owner** is an OwnerPSK. Its identity is the OCF owner UUID, which setup
+  fills in from `devowneruuid` when the appliance reports one.
+- **Peer** is a pairwise credential installed alongside Samsung's ownership.
+  Its identity can't be read from the appliance, so enter it with the key.
+
+The identity is a UUID and the key is 32 or 64 hex characters. Setup adds the
+appliance only after the key completes a handshake and the appliance reports its
+`/oic/d` `di` over that session. That `di` is recorded, and later connections
+must match it.
+
+The secure port can change when the appliance restarts. When a handshake on
+the stored port fails, LocalThings asks the appliance which port it now
+advertises and reconnects there, waiting longer between lookups while it stays
+unreachable.
+
 ## WD86 washer/dryer
 
 An OwnerPSK recovered after SmartThings removal and re-registration authenticated

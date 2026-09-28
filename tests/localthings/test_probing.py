@@ -478,6 +478,66 @@ def test_read_plaintext_identity_is_none_when_nothing_answers(monkeypatch) -> No
     assert probing._read_plaintext_identity("10.0.0.1", 5683) is None
 
 
+def _patch_doxm(monkeypatch, by_port: dict[int, dict | None]) -> list[int]:
+    asked: list[int] = []
+
+    def _read(host, href, *, port, **kwargs):
+        assert href == "/oic/sec/doxm"
+        asked.append(port)
+        return _FakeRead(by_port.get(port))
+
+    monkeypatch.setattr(
+        "smartthings_local.protocol.ocf_discovery.read_plaintext_ocf_resource", _read
+    )
+    return asked
+
+
+def test_credential_hint_reads_sct_and_owner(monkeypatch) -> None:
+    """The WD53 shape from #435: PSK bit only, and an owner UUID."""
+    from custom_components.localthings import probing
+
+    owner = "1A2B3C4D-5E6F-4A1B-8C9D-AEBFC1D2E3F4"
+    _patch_doxm(monkeypatch, {5683: {"sct": 1, "oxms": [2, 65282], "devowneruuid": owner}})
+    hint = probing.read_credential_hint("10.0.0.1")
+    assert hint.sct == 1
+    assert hint.owner_uuid == owner.lower()
+    assert hint.suggests_psk
+
+
+def test_credential_hint_tries_the_next_port_sequentially(monkeypatch) -> None:
+    from custom_components.localthings import probing
+
+    asked = _patch_doxm(monkeypatch, {49153: {"sct": 8}})
+    hint = probing.read_credential_hint("10.0.0.1")
+    assert asked == [5683, 49153]
+    assert hint.sct == 8
+    assert not hint.suggests_psk
+
+
+def test_credential_hint_is_empty_when_doxm_is_unusable(monkeypatch) -> None:
+    """Missing, malformed or nil values suggest nothing rather than fail."""
+    from custom_components.localthings import probing
+
+    _patch_doxm(
+        monkeypatch,
+        {5683: {"sct": True, "devowneruuid": "00000000-0000-0000-0000-000000000000"}},
+    )
+    hint = probing.read_credential_hint("10.0.0.1")
+    assert hint == probing.CredentialHint()
+    assert not hint.suggests_psk
+
+    _patch_doxm(monkeypatch, {})
+    assert probing.read_credential_hint("10.0.0.1") == probing.CredentialHint()
+
+
+def test_mixed_credential_bits_suggest_nothing() -> None:
+    from custom_components.localthings.probing import CredentialHint
+
+    assert not CredentialHint(sct=9).suggests_psk
+    assert not CredentialHint(sct=0).suggests_psk
+    assert CredentialHint(sct=3).suggests_psk
+
+
 def _patch_tier(
     monkeypatch, *, advertised=(), plaintext_port=None, identity=None, legacy_http=False
 ):

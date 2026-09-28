@@ -1809,9 +1809,36 @@
           "host": "Lokalny adres IP urządzenia Samsung (np. 192.168.1.50)."
         }
       },
+      "credential": {
+        "title": "Certyfikat odrzucony",
+        "description": "{host} odrzucił automatyczny certyfikat. Niektóre urządzenia zamiast certyfikatu używają klucza współdzielonego (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz. Dostępny jest też certyfikat CA AC14K_M, ale nie zgłoszono żadnego urządzenia, które odrzuciło automatyczny certyfikat, a przyjęło taki.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Zaimportuj klucz współdzielony właściciela",
+          "psk_peer": "Zaimportuj klucz współdzielony peera",
+          "fallback_ca": "Spróbuj certyfikatu CA AC14K_M"
+        }
+      },
+      "credential_psk": {
+        "title": "To urządzenie prawdopodobnie używa klucza współdzielonego",
+        "description": "{host} odrzucił automatyczny certyfikat, a jego nieszyfrowane metadane bezpieczeństwa wskazują, że uwierzytelnia się zamiast tego kluczem współdzielonym (PSK). LocalThings nie może sam uzyskać tego klucza, więc zaimportuj klucz, który już masz. Dostępny jest też certyfikat CA AC14K_M, ale nie zgłoszono żadnego urządzenia, które odrzuciło automatyczny certyfikat, a przyjęło taki.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Zaimportuj klucz współdzielony właściciela",
+          "psk_peer": "Zaimportuj klucz współdzielony peera",
+          "fallback_ca": "Spróbuj certyfikatu CA AC14K_M"
+        }
+      },
+      "ca_rejected": {
+        "title": "Certyfikat nadal odrzucony",
+        "description": "{host} odrzucił również certyfikat podpisany przez to CA. To zgadza się ze wszystkimi dotychczasowymi zgłoszeniami: żadne urządzenie, które odrzuciło automatyczny certyfikat, nie przyjęło CA AC14K_M. Możliwe, że używa klucza współdzielonego. Dokładny alert znajdziesz w logu Home Assistant.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "menu_options": {
+          "psk_owner": "Zaimportuj klucz współdzielony właściciela",
+          "psk_peer": "Zaimportuj klucz współdzielony peera",
+          "fallback_ca": "Wprowadź CA ponownie"
+        }
+      },
       "fallback_ca": {
-        "title": "Wymagany certyfikat AC14K_M",
-        "description": "Urządzenie {host} odrzuciło automatyczny certyfikat, więc do wystawienia certyfikatu urządzenia potrzebne są poświadczenia CA AC14K_M. Wklej je poniżej.",
+        "title": "Certyfikat CA AC14K_M",
+        "description": "Wklej certyfikat CA AC14K_M i klucz prywatny. LocalThings podpisze nimi certyfikat urządzenia dla {host}.",
         "data": {
           "ca_cert_pem": "Certyfikat CA (PEM)",
           "ca_key_pem": "Klucz prywatny CA (PEM)"
@@ -1819,6 +1846,28 @@
         "data_description": {
           "ca_cert_pem": "Łańcuch certyfikatów CA AC14K_M zakodowany w formacie PEM. Wklej całą zawartość pliku fullchain PEM wraz ze wszystkimi blokami BEGIN/END CERTIFICATE.",
           "ca_key_pem": "Klucz prywatny AC14K_M zakodowany w formacie PEM. Wklej całą zawartość wraz z nagłówkiem i stopką BEGIN/END PRIVATE KEY."
+        }
+      },
+      "psk_owner": {
+        "title": "Klucz współdzielony właściciela",
+        "description": "Wprowadź klucz współdzielony właściciela dla {host}. Tożsamość to UUID właściciela OCF, uzupełniany automatycznie, jeśli urządzenie go podaje. Przed dodaniem LocalThings sprawdza klucz na urządzeniu i zapisuje, które urządzenie odpowiedziało.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "data": {
+          "psk_identity": "Tożsamość (UUID właściciela)",
+          "psk_key": "Klucz"
+        },
+        "data_description": {
+          "psk_key": "32 lub 64 znaki szesnastkowe."
+        }
+      },
+      "psk_peer": {
+        "title": "Klucz współdzielony peera",
+        "description": "Wprowadź parowe poświadczenie peera zainstalowane na {host} obok własności Samsunga, dokładnie tak, jak podało je narzędzie, które je zainstalowało. Ani tożsamości, ani klucza nie da się odczytać z urządzenia. Przed dodaniem LocalThings sprawdza klucz na urządzeniu i zapisuje, które urządzenie odpowiedziało.\n\nUrządzenia używające klucza współdzielonego wciąż staramy się zrozumieć i prawdopodobnie napotkasz z nimi problemy. Nasz plan, dotychczasowe ustalenia i miejsce na opinie znajdziesz w [zgłoszeniu #435]({issue_url}).",
+        "data": {
+          "psk_identity": "Tożsamość (UUID peera)",
+          "psk_key": "Klucz"
+        },
+        "data_description": {
+          "psk_key": "32 lub 64 znaki szesnastkowe."
         }
       },
       "reconfigure": {
@@ -1857,6 +1906,11 @@
       "appliance_no_dtls": "Pod tym adresem znajduje się urządzenie Samsung — przedstawiło się jako {model} na nieszyfrowanym kanale wykrywania i podało {port} jako swój bezpieczny port — ale nigdy nie ukończyło tam uzgadniania DTLS. Problemem nie jest adres. Sprawdź, czy w panelu urządzenia nie wyłączono Zdalnego sterowania lub podobnego ustawienia, i zajrzyj do dziennika Home Assistant po dokładną przyczynę błędu.",
       "handshake_timeout": "Urządzenie odpowiedziało na porcie lokalnego API, ale nie ukończyło uzgadniania DTLS. Zwykle oznacza to, że wciąż utrzymuje sesję z poprzedniej próby — odczekaj około minuty i spróbuj ponownie.",
       "cert_rejected": "Urządzenie odrzuciło certyfikat. Najprawdopodobniej certyfikat i klucz CA nie pochodzą z CA AC14K_M, któremu ufa to urządzenie, albo do siebie nie pasują. Dokładny alert wysłany przez urządzenie znajdziesz w dzienniku Home Assistant.",
+      "psk_rejected": "Urządzenie odrzuciło klucz współdzielony. Tożsamość lub klucz są nieprawidłowe albo należą do innego urządzenia lub do właściciela, który się od tego czasu zmienił. Dokładny alert znajdziesz w logu Home Assistant.",
+      "identity_unproven": "Klucz zadziałał, ale urządzenie nie podało swojego identyfikatora urządzenia OCF przez szyfrowane połączenie, więc LocalThings nie może potwierdzić, które urządzenie ma ten klucz, i go nie doda. Spróbuj ponownie, gdy urządzenie jest wybudzone. Jeśli problem się powtarza, daj nam znać w [zgłoszeniu #435]({issue_url}) i dołącz log Home Assistant.",
+      "invalid_psk_identity": "Wprowadź tożsamość jako UUID, na przykład 12345678-1234-1234-1234-123456789abc.",
+      "psk_identity_zero_byte": "Ten UUID zawiera bajt zerowy, którego DTLS nie może przenieść jako tożsamości. Jeśli ta tożsamość peera została przez ciebie wygenerowana, wygeneruj nową.",
+      "invalid_psk_key": "Wprowadź klucz jako 32 lub 64 znaki szesnastkowe.",
       "handshake_failed": "Urządzenie odrzuciło uzgadnianie DTLS z powodu niezwiązanego z certyfikatem, najprawdopodobniej przez niezgodność protokołu lub szyfru. Dokładny alert, który wysłało, znajdziesz w dzienniku Home Assistant.",
       "cloud_unreachable": "Nie udało się połączyć z bramą chmurową Samsunga, aby pobrać UUID potrzebny do wystawienia certyfikatu tego urządzenia. Sprawdź dostęp Home Assistant do internetu i spróbuj ponownie.",
       "unexpected_response": "Połączenie z urządzeniem powiodło się, ale nie zwróciło ono użytecznego opisu urządzenia. Może to nie być urządzenie obsługiwane przez tę integrację. To, co zostało wysłane, znajdziesz w dzienniku Home Assistant.",

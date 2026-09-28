@@ -228,6 +228,10 @@ DEVICE_SUPPORT_ISSUE_URL = (
     "https://github.com/mbillow/localthings/issues/new?template=device-support.yml"
 )
 
+# Where setup points anyone taking the pre-shared-key path: the plan, what
+# has been learned so far, and the place to report how it went.
+PSK_TRACKING_ISSUE_URL = "https://github.com/mbillow/localthings/issues/435"
+
 # Service names (services.py), shared with config_flow.py so the
 # options-flow debug panel calls the exact same service a user could call
 # from an automation (issue #300) -- one code path performs a raw write.
