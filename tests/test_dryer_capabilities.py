@@ -247,3 +247,22 @@ def test_dry_time_keeps_its_full_list_where_the_board_carries_no_0xe_group():
         supported = resources["/washer/vs/0"]["x.com.samsung.da.supportedDryTime"]
         assert len(supported) >= 11, name
         assert desc.options(resources) == supported, name
+
+
+def test_dv8900b_course_list_is_fully_translated():
+    """A DV8900B reporting Table_03 (issue #464): every course its
+    editCourseList advertises has a name. The owner confirmed 2F, 30, 32, 33,
+    34, 35, 36 and 3E by selecting each cycle on the panel."""
+    from custom_components.localthings.catalog import translated_states
+
+    desc = next(
+        e for e in dryer.DRYER_COURSE.entities if e.key == "cycle" and isinstance(e, SelectDesc)
+    )
+    live = {
+        "/wm/editcourse/vs/0": {
+            "x.com.samsung.da.editCourseList": "EditCourseList_01360605022F173E073335340E3032"
+        }
+    }
+    codes = {code.lower() for code in desc.options(live)}
+    assert {"2f", "30", "32", "33", "34", "35", "36", "3e"} <= codes
+    assert codes <= translated_states("select", "dryer_cycle_table_03")

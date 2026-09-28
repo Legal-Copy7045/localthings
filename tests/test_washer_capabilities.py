@@ -149,6 +149,26 @@ class TestWasherCourse:
         }
         assert confirmed <= translated_states("select", "washer_cycle_table_02")
 
+    def test_wf8900b_course_list_is_fully_translated(self):
+        """A WF8900B reporting Table_02 (issue #464): every course its
+        editCourseList advertises has a name. The owner confirmed 51, 56, 5A,
+        5B, 64, 85 and 8C by selecting each cycle on the panel."""
+        from custom_components.localthings.catalog import translated_states
+
+        desc = next(
+            e
+            for e in washer.WASHER_COURSE.entities
+            if e.key == "cycle" and isinstance(e, SelectDesc)
+        )
+        live = {
+            "/wm/editcourse/vs/0": {
+                "x.com.samsung.da.editCourseList": "EditCourseList_0156575B60548C5351645A85555E"
+            }
+        }
+        codes = {code.lower() for code in desc.options(live)}
+        assert {"51", "56", "5a", "5b", "64", "85", "8c"} <= codes
+        assert codes <= translated_states("select", "washer_cycle_table_02")
+
     def test_reported_table_00_course_codes_are_translated(self):
         """The reporter confirmed these codes on a WF45R6300AW/US by
         selecting each cycle and reading back the raw course code
