@@ -605,7 +605,12 @@
           "bread_proof": "Deeg rijzen",
           "dehydrate": "Drogen",
           "self_clean": "Zelfreiniging",
-          "air_fryer": "Airfryer"
+          "air_fryer": "Airfryer",
+          "upper_broil": "Grillen (boven)",
+          "upper_convection_bake": "Bakken met hetelucht (boven)",
+          "upper_convection_roast": "Heteluchtbraden (boven)",
+          "lower_bake": "Bakken (onder)",
+          "lower_convection_bake": "Bakken met hetelucht (onder)"
         }
       },
       "operating_mode": {
@@ -759,7 +764,9 @@
           "no_spin": "Niet centrifugeren",
           "low": "Laag",
           "medium": "Gemiddeld",
-          "high": "Hoog"
+          "high": "Hoog",
+          "extra_low": "Extra laag",
+          "extra_high": "Extra hoog"
         }
       },
       "wash_temperature": {
@@ -770,7 +777,8 @@
           "cool": "Koel",
           "warm": "Warm",
           "hot": "Heet",
-          "extra_hot": "Extra heet"
+          "extra_hot": "Extra heet",
+          "tap_cold": "Koud leidingwater"
         }
       },
       "washer_cycle_table_00": {
@@ -1214,7 +1222,8 @@
       "dryer_type": {
         "name": "Type droger",
         "state": {
-          "electricity": "Elektriciteit"
+          "electricity": "Elektriciteit",
+          "gas": "Gas"
         }
       },
       "dust": {

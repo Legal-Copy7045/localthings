@@ -605,7 +605,12 @@
           "bread_proof": "Wyrastanie ciasta",
           "dehydrate": "Suszenie żywności",
           "self_clean": "Samoczyszczenie",
-          "air_fryer": "Smażenie na gorącym powietrzu"
+          "air_fryer": "Smażenie na gorącym powietrzu",
+          "upper_broil": "Opiekanie (górna)",
+          "upper_convection_bake": "Pieczenie z termoobiegiem (górna)",
+          "upper_convection_roast": "Pieczenie mięs z termoobiegiem (górna)",
+          "lower_bake": "Pieczenie (dolna)",
+          "lower_convection_bake": "Pieczenie z termoobiegiem (dolna)"
         }
       },
       "operating_mode": {
@@ -759,7 +764,9 @@
           "no_spin": "Bez wirowania",
           "low": "Niska",
           "medium": "Średnia",
-          "high": "Wysoka"
+          "high": "Wysoka",
+          "extra_low": "Bardzo niska",
+          "extra_high": "Bardzo wysoka"
         }
       },
       "wash_temperature": {
@@ -770,7 +777,8 @@
           "cool": "Chłodna",
           "warm": "Ciepła",
           "hot": "Gorąca",
-          "extra_hot": "Bardzo gorąca"
+          "extra_hot": "Bardzo gorąca",
+          "tap_cold": "Zimna z kranu"
         }
       },
       "washer_cycle_table_00": {
@@ -1214,7 +1222,8 @@
       "dryer_type": {
         "name": "Typ suszarki",
         "state": {
-          "electricity": "Energia elektryczna"
+          "electricity": "Energia elektryczna",
+          "gas": "Gaz"
         }
       },
       "dust": {

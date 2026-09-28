@@ -943,7 +943,12 @@
           "bread_proof": "Fermentar masa",
           "dehydrate": "Deshidratar",
           "self_clean": "Autolimpieza",
-          "air_fryer": "Freidora de aire"
+          "air_fryer": "Freidora de aire",
+          "upper_broil": "Gratinar (superior)",
+          "upper_convection_bake": "Hornear por convección (superior)",
+          "upper_convection_roast": "Asar por convección (superior)",
+          "lower_bake": "Hornear (inferior)",
+          "lower_convection_bake": "Hornear por convección (inferior)"
         }
       },
       "operating_mode": {
@@ -1097,7 +1102,9 @@
           "no_spin": "Sin centrifugado",
           "low": "Baja",
           "medium": "Media",
-          "high": "Alta"
+          "high": "Alta",
+          "extra_low": "Extra bajo",
+          "extra_high": "Extra alto"
         }
       },
       "wash_temperature": {
@@ -1108,7 +1115,8 @@
           "cool": "Fresca",
           "warm": "Tibia",
           "hot": "Caliente",
-          "extra_hot": "Muy caliente"
+          "extra_hot": "Muy caliente",
+          "tap_cold": "Frío del grifo"
         }
       },
       "washer_cycle_table_00": {
@@ -1549,7 +1557,8 @@
       "dryer_type": {
         "name": "Tipo de secadora",
         "state": {
-          "electricity": "Electricidad"
+          "electricity": "Electricidad",
+          "gas": "Gas"
         }
       },
       "dust": {

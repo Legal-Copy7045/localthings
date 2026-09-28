@@ -605,7 +605,12 @@
           "bread_proof": "Lievitazione",
           "dehydrate": "Essiccazione",
           "self_clean": "Autopulizia",
-          "air_fryer": "Friggitrice ad aria"
+          "air_fryer": "Friggitrice ad aria",
+          "upper_broil": "Grill (superiore)",
+          "upper_convection_bake": "Cottura a convezione (superiore)",
+          "upper_convection_roast": "Arrosto ventilato (superiore)",
+          "lower_bake": "Statico (inferiore)",
+          "lower_convection_bake": "Cottura a convezione (inferiore)"
         }
       },
       "operating_mode": {
@@ -759,7 +764,9 @@
           "no_spin": "Scarico acqua senza centrifuga",
           "low": "Bassa",
           "medium": "Media",
-          "high": "Alta"
+          "high": "Alta",
+          "extra_low": "Extra bassa",
+          "extra_high": "Extra alta"
         }
       },
       "wash_temperature": {
@@ -770,7 +777,8 @@
           "cool": "Fresco",
           "warm": "Tiepido",
           "hot": "Caldo",
-          "extra_hot": "Extra caldo"
+          "extra_hot": "Extra caldo",
+          "tap_cold": "Freddo di rete"
         }
       },
       "washer_cycle_table_00": {
@@ -1214,7 +1222,8 @@
       "dryer_type": {
         "name": "Tipo di asciugatrice",
         "state": {
-          "electricity": "Elettricità"
+          "electricity": "Elettricità",
+          "gas": "Gas"
         }
       },
       "dust": {

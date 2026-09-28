@@ -605,7 +605,12 @@
           "bread_proof": "Teig gehen lassen",
           "dehydrate": "Dörren",
           "self_clean": "Selbstreinigung",
-          "air_fryer": "Heißluftfritteuse"
+          "air_fryer": "Heißluftfritteuse",
+          "upper_broil": "Grillen (oben)",
+          "upper_convection_bake": "Umluftbacken (oben)",
+          "upper_convection_roast": "Umluftbraten (oben)",
+          "lower_bake": "Backen (unten)",
+          "lower_convection_bake": "Umluftbacken (unten)"
         }
       },
       "operating_mode": {
@@ -722,7 +727,9 @@
           "no_spin": "Ohne Schleudern",
           "low": "Niedrig",
           "medium": "Mittel",
-          "high": "Hoch"
+          "high": "Hoch",
+          "extra_low": "Extra niedrig",
+          "extra_high": "Extra hoch"
         }
       },
       "wash_temperature": {
@@ -733,7 +740,8 @@
           "cool": "Kühl",
           "warm": "Warm",
           "hot": "Heiß",
-          "extra_hot": "Extra heiß"
+          "extra_hot": "Extra heiß",
+          "tap_cold": "Leitungswasser kalt"
         }
       },
       "washer_cycle_table_00": {
@@ -1208,7 +1216,8 @@
       "dryer_type": {
         "name": "Trocknertyp",
         "state": {
-          "electricity": "Strom"
+          "electricity": "Strom",
+          "gas": "Gas"
         }
       },
       "dust": {

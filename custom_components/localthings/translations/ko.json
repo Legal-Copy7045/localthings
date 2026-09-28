@@ -605,7 +605,12 @@
           "bread_proof": "발효",
           "dehydrate": "건조",
           "self_clean": "자동 세척",
-          "air_fryer": "에어프라이"
+          "air_fryer": "에어프라이",
+          "upper_broil": "브로일 (상단)",
+          "upper_convection_bake": "컨벡션 베이크 (상단)",
+          "upper_convection_roast": "컨벡션 로스트 (상단)",
+          "lower_bake": "베이크 (하단)",
+          "lower_convection_bake": "컨벡션 베이크 (하단)"
         }
       },
       "operating_mode": {
@@ -759,7 +764,9 @@
           "no_spin": "탈수 안 함",
           "low": "약",
           "medium": "중",
-          "high": "강"
+          "high": "강",
+          "extra_low": "매우 낮음",
+          "extra_high": "매우 높음"
         }
       },
       "wash_temperature": {
@@ -770,7 +777,8 @@
           "cool": "찬물",
           "warm": "미온수",
           "hot": "온수",
-          "extra_hot": "고온수"
+          "extra_hot": "고온수",
+          "tap_cold": "수돗물 냉수"
         }
       },
       "washer_cycle_table_00": {
@@ -1214,7 +1222,8 @@
       "dryer_type": {
         "name": "건조기 유형",
         "state": {
-          "electricity": "전기"
+          "electricity": "전기",
+          "gas": "가스"
         }
       },
       "dust": {
