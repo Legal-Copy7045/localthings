@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Podwójna nastawa włączona"
+      },
+      "wrinkle_prevent_active": {
+        "name": "Bez zagnieceń aktywne"
       }
     },
     "button": {
@@ -488,7 +491,7 @@
           "2f": "Intensywne",
           "30": "Odzież sportowa",
           "32": "Tkaniny niemnące",
-          "33": "Steam Sanitize",
+          "33": "Dezynfekcja parą+",
           "34": "Odświeżanie parą",
           "35": "Bez zagnieceń",
           "36": "Napowietrzanie",
@@ -937,7 +940,14 @@
           "8f": "Intensywne pranie na zimno",
           "96": "Mniej włókien",
           "a0": "Szybkie pranie 15'",
-          "b0": "Pranie mieszane"
+          "b0": "Pranie mieszane",
+          "58": "Wełna",
+          "5c": "Odzież outdoorowa",
+          "5d": "Mocne płukanie",
+          "5f": "Tylko wirowanie",
+          "63": "Mocna para",
+          "67": "Antyalergiczny z parą",
+          "68": "Duże rzeczy z parą"
         }
       },
       "washer_dry_level": {
@@ -1081,6 +1091,13 @@
           "off": "Wył.",
           "low": "Niska",
           "high": "Wysoka"
+        }
+      },
+      "extra_rinse": {
+        "name": "Dodatkowe płukanie",
+        "state": {
+          "on": "Wł.",
+          "off": "Wył."
         }
       }
     },
@@ -1815,6 +1832,9 @@
       },
       "speed_booster": {
         "name": "Speed Booster"
+      },
+      "damp_alert": {
+        "name": "Alert wilgotnego wsadu"
       }
     },
     "time": {
@@ -2188,6 +2208,9 @@
     },
     "cook_duration_out_of_range": {
       "message": "Tryb {mode} przyjmuje czas gotowania od {min} do {max}."
+    },
+    "extra_rinse_unavailable_for_cycle": {
+      "message": "Dodatkowe płukanie nie jest dostępne dla wybranego cyklu."
     }
   },
   "selector": {
