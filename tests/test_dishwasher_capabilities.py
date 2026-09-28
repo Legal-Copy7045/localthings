@@ -135,3 +135,7 @@ class TestDishwasherSettings:
     @pytest.mark.parametrize("key", ["sanitize", "speed_booster", "heated_dry", "wash_zone"])
     def test_absent_field_binds_nothing(self, key):
         assert self._desc(key).exists_fn({}, {}) is False
+
+    @pytest.mark.parametrize("key", ["sanitize", "speed_booster", "heated_dry", "wash_zone"])
+    def test_not_yet_fetched_stub_still_binds(self, key):
+        assert self._desc(key).exists_fn({"href": "/dishwasher/vs/0"}, {}) is True

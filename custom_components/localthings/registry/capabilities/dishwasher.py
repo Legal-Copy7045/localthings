@@ -7,6 +7,7 @@ washer and dryer in laundry.py; only the dishwasher-specific options (storm
 wash, auto release dry) are read locally here.
 """
 
+from ..batch import is_stub_rep
 from ..capability import Capability
 from ..entities import ButtonDesc, SelectDesc, SensorDesc, SwitchDesc
 from .common import diagnosis_status
@@ -23,8 +24,9 @@ from .laundry import (
 
 def _has(field):
     """Bound only where the board reports the field: the DW60BG750 (#538) has
-    no heatedDry, and an absent field would otherwise show as a dead entity."""
-    return lambda rep, resources: field in rep
+    no heatedDry, and an absent field would otherwise show as a dead entity.
+    A not-yet-fetched stub still binds, as elsewhere (issue #127)."""
+    return lambda rep, resources: is_stub_rep(rep) or field in rep
 
 
 def _setting_write(field):
