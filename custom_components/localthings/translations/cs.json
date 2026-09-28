@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Dvojí žádaná teplota zapnuta"
+      },
+      "divider": {
+        "name": "Přepážka"
       }
     },
     "button": {

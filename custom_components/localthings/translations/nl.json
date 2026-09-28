@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Dubbel setpoint ingeschakeld"
+      },
+      "divider": {
+        "name": "Scheidingswand"
       }
     },
     "button": {

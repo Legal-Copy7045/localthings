@@ -660,6 +660,14 @@ OVEN_DOOR = Capability(
     ),
 )
 
+
+def _is_lower_cavity(rep, resources):
+    """A cavity names itself in defaultMode ('LowerConvectionBake'), the same
+    signal coordinator._cavity_label uses for the device name."""
+    mode = (resources.get(cook.MODE_HREF) or {}).get("x.com.samsung.da.defaultMode")
+    return isinstance(mode, str) and mode.startswith("Lower")
+
+
 OVEN_CONNECTED = Capability(
     href="/connected/vs/0",
     poll_tier="warm",
@@ -669,6 +677,16 @@ OVEN_CONNECTED = Capability(
             field="x.com.samsung.da.connected",
             device_class="connectivity",
             entity_category="diagnostic",
+            value_fn=lambda v: v == "On",
+        ),
+        # On a lower cavity this flag is whether the divider is in, which
+        # SmartThings reports as ovenCavityStatus: On with the upper cavity
+        # offering only Upper* modes (issue #324), Off with whole-oven modes.
+        BinarySensorDesc(
+            key="divider",
+            field="x.com.samsung.da.connected",
+            icon="mdi:view-split-horizontal",
+            exists_fn=_is_lower_cavity,
             value_fn=lambda v: v == "On",
         ),
     ),

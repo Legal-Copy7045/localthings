@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Podwójna nastawa włączona"
+      },
+      "divider": {
+        "name": "Przegroda"
       }
     },
     "button": {

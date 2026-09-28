@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Doppelter Sollwert aktiviert"
+      },
+      "divider": {
+        "name": "Trennwand"
       }
     },
     "button": {
