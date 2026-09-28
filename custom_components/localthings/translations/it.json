@@ -1024,6 +1024,14 @@
           "left_narrow": "Sinistra stretta",
           "left_wide": "Sinistra ampia"
         }
+      },
+      "wash_zone": {
+        "name": "Zona di lavaggio",
+        "state": {
+          "on_on": "Entrambi i cestelli",
+          "off_on": "Solo cestello inferiore",
+          "on_off": "Solo cestello superiore"
+        }
       }
     },
     "sensor": {
@@ -1750,6 +1758,9 @@
       },
       "auto_changeover": {
         "name": "Commutazione automatica"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

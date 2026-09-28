@@ -1024,6 +1024,14 @@
           "left_narrow": "Links smal",
           "left_wide": "Links breed"
         }
+      },
+      "wash_zone": {
+        "name": "Wasgebied",
+        "state": {
+          "on_on": "Beide korven",
+          "off_on": "Alleen onderkorf",
+          "on_off": "Alleen bovenkorf"
+        }
       }
     },
     "sensor": {
@@ -1750,6 +1758,9 @@
       },
       "auto_changeover": {
         "name": "Automatisch omschakelen"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

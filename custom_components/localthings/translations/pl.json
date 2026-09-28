@@ -1024,6 +1024,14 @@
           "left_narrow": "W lewo, wąsko",
           "left_wide": "W lewo, szeroko"
         }
+      },
+      "wash_zone": {
+        "name": "Strefa mycia",
+        "state": {
+          "on_on": "Oba kosze",
+          "off_on": "Tylko dolny kosz",
+          "on_off": "Tylko górny kosz"
+        }
       }
     },
     "sensor": {
@@ -1750,6 +1758,9 @@
       },
       "auto_changeover": {
         "name": "Automatyczne przełączanie"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

@@ -1024,6 +1024,14 @@
           "left_narrow": "왼쪽 좁게",
           "left_wide": "왼쪽 넓게"
         }
+      },
+      "wash_zone": {
+        "name": "세척 구역",
+        "state": {
+          "on_on": "상·하단 모두",
+          "off_on": "하단만",
+          "on_off": "상단만"
+        }
       }
     },
     "sensor": {
@@ -1750,6 +1758,9 @@
       },
       "auto_changeover": {
         "name": "자동 전환"
+      },
+      "speed_booster": {
+        "name": "스피드 부스터"
       }
     },
     "time": {

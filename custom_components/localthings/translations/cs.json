@@ -1024,6 +1024,14 @@
           "left_narrow": "Vlevo úzce",
           "left_wide": "Vlevo široce"
         }
+      },
+      "wash_zone": {
+        "name": "Zóna mytí",
+        "state": {
+          "on_on": "Oba koše",
+          "off_on": "Pouze spodní koš",
+          "on_off": "Pouze horní koš"
+        }
       }
     },
     "sensor": {
@@ -1750,6 +1758,9 @@
       },
       "auto_changeover": {
         "name": "Automatické přepínání"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

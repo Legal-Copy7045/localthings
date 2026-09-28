@@ -1362,6 +1362,14 @@
           "left_narrow": "Izquierda estrecha",
           "left_wide": "Izquierda amplia"
         }
+      },
+      "wash_zone": {
+        "name": "Zona de lavado",
+        "state": {
+          "on_on": "Ambas bandejas",
+          "off_on": "Solo bandeja inferior",
+          "on_off": "Solo bandeja superior"
+        }
       }
     },
     "sensor": {
@@ -2088,6 +2096,9 @@
       },
       "auto_changeover": {
         "name": "Cambio automático"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

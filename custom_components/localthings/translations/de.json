@@ -1024,6 +1024,14 @@
           "left_narrow": "Links eng",
           "left_wide": "Links weit"
         }
+      },
+      "wash_zone": {
+        "name": "Spülzone",
+        "state": {
+          "on_on": "Beide Körbe",
+          "off_on": "Nur Unterkorb",
+          "on_off": "Nur Oberkorb"
+        }
       }
     },
     "sensor": {
@@ -1750,6 +1758,9 @@
       },
       "auto_changeover": {
         "name": "Automatische Umschaltung"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

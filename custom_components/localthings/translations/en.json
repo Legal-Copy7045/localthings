@@ -1024,6 +1024,14 @@
           "left_narrow": "Left narrow",
           "left_wide": "Left wide"
         }
+      },
+      "wash_zone": {
+        "name": "Wash zone",
+        "state": {
+          "on_on": "Both racks",
+          "off_on": "Lower rack only",
+          "on_off": "Upper rack only"
+        }
       }
     },
     "sensor": {
@@ -1750,6 +1758,9 @@
       },
       "auto_changeover": {
         "name": "Auto changeover"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {
