@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Doppelter Sollwert aktiviert"
+      },
+      "wrinkle_prevent_active": {
+        "name": "Knitterschutz aktiv"
       }
     },
     "button": {
@@ -488,7 +491,7 @@
           "2f": "Intensiv",
           "30": "Sportkleidung",
           "32": "Pflegeleicht",
-          "33": "Dampf-Hygiene",
+          "33": "Dampf-Hygiene+",
           "34": "Dampfauffrischung",
           "35": "Knitterschutz",
           "36": "Lüften",
@@ -900,7 +903,14 @@
           "8f": "Kaltwäsche Intensiv",
           "96": "Weniger Mikrofasern",
           "a0": "Schnelle Wäsche 15'",
-          "b0": "Gemischte Beladung"
+          "b0": "Gemischte Beladung",
+          "58": "Wolle",
+          "5c": "Outdoor",
+          "5d": "Power-Spülen",
+          "5f": "Nur Schleudern",
+          "63": "Power-Dampf",
+          "67": "Dampf-Anti-Allergie",
+          "68": "Dampf-Großwäsche"
         }
       },
       "washer_dry_level": {
@@ -1081,6 +1091,13 @@
           "off": "Aus",
           "low": "Niedrig",
           "high": "Hoch"
+        }
+      },
+      "extra_rinse": {
+        "name": "Extra-Spülen",
+        "state": {
+          "on": "Ein",
+          "off": "Aus"
         }
       }
     },
@@ -1815,6 +1832,9 @@
       },
       "speed_booster": {
         "name": "Speed Booster"
+      },
+      "damp_alert": {
+        "name": "Signal Mischbeladung"
       }
     },
     "time": {
@@ -2188,6 +2208,9 @@
     },
     "cook_duration_out_of_range": {
       "message": "{mode} erlaubt eine Garzeit von {min} bis {max}."
+    },
+    "extra_rinse_unavailable_for_cycle": {
+      "message": "Extra Rinse ist bei dem ausgewählten Programm nicht verfügbar."
     }
   },
   "selector": {

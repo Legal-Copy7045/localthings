@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Doppio setpoint attivo"
+      },
+      "wrinkle_prevent_active": {
+        "name": "Antipiega attivo"
       }
     },
     "button": {
@@ -488,7 +491,7 @@
           "2f": "Intenso",
           "30": "Abbigliamento sportivo",
           "32": "Pronto da stirare",
-          "33": "Igienizzante a vapore",
+          "33": "Igienizzante a vapore+",
           "34": "Rinfresca a vapore",
           "35": "Antipiega",
           "36": "Arieggiatura",
@@ -899,7 +902,7 @@
           "54": "Asciugamani",
           "55": "Capi sportivi",
           "56": "Biancheria da letto",
-          "57": "Delicato",
+          "57": "Delicati",
           "5a": "Igienizzante a vapore",
           "5b": "Carico ridotto",
           "5e": "Risciacquo+Centrifuga",
@@ -937,7 +940,14 @@
           "8f": "Intenso a freddo",
           "96": "Riduci microfibre",
           "a0": "Rapido 15'",
-          "b0": "Carico misto"
+          "b0": "Carico misto",
+          "58": "Lana",
+          "5c": "Capi outdoor",
+          "5d": "Risciacquo potente",
+          "5f": "Solo centrifuga",
+          "63": "Vapore potente",
+          "67": "Antiallergia a vapore",
+          "68": "Voluminosi a vapore"
         }
       },
       "washer_dry_level": {
@@ -1081,6 +1091,13 @@
           "off": "Spenta",
           "low": "Bassa",
           "high": "Alta"
+        }
+      },
+      "extra_rinse": {
+        "name": "Risciacquo extra",
+        "state": {
+          "on": "Acceso",
+          "off": "Spento"
         }
       }
     },
@@ -1815,6 +1832,9 @@
       },
       "speed_booster": {
         "name": "Speed Booster"
+      },
+      "damp_alert": {
+        "name": "Avviso di umidità"
       }
     },
     "time": {
@@ -2188,6 +2208,9 @@
     },
     "cook_duration_out_of_range": {
       "message": "{mode} accetta un tempo di cottura da {min} a {max}."
+    },
+    "extra_rinse_unavailable_for_cycle": {
+      "message": "Risciacquo extra non è disponibile per il ciclo selezionato."
     }
   },
   "selector": {

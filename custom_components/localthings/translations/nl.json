@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Dubbel setpoint ingeschakeld"
+      },
+      "wrinkle_prevent_active": {
+        "name": "Kreukpreventie actief"
       }
     },
     "button": {
@@ -488,7 +491,7 @@
           "2f": "Intensief",
           "30": "Sportkleding",
           "32": "Strijkvrij",
-          "33": "Stoomhygiëne",
+          "33": "Stoomhygiëne+",
           "34": "Opfrissen met stoom",
           "35": "Kreukvrij",
           "36": "Luchtdrogen",
@@ -937,7 +940,14 @@
           "8f": "Intensief koud",
           "96": "Minder microvezels",
           "a0": "15' Snelle was",
-          "b0": "Gemengde was"
+          "b0": "Gemengde was",
+          "58": "Wol",
+          "5c": "Outdoor",
+          "5d": "Power spoelen",
+          "5f": "Alleen centrifugeren",
+          "63": "Power Steam",
+          "67": "Stoom anti-allergie",
+          "68": "Stoom volumineuze was"
         }
       },
       "washer_dry_level": {
@@ -1081,6 +1091,13 @@
           "off": "Uit",
           "low": "Laag",
           "high": "Hoog"
+        }
+      },
+      "extra_rinse": {
+        "name": "Extra spoelen",
+        "state": {
+          "on": "Aan",
+          "off": "Uit"
         }
       }
     },
@@ -1815,6 +1832,9 @@
       },
       "speed_booster": {
         "name": "Speed Booster"
+      },
+      "damp_alert": {
+        "name": "Waarschuwing vochtige was"
       }
     },
     "time": {
@@ -2188,6 +2208,9 @@
     },
     "cook_duration_out_of_range": {
       "message": "{mode} accepteert een bereidingstijd van {min} tot {max}."
+    },
+    "extra_rinse_unavailable_for_cycle": {
+      "message": "Extra Rinse is niet beschikbaar voor het geselecteerde programma."
     }
   },
   "selector": {
