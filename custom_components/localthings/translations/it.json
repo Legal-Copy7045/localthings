@@ -1809,6 +1809,24 @@
           "host": "Indirizzo IP locale del tuo dispositivo Samsung (ad esempio 192.168.1.50)."
         }
       },
+      "credential": {
+        "title": "Certificato rifiutato",
+        "description": "{host} ha rifiutato il certificato automatico. Un elettrodomestico che verifica la catena di certificati richiede la CA AC14K_M. Alcuni elettrodomestici usano una chiave precondivisa invece di un certificato. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già.",
+        "menu_options": {
+          "fallback_ca": "Usa un certificato CA AC14K_M",
+          "psk_owner": "Importa una chiave precondivisa del proprietario",
+          "psk_peer": "Importa una chiave precondivisa peer"
+        }
+      },
+      "credential_psk": {
+        "title": "Questo elettrodomestico probabilmente usa una chiave precondivisa",
+        "description": "{host} ha rifiutato il certificato automatico e i suoi metadati di sicurezza non cifrati indicano che si autentica con una chiave precondivisa anziché con un certificato. LocalThings non può ottenere quella chiave da solo, quindi importane una che possiedi già. Se l'indicazione è errata, il certificato AC14K_M resta disponibile qui sotto.",
+        "menu_options": {
+          "psk_owner": "Importa una chiave precondivisa del proprietario",
+          "psk_peer": "Importa una chiave precondivisa peer",
+          "fallback_ca": "Usa un certificato CA AC14K_M"
+        }
+      },
       "fallback_ca": {
         "title": "Certificato AC14K_M richiesto",
         "description": "{host} ha rifiutato il certificato automatico, quindi sono necessarie le credenziali della CA AC14K_M per generare un certificato del dispositivo. Incollale qui sotto.",
@@ -1819,6 +1837,28 @@
         "data_description": {
           "ca_cert_pem": "La catena di certificati CA AC14K_M codificata in formato PEM. Incolla l'intero contenuto del tuo file PEM dell'intera catena, inclusi tutti i blocchi BEGIN/END CERTIFICATE.",
           "ca_key_pem": "La chiave privata AC14K_M codificata in formato PEM. Incollare l'intero contenuto, inclusi l'intestazione e il piè di pagina BEGIN/END PRIVATE KEY."
+        }
+      },
+      "psk_owner": {
+        "title": "Chiave precondivisa del proprietario",
+        "description": "Inserisci la OwnerPSK di {host}. L'identità è l'UUID del proprietario OCF, precompilato se l'elettrodomestico lo riporta. LocalThings verifica la chiave sull'elettrodomestico, e registra quale elettrodomestico ha risposto, prima di aggiungerlo.",
+        "data": {
+          "psk_identity": "Identità (UUID del proprietario)",
+          "psk_key": "Chiave"
+        },
+        "data_description": {
+          "psk_key": "32 o 64 caratteri esadecimali."
+        }
+      },
+      "psk_peer": {
+        "title": "Chiave precondivisa peer",
+        "description": "Inserisci la credenziale peer installata su {host} accanto alla proprietà di Samsung, esattamente come l'ha riportata lo strumento che l'ha installata. Né l'identità né la chiave si possono leggere dall'elettrodomestico. LocalThings verifica la chiave sull'elettrodomestico, e registra quale elettrodomestico ha risposto, prima di aggiungerlo.",
+        "data": {
+          "psk_identity": "Identità (UUID del peer)",
+          "psk_key": "Chiave"
+        },
+        "data_description": {
+          "psk_key": "32 o 64 caratteri esadecimali."
         }
       },
       "reconfigure": {
@@ -1857,6 +1897,11 @@
       "appliance_no_dtls": "Quell'indirizzo è un apparecchio Samsung: si è identificato come {model} sul canale discovery non cifrato e ha dichiarato {port} come sua porta sicura, ma non ha mai completato un handshake DTLS su di essa. L'indirizzo non è il problema. Verifica che il Controllo remoto o un'impostazione simile non sia disattivata sul pannello dell'apparecchio, e consulta il log di Home Assistant per l'errore esatto.",
       "handshake_timeout": "L'apparecchio ha risposto sulla sua porta dell'API locale ma non ha completato l'handshake DTLS, nemmeno dopo un nuovo tentativo. Riprova. Se continua a non riuscire, riavviare l'apparecchio libera le connessioni che sta ancora mantenendo; il log di Home Assistant riporta l'errore esatto.",
       "cert_rejected": "L'apparecchio ha rifiutato il certificato. Con ogni probabilità il certificato e la chiave della CA non sono quelli della CA AC14K_M di cui questo apparecchio si fida, oppure non corrispondono tra loro. Il log di Home Assistant riporta l'alert esatto inviato dall'apparecchio.",
+      "psk_rejected": "L'elettrodomestico ha rifiutato la chiave precondivisa. L'identità o la chiave sono errate, oppure appartengono a un altro elettrodomestico o a un proprietario nel frattempo cambiato. Il log di Home Assistant riporta l'avviso esatto.",
+      "identity_unproven": "La chiave ha funzionato, ma l'elettrodomestico non ha riportato il proprio ID dispositivo OCF sulla connessione cifrata, quindi LocalThings non può confermare quale elettrodomestico possiede la chiave e non lo aggiungerà. Riprova mentre l'elettrodomestico è attivo. Se continua a succedere, apri una segnalazione con il log di Home Assistant.",
+      "invalid_psk_identity": "Inserisci l'identità come UUID, ad esempio 12345678-1234-1234-1234-123456789abc.",
+      "psk_identity_zero_byte": "Questo UUID contiene un byte zero, che DTLS non può trasportare come identità. Se hai generato questa identità peer, generane un'altra.",
+      "invalid_psk_key": "Inserisci la chiave come 32 o 64 caratteri esadecimali.",
       "handshake_failed": "L'apparecchio ha rifiutato l'handshake DTLS per un motivo non legato al certificato, molto probabilmente un'incompatibilità di protocollo o di cifratura. Il log di Home Assistant riporta l'alert esatto inviato.",
       "cloud_unreachable": "Impossibile raggiungere il gateway cloud di Samsung per ottenere l'UUID necessario a emettere il certificato di questo dispositivo. Verifica l'accesso a internet di Home Assistant e riprova.",
       "unexpected_response": "Connessione al dispositivo riuscita, ma non ha restituito una descrizione del dispositivo utilizzabile. Potrebbe non essere un apparecchio supportato da questa integrazione. Il log di Home Assistant riporta ciò che ha inviato.",

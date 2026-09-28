@@ -445,3 +445,72 @@ def _read_plaintext_identity(host: str, port: int) -> PlaintextIdentity | None:
         firmware=platform.get("mnfv", ""),
         name=device.get("n", ""),
     )
+
+
+# Credential-type bits of doxm's `sct` (OCF oic.sec.credtype).
+_SCT_PSK = 0x1
+_SCT_CERTIFICATE = 0x8
+
+
+@dataclass(frozen=True)
+class CredentialHint:
+    """What plaintext `/oic/sec/doxm` says about the credential a device takes.
+
+    A hint for which setup step to show first, never proof: it is read
+    unauthenticated, and only a completed handshake settles the carrier.
+    """
+
+    sct: int | None = None
+    owner_uuid: str | None = None
+
+    @property
+    def suggests_psk(self) -> bool:
+        """PSK bit set and certificate bit clear.
+
+        Matched the carrier on every unit reported in #435: `sct: 8` boards
+        take our certificate, `sct: 1` boards refuse it. Unknown or mixed
+        bits suggest nothing, so the certificate step keeps its place.
+        """
+        return (
+            self.sct is not None and bool(self.sct & _SCT_PSK) and not self.sct & _SCT_CERTIFICATE
+        )
+
+
+def read_credential_hint(host: str) -> CredentialHint:
+    """`sct` and `devowneruuid` from plaintext doxm, or an empty hint.
+
+    One port at a time, for the same Block2 reason as
+    `_discover_advertised_ports`. A missing or malformed answer is an empty
+    hint rather than an error: this only orders a menu.
+    """
+    import cbor2
+    from smartthings_local.protocol.ocf_discovery import read_plaintext_ocf_resource
+
+    from .credentials import InvalidCredentialConfig, normalize_psk_identity
+
+    for port in PLAINTEXT_DISCOVERY_PORTS:
+        try:
+            result = read_plaintext_ocf_resource(
+                host,
+                "/oic/sec/doxm",
+                port=port,
+                timeout=PLAINTEXT_READ_TIMEOUT_S,
+                retries=PLAINTEXT_DISCOVERY_RETRIES,
+            )
+            body = cbor2.loads(result.payload) if result.successful and result.payload else None
+        except Exception as exc:
+            _LOGGER.debug("Plaintext doxm read on %s:%d failed: %s", host, port, exc)
+            continue
+        if not isinstance(body, dict):
+            continue
+        sct = body.get("sct")
+        if isinstance(sct, bool) or not isinstance(sct, int):
+            sct = None
+        try:
+            # An unowned device reports the nil UUID, which this rejects.
+            owner_uuid = normalize_psk_identity(body.get("devowneruuid"))
+        except InvalidCredentialConfig:
+            owner_uuid = None
+        _LOGGER.debug("Plaintext doxm on %s:%d: sct=%s", host, port, sct)
+        return CredentialHint(sct=sct, owner_uuid=owner_uuid)
+    return CredentialHint()

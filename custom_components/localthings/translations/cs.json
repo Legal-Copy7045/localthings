@@ -1809,6 +1809,24 @@
           "host": "Lokální IP adresa vašeho spotřebiče Samsung (např. 192.168.1.50)."
         }
       },
+      "credential": {
+        "title": "Certifikát odmítnut",
+        "description": "{host} odmítl automatický certifikát. Spotřebič, který ověřuje řetězec certifikátů, potřebuje CA AC14K_M. Některé spotřebiče místo certifikátu používají předsdílený klíč (PSK). LocalThings tento klíč nedokáže získat sám, proto importujte klíč, který už máte.",
+        "menu_options": {
+          "fallback_ca": "Použít certifikát CA AC14K_M",
+          "psk_owner": "Importovat předsdílený klíč vlastníka",
+          "psk_peer": "Importovat předsdílený klíč peeru"
+        }
+      },
+      "credential_psk": {
+        "title": "Tento spotřebič pravděpodobně používá předsdílený klíč",
+        "description": "{host} odmítl automatický certifikát a jeho nešifrovaná bezpečnostní metadata uvádějí, že se ověřuje předsdíleným klíčem (PSK), nikoli certifikátem. LocalThings tento klíč nedokáže získat sám, proto importujte klíč, který už máte. Pokud je nápověda chybná, certifikát AC14K_M je níže stále k dispozici.",
+        "menu_options": {
+          "psk_owner": "Importovat předsdílený klíč vlastníka",
+          "psk_peer": "Importovat předsdílený klíč peeru",
+          "fallback_ca": "Použít certifikát CA AC14K_M"
+        }
+      },
       "fallback_ca": {
         "title": "Vyžadován certifikát AC14K_M",
         "description": "{host} odmítl automatický certifikát, proto potřebuje přihlašovací údaje CA AC14K_M k vydání certifikátu zařízení. Vložte je níže.",
@@ -1819,6 +1837,28 @@
         "data_description": {
           "ca_cert_pem": "Certifikát CA AC14K_M ve formátu PEM. Vložte celý obsah řetězce fullchain PEM včetně všech bloků BEGIN/END CERTIFICATE.",
           "ca_key_pem": "Privátní klíč AC14K_M ve formátu PEM. Vložte celý obsah včetně hlavičky a patičky BEGIN/END PRIVATE KEY."
+        }
+      },
+      "psk_owner": {
+        "title": "Předsdílený klíč vlastníka",
+        "description": "Zadejte OwnerPSK pro {host}. Identita je UUID vlastníka OCF, předvyplněné, pokud ho spotřebič hlásí. Před přidáním LocalThings ověří klíč na spotřebiči a zaznamená, který spotřebič odpověděl.",
+        "data": {
+          "psk_identity": "Identita (UUID vlastníka)",
+          "psk_key": "Klíč"
+        },
+        "data_description": {
+          "psk_key": "32 nebo 64 šestnáctkových znaků."
+        }
+      },
+      "psk_peer": {
+        "title": "Předsdílený klíč peeru",
+        "description": "Zadejte párové pověření peeru nainstalované na {host} vedle vlastnictví Samsungu přesně tak, jak ho vypsal nástroj, který ho nainstaloval. Identitu ani klíč nelze ze spotřebiče přečíst. Před přidáním LocalThings ověří klíč na spotřebiči a zaznamená, který spotřebič odpověděl.",
+        "data": {
+          "psk_identity": "Identita (UUID peeru)",
+          "psk_key": "Klíč"
+        },
+        "data_description": {
+          "psk_key": "32 nebo 64 šestnáctkových znaků."
         }
       },
       "reconfigure": {
@@ -1857,6 +1897,11 @@
       "appliance_no_dtls": "Na této adrese je spotřebič Samsung — přes nešifrovaný discovery kanál se představil jako {model} a jako svůj zabezpečený port uvedl {port} — ale handshake DTLS na něm nikdy nedokončil. Adresa tedy není problém. Zkontrolujte, zda spotřebič nemá na panelu vypnuté dálkové ovládání nebo podobné nastavení, a přesný důvod selhání najdete v logu Home Assistanta.",
       "handshake_timeout": "Spotřebič odpověděl na portu lokálního API, ale nedokončil DTLS handshake ani po opakovaném pokusu. Zkuste to znovu. Pokud to stále selhává, restart spotřebiče uvolní připojení, která stále drží; přesnou chybu najdete v logu Home Assistantu.",
       "cert_rejected": "Spotřebič odmítl certifikát. Certifikát CA a klíč pravděpodobně nepatří CA AC14K_M, které spotřebič důvěřuje, nebo k sobě nepasují. Přesný alert, který spotřebič odeslal, najdete v logu Home Assistanta.",
+      "psk_rejected": "Spotřebič odmítl předsdílený klíč. Identita nebo klíč jsou chybné, nebo patří jinému spotřebiči či vlastníkovi, který se mezitím změnil. Přesný alert je v logu Home Assistant.",
+      "identity_unproven": "Klíč fungoval, ale spotřebič přes šifrované spojení nenahlásil své ID zařízení OCF, takže LocalThings nemůže potvrdit, který spotřebič klíč drží, a nepřidá ho. Zkuste to znovu, když je spotřebič probuzený. Pokud se to opakuje, založte issue s logem Home Assistant.",
+      "invalid_psk_identity": "Zadejte identitu jako UUID, například 12345678-1234-1234-1234-123456789abc.",
+      "psk_identity_zero_byte": "Toto UUID obsahuje nulový bajt, který DTLS nedokáže přenést jako identitu. Pokud jste tuto identitu peeru vygenerovali, vygenerujte jinou.",
+      "invalid_psk_key": "Zadejte klíč jako 32 nebo 64 šestnáctkových znaků.",
       "handshake_failed": "Spotřebič odmítl DTLS handshake z důvodu, který nesouvisí s certifikátem — nejspíše kvůli neshodě protokolu nebo šifry. Přesný alert najdete v logu Home Assistanta.",
       "cloud_unreachable": "Nepodařilo se spojit s cloudovou bránou Samsung a získat UUID potřebné k vystavení certifikátu tohoto zařízení. Zkontrolujte přístup Home Assistanta k internetu a zkuste to znovu.",
       "unexpected_response": "Připojení k zařízení proběhlo úspěšně, ale nevrátilo použitelný popis zařízení. Nemusí jít o spotřebič, který tato integrace podporuje. Co zařízení odeslalo, najdete v logu Home Assistanta.",
