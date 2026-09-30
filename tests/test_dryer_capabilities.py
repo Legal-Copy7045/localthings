@@ -4,7 +4,7 @@ from custom_components.localthings.registry.adapter import flatten
 from custom_components.localthings.registry.by_type import for_device_by_model, resolve
 from custom_components.localthings.registry.capabilities import dryer, ignored
 from custom_components.localthings.registry.discovery import discover
-from custom_components.localthings.registry.entities import SelectDesc
+from custom_components.localthings.registry.entities import SelectDesc, SensorDesc
 from tests.conftest import _load_device
 
 
@@ -266,3 +266,17 @@ def test_dv8900b_course_list_is_fully_translated():
     codes = {code.lower() for code in desc.options(live)}
     assert {"2f", "30", "32", "33", "34", "35", "36", "3e"} <= codes
     assert codes <= translated_states("select", "dryer_cycle_table_03")
+
+
+def test_gas_dryer_type_is_named():
+    """A DV8900B reports dryerType 'Gas' (issue #464)."""
+    from custom_components.localthings.catalog import translated_states
+
+    desc = next(
+        e
+        for e in dryer.DRYER_SETTINGS.entities
+        if e.key == "dryer_type" and isinstance(e, SensorDesc)
+    )
+    assert desc.value_fn("Gas") == "gas"
+    assert "gas" in desc.options
+    assert "gas" in translated_states("sensor", "dryer_type")

@@ -99,10 +99,10 @@ DRYER_SETTINGS = Capability(
             field="x.com.samsung.da.dryerType",
             icon="mdi:tumble-dryer",
             device_class="enum",
-            # Only 'Electricity' confirmed across shipped fixtures (#366); an
-            # unrecognized value still passes through raw via sensor.py's
-            # options property rather than breaking the entity.
-            options=("electricity",),
+            # 'Electricity' from the shipped fixtures (#366), 'Gas' from a
+            # DV8900B (#464); an unrecognized value still passes through raw
+            # via sensor.py's options property rather than breaking the entity.
+            options=("electricity", "gas"),
             value_fn=lambda v: v.lower() if isinstance(v, str) else v,
         ),
         SwitchDesc(

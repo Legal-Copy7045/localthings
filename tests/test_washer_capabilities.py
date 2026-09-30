@@ -934,3 +934,16 @@ class TestSupportedProgressChoices:
 
         assert _operational_desc("pre_wash_selected").exists_fn(rep, {}) is False
         assert _operational_desc("delay_wash_set").exists_fn(rep, {}) is False
+
+
+def test_wf8900b_spin_and_temperature_options_are_named():
+    """A WF8900B's supportedSpinLevel and supportedWaterTemperature
+    (issue #464) include ExtraLow, ExtraHigh and TapCold."""
+    from custom_components.localthings.catalog import translated_states
+    from custom_components.localthings.select import _display
+
+    spin = ["RinseHold", "NoSpin", "ExtraLow", "Low", "Medium", "High", "ExtraHigh"]
+    temperature = ["None", "TapCold", "Cold", "Warm", "Hot", "ExtraHot"]
+    for key, options in (("spin_speed", spin), ("wash_temperature", temperature)):
+        known = translated_states("select", key)
+        assert all(_display(option, key) in known for option in options), key

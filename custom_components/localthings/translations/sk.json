@@ -613,7 +613,12 @@
           "bread_proof": "Kysnutie cesta",
           "dehydrate": "Sušenie",
           "self_clean": "Samočistenie",
-          "air_fryer": "Teplovzdušné fritovanie"
+          "air_fryer": "Teplovzdušné fritovanie",
+          "upper_broil": "Grilovanie (horná)",
+          "upper_convection_bake": "Teplovzdušné pečenie (horná)",
+          "upper_convection_roast": "Teplovzdušné opekanie (horná)",
+          "lower_bake": "Pečenie (dolná)",
+          "lower_convection_bake": "Teplovzdušné pečenie (dolná)"
         }
       },
       "operating_mode": {
@@ -767,7 +772,9 @@
           "no_spin": "Bez odstreďovania",
           "low": "Nízka",
           "medium": "Stredná",
-          "high": "Vysoká"
+          "high": "Vysoká",
+          "extra_low": "Extra nízke",
+          "extra_high": "Extra vysoké"
         }
       },
       "wash_temperature": {
@@ -778,7 +785,8 @@
           "cool": "Chladná",
           "warm": "Teplá",
           "hot": "Horúca",
-          "extra_hot": "Extra horúca"
+          "extra_hot": "Extra horúca",
+          "tap_cold": "Studená z vodovodu"
         }
       },
       "washer_cycle_table_00": {
@@ -1264,7 +1272,8 @@
       "dryer_type": {
         "name": "Typ sušičky",
         "state": {
-          "electricity": "Elektrická"
+          "electricity": "Elektrická",
+          "gas": "Plyn"
         }
       },
       "dust": {
