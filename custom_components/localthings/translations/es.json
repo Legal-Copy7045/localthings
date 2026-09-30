@@ -1321,7 +1321,12 @@
         "state": {
           "purification": "Purificación",
           "ventilation": "Ventilación",
-          "smartventilation": "Ventilación inteligente"
+          "smartventilation": "Ventilación inteligente",
+          "aicomfort": "Confort IA",
+          "autoventilation": "Ventilación automática",
+          "freshairintake": "Entrada de aire fresco",
+          "indoorpurification": "Purificación interior",
+          "indoordehumidification": "Deshumidificación interior"
         }
       },
       "dry_time": {
@@ -1361,6 +1366,19 @@
           "right_wide": "Derecha amplia",
           "left_narrow": "Izquierda estrecha",
           "left_wide": "Izquierda amplia"
+        }
+      },
+      "ai_motion_wind": {
+        "name": "Viento por movimiento IA",
+        "state": {
+          "off": "Apagado",
+          "surround": "Envolvente",
+          "longreach": "Largo alcance",
+          "down": "Hacia abajo",
+          "power": "Potencia",
+          "windfree": "Wind-Free",
+          "aidirect": "IA directo",
+          "aiindirect": "IA indirecto"
         }
       }
     },
@@ -2088,6 +2106,9 @@
       },
       "auto_changeover": {
         "name": "Cambio automático"
+      },
+      "interlock": {
+        "name": "Enclavamiento"
       }
     },
     "time": {

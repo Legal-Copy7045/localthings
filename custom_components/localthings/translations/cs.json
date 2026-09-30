@@ -983,7 +983,12 @@
         "state": {
           "purification": "Čištění",
           "ventilation": "Větrání",
-          "smartventilation": "Chytré větrání"
+          "smartventilation": "Chytré větrání",
+          "aicomfort": "AI komfort",
+          "autoventilation": "Automatické větrání",
+          "freshairintake": "Přívod čerstvého vzduchu",
+          "indoorpurification": "Čištění vnitřního vzduchu",
+          "indoordehumidification": "Odvlhčování vnitřního vzduchu"
         }
       },
       "dry_time": {
@@ -1023,6 +1028,19 @@
           "right_wide": "Vpravo široce",
           "left_narrow": "Vlevo úzce",
           "left_wide": "Vlevo široce"
+        }
+      },
+      "ai_motion_wind": {
+        "name": "AI proudění vzduchu podle pohybu",
+        "state": {
+          "off": "Vypnuto",
+          "surround": "Všesměrové",
+          "longreach": "Dlouhý dosah",
+          "down": "Dolů",
+          "power": "Výkon",
+          "windfree": "Wind-Free",
+          "aidirect": "AI přímé",
+          "aiindirect": "AI nepřímé"
         }
       }
     },
@@ -1750,6 +1768,9 @@
       },
       "auto_changeover": {
         "name": "Automatické přepínání"
+      },
+      "interlock": {
+        "name": "Propojení provozu"
       }
     },
     "time": {

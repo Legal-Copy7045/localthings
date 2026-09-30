@@ -983,7 +983,12 @@
         "state": {
           "purification": "Zuivering",
           "ventilation": "Ventilatie",
-          "smartventilation": "Slimme ventilatie"
+          "smartventilation": "Slimme ventilatie",
+          "aicomfort": "AI-comfort",
+          "autoventilation": "Automatische ventilatie",
+          "freshairintake": "Verse luchttoevoer",
+          "indoorpurification": "Binnenluchtzuivering",
+          "indoordehumidification": "Binnenluchtontvochtiging"
         }
       },
       "dry_time": {
@@ -1023,6 +1028,19 @@
           "right_wide": "Rechts breed",
           "left_narrow": "Links smal",
           "left_wide": "Links breed"
+        }
+      },
+      "ai_motion_wind": {
+        "name": "AI-bewegingsluchtstroom",
+        "state": {
+          "off": "Uit",
+          "surround": "Rondom",
+          "longreach": "Groot bereik",
+          "down": "Omlaag",
+          "power": "Krachtig",
+          "windfree": "Wind-Free",
+          "aidirect": "AI direct",
+          "aiindirect": "AI indirect"
         }
       }
     },
@@ -1750,6 +1768,9 @@
       },
       "auto_changeover": {
         "name": "Automatisch omschakelen"
+      },
+      "interlock": {
+        "name": "Koppeling"
       }
     },
     "time": {

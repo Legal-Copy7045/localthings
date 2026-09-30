@@ -983,7 +983,12 @@
         "state": {
           "purification": "Oczyszczanie",
           "ventilation": "Wentylacja",
-          "smartventilation": "Inteligentna wentylacja"
+          "smartventilation": "Inteligentna wentylacja",
+          "aicomfort": "AI Comfort",
+          "autoventilation": "Wentylacja automatyczna",
+          "freshairintake": "Nawiew świeżego powietrza",
+          "indoorpurification": "Oczyszczanie powietrza wewnętrznego",
+          "indoordehumidification": "Osuszanie powietrza wewnętrznego"
         }
       },
       "dry_time": {
@@ -1023,6 +1028,19 @@
           "right_wide": "W prawo, szeroko",
           "left_narrow": "W lewo, wąsko",
           "left_wide": "W lewo, szeroko"
+        }
+      },
+      "ai_motion_wind": {
+        "name": "Nawiew AI z wykrywaniem ruchu",
+        "state": {
+          "off": "Wyłączony",
+          "surround": "Dookólny",
+          "longreach": "Daleki zasięg",
+          "down": "W dół",
+          "power": "Moc",
+          "windfree": "Wind-Free",
+          "aidirect": "AI bezpośredni",
+          "aiindirect": "AI pośredni"
         }
       }
     },
@@ -1750,6 +1768,9 @@
       },
       "auto_changeover": {
         "name": "Automatyczne przełączanie"
+      },
+      "interlock": {
+        "name": "Blokada współpracy"
       }
     },
     "time": {
