@@ -1058,6 +1058,14 @@
           "aidirect": "AI 직접풍",
           "aiindirect": "AI 간접풍"
         }
+      },
+      "wash_zone": {
+        "name": "세척 구역",
+        "state": {
+          "on_on": "상·하단 모두",
+          "off_on": "하단만",
+          "on_off": "상단만"
+        }
       }
     },
     "sensor": {
@@ -1787,6 +1795,9 @@
       },
       "interlock": {
         "name": "연동"
+      },
+      "speed_booster": {
+        "name": "스피드 부스터"
       }
     },
     "time": {

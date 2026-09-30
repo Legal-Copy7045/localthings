@@ -1058,6 +1058,14 @@
           "aidirect": "AI direct",
           "aiindirect": "AI indirect"
         }
+      },
+      "wash_zone": {
+        "name": "Wasgebied",
+        "state": {
+          "on_on": "Beide korven",
+          "off_on": "Alleen onderkorf",
+          "on_off": "Alleen bovenkorf"
+        }
       }
     },
     "sensor": {
@@ -1787,6 +1795,9 @@
       },
       "interlock": {
         "name": "Koppeling"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

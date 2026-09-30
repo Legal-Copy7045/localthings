@@ -1058,6 +1058,14 @@
           "aidirect": "AI diretto",
           "aiindirect": "AI indiretto"
         }
+      },
+      "wash_zone": {
+        "name": "Zona di lavaggio",
+        "state": {
+          "on_on": "Entrambi i cestelli",
+          "off_on": "Solo cestello inferiore",
+          "on_off": "Solo cestello superiore"
+        }
       }
     },
     "sensor": {
@@ -1787,6 +1795,9 @@
       },
       "interlock": {
         "name": "Interblocco"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

@@ -1058,6 +1058,14 @@
           "aidirect": "AI direct",
           "aiindirect": "AI indirect"
         }
+      },
+      "wash_zone": {
+        "name": "Wash zone",
+        "state": {
+          "on_on": "Both racks",
+          "off_on": "Lower rack only",
+          "on_off": "Upper rack only"
+        }
       }
     },
     "sensor": {
@@ -1787,6 +1795,9 @@
       },
       "interlock": {
         "name": "Interlock"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

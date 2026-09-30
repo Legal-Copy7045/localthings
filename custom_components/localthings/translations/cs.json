@@ -1058,6 +1058,14 @@
           "aidirect": "AI přímé",
           "aiindirect": "AI nepřímé"
         }
+      },
+      "wash_zone": {
+        "name": "Zóna mytí",
+        "state": {
+          "on_on": "Oba koše",
+          "off_on": "Pouze spodní koš",
+          "on_off": "Pouze horní koš"
+        }
       }
     },
     "sensor": {
@@ -1787,6 +1795,9 @@
       },
       "interlock": {
         "name": "Propojení provozu"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

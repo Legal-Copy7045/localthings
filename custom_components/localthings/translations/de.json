@@ -1058,6 +1058,14 @@
           "aidirect": "KI direkt",
           "aiindirect": "KI indirekt"
         }
+      },
+      "wash_zone": {
+        "name": "Spülzone",
+        "state": {
+          "on_on": "Beide Körbe",
+          "off_on": "Nur Unterkorb",
+          "on_off": "Nur Oberkorb"
+        }
       }
     },
     "sensor": {
@@ -1787,6 +1795,9 @@
       },
       "interlock": {
         "name": "Verriegelung"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {
