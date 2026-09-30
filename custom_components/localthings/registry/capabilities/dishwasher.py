@@ -67,8 +67,8 @@ DISHWASHER_SETTINGS = Capability(
             write_fn=_setting_write("x.com.samsung.da.heatedDry"),
         ),
         # Which racks wash, as UPPER_LOWER: the DW60BG750 (#538) offers OFF_ON
-        # and ON_ON. The upper-then-lower order is inferred from the name and
-        # needs the reporter to confirm which rack OFF_ON leaves out.
+        # and ON_ON. The reporter confirmed OFF_ON is the panel's lower-rack-only
+        # zone wash.
         SelectDesc(
             key="wash_zone",
             field="x.com.samsung.da.selectedZone",
