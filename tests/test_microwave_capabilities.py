@@ -403,6 +403,45 @@ def test_upper_lamp_write_uses_oven_on_off_values():
     )
 
 
+def _lamp_level():
+    return next(
+        e
+        for e in microwave.MICROWAVE_MODE.entities
+        if e.key == "lamp_level" and isinstance(e, SelectDesc)
+    )
+
+
+def test_lamp_level_offers_three_levels_and_reads_the_token():
+    """Issue #181: the ME7500D's light has Low as well as High."""
+    desc = _lamp_level()
+    assert tuple(desc.options) == ("Off", "Low", "High")
+    assert desc.value_fn(["Sound_On", "Lamp_Low"]) == "Low"
+    assert desc.value_fn(["Lamp_High"]) == "High"
+
+
+def test_lamp_level_writes_each_level_as_one_token():
+    desc = _lamp_level()
+    rep = {"x.com.samsung.da.options": ["Lamp_Off"]}
+    assert desc.write_fn is not None
+    for level in ("Off", "Low", "High"):
+        assert desc.write_fn(level, rep) == (
+            ["mode", "vs", "0"],
+            {"x.com.samsung.da.options": [f"Lamp_{level}"]},
+        )
+    assert desc.write_fn("Medium", rep) is None
+    assert desc.write_fn("Low", {}) is None
+
+
+def test_lamp_level_gated_to_the_bare_lamp_token():
+    """UpperLamp boards (NQ7000B, issue #496) only have On/Off, and the
+    combi dump (issue #121) has no lamp at all."""
+    desc = _lamp_level()
+    assert desc.exists_fn is not None
+    assert desc.exists_fn({"x.com.samsung.da.options": ["Lamp_Off"]}, {}) is True
+    assert desc.exists_fn({"x.com.samsung.da.options": ["UpperLamp_Off"]}, {}) is False
+    assert desc.exists_fn({"x.com.samsung.da.options": ["Sound_Off"]}, {}) is False
+
+
 def test_nq7000b_fixture_resolves_as_microwave_with_lamp_and_clock_sync():
     """Issue #496: NQ7000B declares oic.d.oven but has the microwave
     surface; it binds fully, with the UpperLamp switch and clock sync."""
