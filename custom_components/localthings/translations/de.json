@@ -495,7 +495,8 @@
           "34": "Dampfauffrischung",
           "35": "Knitterschutz",
           "36": "Lüften",
-          "3e": "Kleine Beladung"
+          "3e": "Kleine Beladung",
+          "2e": "Eco Normal"
         }
       },
       "dryer_dry_level": {
