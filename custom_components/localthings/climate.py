@@ -604,6 +604,10 @@ class LocalThingsClimate(LocalThingsEntity, ClimateEntity):
                 continue
             if mapped not in modes:
                 modes.append(mapped)
+        # hvac_mode reads AIComfort as AUTO, so a unit with no plain Auto (the
+        # AI Air Combo ventilator, #551) still needs AUTO offered for it.
+        if HVACMode.AUTO not in modes and _AI_COMFORT_MODE in self._supported(MODE_HREF):
+            modes.append(HVACMode.AUTO)
         return modes
 
     # -- fan / swing / preset ----------------------------------------------
@@ -683,9 +687,12 @@ class LocalThingsClimate(LocalThingsEntity, ClimateEntity):
         current = _first(self._rep(MODE_HREF).get(_MODES_FIELD))
         if _DEVICE_TO_HVAC.get(current) == hvac_mode:
             return current
-        for code in self._supported(MODE_HREF):
+        supported = self._supported(MODE_HREF)
+        for code in supported:
             if _DEVICE_TO_HVAC.get(code) == hvac_mode:
                 return code
+        if hvac_mode == HVACMode.AUTO and _AI_COMFORT_MODE in supported:
+            return _AI_COMFORT_MODE  # same reasoning as hvac_modes' AUTO fallback
         return _HVAC_TO_DEVICE.get(hvac_mode)
 
     async def async_set_temperature(self, **kwargs) -> None:

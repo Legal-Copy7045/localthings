@@ -79,7 +79,23 @@ def climate(hass: HomeAssistant, request) -> LocalThingsClimate:
 
 
 def test_every_mode_maps_to_an_hvac_mode(climate):
-    assert climate.hvac_modes == [HVACMode.OFF, HVACMode.FAN_ONLY, HVACMode.DRY]
+    """No plain Auto here, so AUTO stands for AIComfort."""
+    assert climate.hvac_modes == [HVACMode.OFF, HVACMode.FAN_ONLY, HVACMode.DRY, HVACMode.AUTO]
+
+
+@pytest.mark.parametrize(
+    "climate", [{"/power/vs/0": {"x.com.samsung.da.power": "On"}}], indirect=True
+)
+def test_the_dumps_ai_comfort_mode_reads_as_an_offered_mode(climate):
+    assert climate.hvac_mode == HVACMode.AUTO
+    assert climate.hvac_mode in climate.hvac_modes
+
+
+async def test_auto_writes_ai_comfort(climate):
+    await climate.async_set_hvac_mode(HVACMode.AUTO)
+
+    sent = [call.args[1] for call in climate.coordinator.async_send_command.call_args_list]
+    assert ("mode", "AIComfort") in sent
 
 
 @pytest.mark.parametrize(
