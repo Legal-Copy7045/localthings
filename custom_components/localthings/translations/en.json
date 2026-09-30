@@ -1031,7 +1031,7 @@
         }
       },
       "ai_motion_wind": {
-        "name": "AI motion wind",
+        "name": "AI Motion Wind",
         "state": {
           "off": "Off",
           "surround": "Surround",
