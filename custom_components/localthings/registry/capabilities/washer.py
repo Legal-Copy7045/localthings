@@ -28,6 +28,7 @@ from .laundry import (
     bool_option_exists,
     bool_option_switch,
     course_narrowed_options,
+    cycle_options,
     cycle_select,
     drum_clean_cycles_remaining,
     drum_clean_last_cleaned,
@@ -380,33 +381,62 @@ def _dosing_low(prefix):
 # write instead, rejecting an on-write with a user-facing error rather than
 # silently no-opping. The read/write/presence machinery is
 # laundry.bool_option_switch, shared with dishwasher's toggles.
-def _bool_option_switch(key, icon, prefix, availability_field):
+#
+# Extra Rinse passes supported_options_only: its availability bytes follow
+# the supportedOptions record order, and a 25-record table against a
+# 21-entry editCourseList shows the two orders can differ -- so the
+# edit-list fallback below must not decide its bitmap. Unresolvable data
+# reports unknown and leaves the write to the appliance.
+def _bool_option_switch(key, icon, prefix, availability_field, *, supported_options_only=False):
+    def _supported_options_table(course_rep, rep):
+        """The supportedOptions hex table, or None when it says nothing.
+
+        Prefers the resource snapshot's table; uses the live rep's own copy
+        only when the snapshot carries no table at all. A present but
+        malformed table means unknown, not a reason to look elsewhere.
+        """
+        table = course_rep.get("x.com.samsung.da.supportedOptions")
+        if table is None:
+            table = rep.get("x.com.samsung.da.supportedOptions")
+        if isinstance(table, list):
+            table = table[0] if table else None
+        if (
+            not isinstance(table, str)
+            or not table
+            or not all(char in "0123456789abcdefABCDEF" for char in table)
+        ):
+            return None
+        return table
+
     def course_supported(rep, resources):
         """Whether the selected course allows this toggle; None when the
         availability data can't be resolved (unrecognized course, missing
         or mismatched-length bitmap)."""
         opts = rep.get("x.com.samsung.da.options") or []
         current = option_value(opts, "Course")
-        course_rep = resources.get("/course/vs/0") or rep
-        supported_options = course_rep.get("x.com.samsung.da.supportedOptions")
-        course_table = (
-            supported_options[0]
-            if isinstance(supported_options, list) and supported_options
-            else supported_options
-        )
-        if not isinstance(course_table, str) or not all(
-            char in "0123456789abcdefABCDEF" for char in course_table
-        ):
-            return None
-        courses = _course_codes_from_supported_options(course_rep)
+        course_rep = resources.get("/course/vs/0") or {}
+        if supported_options_only:
+            table = _supported_options_table(course_rep, rep)
+            if table is None:
+                return None
+            course_rep = {
+                **course_rep,
+                "x.com.samsung.da.supportedOptions": table,
+            }
+            courses = _course_codes_from_supported_options(course_rep)
+        else:
+            courses = _course_codes_from_supported_options(course_rep) or cycle_options(resources)
         if not current or current not in courses:
             return None
         raw = option_value(opts, availability_field)
-        if (
-            not isinstance(raw, str)
-            or len(raw) % 2
-            or not all(char in "0123456789abcdefABCDEF" for char in raw)
-        ):
+        if supported_options_only:
+            if (
+                not isinstance(raw, str)
+                or len(raw) % 2
+                or not all(char in "0123456789abcdefABCDEF" for char in raw)
+            ):
+                return None
+        elif raw is None:
             return None
         pairs = hex_pairs(raw)
         if len(pairs) != len(courses):
@@ -600,7 +630,13 @@ WASHER_COURSE = Capability(
             table_href="/st/washercourse/vs/0",
             display_fn=_washer_course_label,
         ),
-        _bool_option_switch("extra_rinse", "mdi:water-plus", "ExtraRinse", "ExtraRinseSet"),
+        _bool_option_switch(
+            "extra_rinse",
+            "mdi:water-plus",
+            "ExtraRinse",
+            "ExtraRinseSet",
+            supported_options_only=True,
+        ),
         SensorDesc(
             key="drum_clean_cycles_remaining",
             unit="cycles",

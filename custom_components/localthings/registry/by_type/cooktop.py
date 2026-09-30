@@ -43,13 +43,7 @@ _BURNER_LIST_POWER = dataclasses.replace(
 def _unique(caps):
     """Both surfaces pull in some of the same shared capabilities."""
     seen: set[int] = set()
-    unique = []
-    for capability in caps:
-        if id(capability) in seen:
-            continue
-        seen.add(id(capability))
-        unique.append(capability)
-    return unique
+    return [c for c in caps if not (id(c) in seen or seen.add(id(c)))]
 
 
 REGISTRY = DeviceRegistry(

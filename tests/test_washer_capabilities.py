@@ -526,11 +526,6 @@ _EDIT_COURSE_RESOURCES = {
 _BUBBLE_SOAK_SET = "BubbleSoakSet_00F000F000F000F0F0F0F00000F000F0F00000F000000000"
 _PRE_WASH_AVAILABLE_SET = "PreWashAvailableSet_F0F000F0F0F000F0F0F0F00000F0F0F0F00000F000000000"
 _INTENSIVE_AVAILABLE_SET = "IntensiveAvailableSet_F0F000F0F0F000F0F0F0F00000F0F0F0F00000F000000000"
-_WASH_OPTION_RESOURCES = {
-    "/course/vs/0": {
-        "x.com.samsung.da.supportedOptions": ["11C0000300000"],
-    },
-}
 
 
 class TestWashOptionToggleValidation:
@@ -544,12 +539,12 @@ class TestWashOptionToggleValidation:
         return next(e for e in washer.WASHER_COURSE.entities if e.key == key)
 
     def test_allowed_on_a_supported_course(self):
-        rep = {"x.com.samsung.da.options": ["Course_30", "BubbleSoakSet_00F0"]}
-        assert self._desc("bubble_soak").validate_fn("On", rep, _WASH_OPTION_RESOURCES) is None
+        rep = {"x.com.samsung.da.options": ["Course_30", _BUBBLE_SOAK_SET]}
+        assert self._desc("bubble_soak").validate_fn("On", rep, _EDIT_COURSE_RESOURCES) is None
 
     def test_rejected_on_an_unsupported_course(self):
-        rep = {"x.com.samsung.da.options": ["Course_1C", "BubbleSoakSet_00F0"]}
-        translation_key = self._desc("bubble_soak").validate_fn("On", rep, _WASH_OPTION_RESOURCES)
+        rep = {"x.com.samsung.da.options": ["Course_1C", _BUBBLE_SOAK_SET]}
+        translation_key = self._desc("bubble_soak").validate_fn("On", rep, _EDIT_COURSE_RESOURCES)
         assert translation_key == "bubble_soak_unavailable_for_cycle"
 
     def test_bytes_follow_supported_options_order_not_edit_course_list(self):
@@ -576,18 +571,19 @@ class TestWashOptionToggleValidation:
         assert attributes({}, {}) == {"course_supported": None}
 
     def test_pre_wash_and_intensive_use_their_own_availableset_field(self):
-        rep = {"x.com.samsung.da.options": ["Course_30", "PreWashAvailableSet_00F0"]}
-        assert self._desc("pre_wash").validate_fn("On", rep, _WASH_OPTION_RESOURCES) is None
-        rep = {"x.com.samsung.da.options": ["Course_30", "IntensiveAvailableSet_00F0"]}
-        assert self._desc("intensive").validate_fn("On", rep, _WASH_OPTION_RESOURCES) is None
+        rep = {"x.com.samsung.da.options": ["Course_30", _PRE_WASH_AVAILABLE_SET]}
+        assert self._desc("pre_wash").validate_fn("On", rep, _EDIT_COURSE_RESOURCES) is None
+        rep = {"x.com.samsung.da.options": ["Course_30", _INTENSIVE_AVAILABLE_SET]}
+        assert self._desc("intensive").validate_fn("On", rep, _EDIT_COURSE_RESOURCES) is None
 
     def test_turning_off_is_never_blocked(self):
-        rep = {"x.com.samsung.da.options": ["Course_1C", "BubbleSoakSet_00F0"]}
-        assert self._desc("bubble_soak").validate_fn("Off", rep, _WASH_OPTION_RESOURCES) is None
+        rep = {"x.com.samsung.da.options": ["Course_1C", _BUBBLE_SOAK_SET]}
+        assert self._desc("bubble_soak").validate_fn("Off", rep, _EDIT_COURSE_RESOURCES) is None
 
     def test_allows_write_when_course_unresolvable(self):
-        """Missing course data, a Course token, or a mismatched bitmap must
-        fail open rather than block a write we can't verify."""
+        """No editCourseList, no Course_ token, or a bitmap whose length
+        doesn't match editCourseList -- in every case, fail open rather than
+        block a write we can't actually verify."""
         desc = self._desc("bubble_soak")
         rep = {"x.com.samsung.da.options": ["Course_1C", _BUBBLE_SOAK_SET]}
         assert desc.validate_fn("On", rep, {}) is None
@@ -599,10 +595,10 @@ class TestWashOptionToggleValidation:
         assert desc.validate_fn("On", rep, _EDIT_COURSE_RESOURCES) is None
 
 
-# Live tokens from a WW90-class washer (Table_02, 2026-09-25): 21 courses
-# in editCourseList, 25 records in supportedOptions (which ExtraRinseSet
-# is positional with — not the edit list). Bytes 14/22/24 read '00' on
-# courses 58 (Wool), 5F (Spin Only) and 60 (Self Clean+).
+# Captured live readback (Table_02): 21 courses in editCourseList, 25
+# records in supportedOptions, which ExtraRinseSet is positional with --
+# not the edit list. Bytes 14/22/24 read '00' on courses 58, 5F and 60,
+# which advertise Extra Rinse as unavailable.
 _LIVE_EDIT_COURSE_RESOURCES = {
     "/wm/editcourse/vs/0": {
         "x.com.samsung.da.editCourseList": "EditCourseList_01515B5756608C53645A85545C55586867635D5F5E",  # noqa: E501
@@ -656,7 +652,7 @@ class TestExtraRinse:
         rep = _live_course_rep("01")
         assert self._desc().validate_fn("On", rep, _LIVE_EDIT_COURSE_RESOURCES) is None
 
-    def test_rejected_on_courses_without_a_rinse_phase(self):
+    def test_rejected_on_courses_advertising_extra_rinse_unavailable(self):
         for course in ("58", "5F", "60"):
             rep = _live_course_rep(course)
             translation_key = self._desc().validate_fn("On", rep, _LIVE_EDIT_COURSE_RESOURCES)
@@ -737,6 +733,58 @@ class TestExtraRinse:
         rep["x.com.samsung.da.options"][-1] = "ExtraRinseSet_GG" + "F0" * 24
 
         assert self._desc().validate_fn("On", rep, _LIVE_EDIT_COURSE_RESOURCES) is None
+
+    def test_edit_list_order_does_not_decide_extra_rinse(self):
+        """On identical resources a shipped toggle resolves through its
+        edit-list fallback and rejects, while Extra Rinse reports unknown:
+        the bitmap follows the supportedOptions order, which a
+        matching-length edit list still does not prove."""
+        rep = {
+            "x.com.samsung.da.options": [
+                "Course_1C",
+                "ExtraRinse_Off",
+                "ExtraRinseSet_00" + "F0" * 23,
+                _BUBBLE_SOAK_SET,
+            ],
+        }
+        bubble_soak = TestWashOptionToggleValidation._desc("bubble_soak")
+        assert (
+            bubble_soak.validate_fn("On", rep, _EDIT_COURSE_RESOURCES)
+            == "bubble_soak_unavailable_for_cycle"
+        )
+        desc = self._desc()
+        assert desc.validate_fn("On", rep, _EDIT_COURSE_RESOURCES) is None
+        assert desc.extra_state_attributes_fn(rep, _EDIT_COURSE_RESOURCES) == {
+            "course_supported": None,
+        }
+
+    def test_snapshot_without_a_table_uses_the_rep_table(self):
+        """A populated snapshot that carries no supportedOptions must not
+        suppress the live rep's own table."""
+        rep = _live_course_rep("58")
+        resources = {
+            "/course/vs/0": {
+                "x.com.samsung.da.options": [
+                    "Course_58",
+                    "ExtraRinse_Off",
+                    _LIVE_EXTRA_RINSE_SET,
+                ],
+            },
+        }
+        assert self._desc().validate_fn("On", rep, resources) == "extra_rinse_unavailable_for_cycle"
+
+    def test_a_malformed_snapshot_table_is_unknown_not_substituted(self):
+        """A present but malformed snapshot table means unknown, even when
+        the live rep carries a usable table of its own."""
+        rep = _live_course_rep("58")
+        resources = {
+            "/course/vs/0": {
+                "x.com.samsung.da.supportedOptions": ["101GGGG04GGGG"],
+            },
+        }
+        desc = self._desc()
+        assert desc.validate_fn("On", rep, resources) is None
+        assert desc.extra_state_attributes_fn(rep, resources) == {"course_supported": None}
 
 
 class TestSoilLevel:
