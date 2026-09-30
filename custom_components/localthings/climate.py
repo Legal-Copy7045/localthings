@@ -97,14 +97,20 @@ _SUPPORTED_FIELD = "x.com.samsung.da.supportedModes"
 # driven by the power resource).
 _DEVICE_TO_HVAC: dict[str, HVACMode] = {
     "Cool": HVACMode.COOL,
+    # AI Air Combo ventilator (TP1X_DA-AC-RHS-01001, #551). Listed before
+    # 'Dry' so that stays the reverse map's fallback.
+    "IndoorDehumidification": HVACMode.DRY,
     "Dry": HVACMode.DRY,
-    # The fresh-air ventilator's only modes (ACA-KR-TP2-21-AN9000, #522).
-    # Fan-only gives its climate card an on state; the ventilation_mode
-    # select picks among the three. Listed before 'Fan'/'Wind' so neither
-    # becomes the reverse map's fallback.
+    # The fresh-air ventilators' fan-only modes (ACA-KR-TP2-21-AN9000, #522;
+    # TP1X_DA-AC-RHS-01001, #551). Fan-only gives the climate card an on
+    # state; the ventilation_mode select tells them apart. Listed before
+    # 'Fan'/'Wind' so neither becomes the reverse map's fallback.
     "Purification": HVACMode.FAN_ONLY,
     "Ventilation": HVACMode.FAN_ONLY,
     "SmartVentilation": HVACMode.FAN_ONLY,
+    "AutoVentilation": HVACMode.FAN_ONLY,
+    "FreshAirIntake": HVACMode.FAN_ONLY,
+    "IndoorPurification": HVACMode.FAN_ONLY,
     # Fan-only is spelled 'Wind' on some boards and 'Fan' on others; both map
     # to FAN_ONLY. _device_code_for_hvac() resolves the write-side code from
     # the unit's own supportedModes, so this reverse map is only a fallback

@@ -983,7 +983,12 @@
         "state": {
           "purification": "청정",
           "ventilation": "환기",
-          "smartventilation": "스마트환기"
+          "smartventilation": "스마트환기",
+          "aicomfort": "AI 쾌적",
+          "autoventilation": "자동환기",
+          "freshairintake": "외기도입",
+          "indoorpurification": "실내청정",
+          "indoordehumidification": "실내제습"
         }
       },
       "dry_time": {
@@ -1023,6 +1028,19 @@
           "right_wide": "오른쪽 넓게",
           "left_narrow": "왼쪽 좁게",
           "left_wide": "왼쪽 넓게"
+        }
+      },
+      "ai_motion_wind": {
+        "name": "AI 모션 바람",
+        "state": {
+          "off": "끄기",
+          "surround": "서라운드",
+          "longreach": "원거리",
+          "down": "하향",
+          "power": "파워",
+          "windfree": "무풍",
+          "aidirect": "AI 직접풍",
+          "aiindirect": "AI 간접풍"
         }
       }
     },
@@ -1750,6 +1768,9 @@
       },
       "auto_changeover": {
         "name": "자동 전환"
+      },
+      "interlock": {
+        "name": "연동"
       }
     },
     "time": {

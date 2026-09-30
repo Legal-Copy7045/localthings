@@ -1890,3 +1890,36 @@ def test_registry_reproduces_golden_state_keys_for_microwave_nw9300md():
         f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
         f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
     )
+
+
+def test_registry_reproduces_golden_state_keys_for_airconditioner_tp1x_rac_01011_aimotionwind():
+    """AR80H12CAAWNSK (issue #554): the TP1X_DA-AC-RAC-01011 board with the
+    AI motion wind picker."""
+    from tests.conftest import _load_device
+
+    name = "airconditioner_tp1x_rac_01011_aimotionwind"
+    golden = json.loads((GOLDEN / f"{name}.json").read_text())
+    state_keys = _new_state_keys(
+        name, _load_device(name), device_types=("oic.wk.d", "oic.d.airconditioner")
+    )
+    assert set(state_keys) == set(golden["state_keys"]), (
+        f"state_keys mismatch:\n"
+        f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
+        f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
+    )
+
+
+def test_registry_reproduces_golden_state_keys_for_airconditioner_tp1x_rhs():
+    """AI Air Combo ventilator AJ020FERPBC2 (issue #551, TP1X_DA-AC-RHS-01001)."""
+    from tests.conftest import _load_device
+
+    name = "airconditioner_tp1x_rhs"
+    golden = json.loads((GOLDEN / f"{name}.json").read_text())
+    state_keys = _new_state_keys(
+        name, _load_device(name), device_types=("oic.wk.d", "oic.d.airconditioner")
+    )
+    assert set(state_keys) == set(golden["state_keys"]), (
+        f"state_keys mismatch:\n"
+        f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
+        f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
+    )

@@ -983,7 +983,12 @@
         "state": {
           "purification": "Purification",
           "ventilation": "Ventilation",
-          "smartventilation": "Smart Ventilation"
+          "smartventilation": "Smart Ventilation",
+          "aicomfort": "AI Comfort",
+          "autoventilation": "Auto ventilation",
+          "freshairintake": "Fresh air intake",
+          "indoorpurification": "Indoor purification",
+          "indoordehumidification": "Indoor dehumidification"
         }
       },
       "dry_time": {
@@ -1023,6 +1028,19 @@
           "right_wide": "Right wide",
           "left_narrow": "Left narrow",
           "left_wide": "Left wide"
+        }
+      },
+      "ai_motion_wind": {
+        "name": "AI motion wind",
+        "state": {
+          "off": "Off",
+          "surround": "Surround",
+          "longreach": "Long reach",
+          "down": "Down",
+          "power": "Power",
+          "windfree": "Wind-Free",
+          "aidirect": "AI direct",
+          "aiindirect": "AI indirect"
         }
       }
     },
@@ -1750,6 +1768,9 @@
       },
       "auto_changeover": {
         "name": "Auto changeover"
+      },
+      "interlock": {
+        "name": "Interlock"
       }
     },
     "time": {

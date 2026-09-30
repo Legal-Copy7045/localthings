@@ -207,15 +207,28 @@ def _mode_options(rep):
 # climate.py maps all three to fan-only (#522), which can't tell them apart,
 # so this select does. Gated to devices whose *entire* supported-mode set is
 # this vocabulary, so it can't false-positive on a real AC's Cool/Heat/Dry
-# list.
-_VENTILATION_MODE_VALUES = frozenset(("Purification", "Ventilation", "SmartVentilation"))
+# list. The AI Air Combo ventilator (issue #551, TP1X_DA-AC-RHS-01001) has
+# the same problem with its own five modes.
+_VENTILATION_MODE_VALUES = frozenset(
+    (
+        "Purification",
+        "Ventilation",
+        "SmartVentilation",
+        "AutoVentilation",
+        "FreshAirIntake",
+        "IndoorPurification",
+        "IndoorDehumidification",
+    )
+)
 
 
 def _is_ventilation_mode_device(rep, resources):
     supported = rep.get("x.com.samsung.da.supportedModes")
     if not isinstance(supported, (list, tuple)) or not supported:
         return False
-    return set(supported) <= _VENTILATION_MODE_VALUES
+    # AIComfort is allowed alongside but never on its own: real ACs list it too.
+    modes = set(supported) - {"AIComfort"}
+    return bool(modes) and modes <= _VENTILATION_MODE_VALUES
 
 
 def _ventilation_mode_write(payload, rep, href=None):
@@ -1259,6 +1272,46 @@ MOTION_DETECT_WIND = Capability(
     ),
 )
 
+# AI motion wind (issue #554, TP1X_DA-AC-RAC-01011 AR80H12CAAWNSK): the app's
+# airflow-style picker. The write mirrors the resource's own `mode` field and
+# is not yet confirmed live. The app says AiDirect/AiIndirect need Auto mode,
+# so expect the device to reject them in any other.
+AI_MOTION_WIND = Capability(
+    href="/aimotionwind/vs/0",
+    poll_tier="warm",
+    entities=(
+        SelectDesc(
+            key="ai_motion_wind",
+            field="mode",
+            options_field="supportedModes",
+            icon="mdi:weather-windy",
+            entity_category="config",
+            write_fn=lambda p, rep, href=None: (["aimotionwind", "vs", "0"], {"mode": p}),
+        ),
+    ),
+)
+
+# Ventilator interlock (issue #551, TP1X_DA-AC-RHS-01001), presumably with the
+# indoor units paired in /rhs/connecteddevice/vs/0.
+# Bare On/Off like AUTO_CHANGEOVER; the write is not yet confirmed live.
+INTERLOCK = Capability(
+    href="/interlock/vs/0",
+    poll_tier="cold",
+    entities=(
+        SwitchDesc(
+            key="interlock",
+            field="x.com.samsung.da.interlock",
+            icon="mdi:link-variant",
+            entity_category="config",
+            value_fn=lambda v: v == "On",
+            write_fn=lambda p, rep, href=None: (
+                ["interlock", "vs", "0"],
+                {"x.com.samsung.da.interlock": "On" if p == "On" else "Off"},
+            ),
+        ),
+    ),
+)
+
 # Standalone temperature sensor for history/automations (issue #75); the
 # climate card only exposes current_temperature as an attribute. Shares key
 # 'current_temperature_c' with the _VS variant below so only one ever binds.
@@ -1757,6 +1810,15 @@ _AC_IGNORED = [
     # absenceInfo is an unconfirmed 48-slot P/A history blob with no
     # documented meaning -- don't guess what it encodes.
     "/csi/information/vs/0",
+    # Sleep-tracker linkage with a paired phone or watch (issue #554): the
+    # sleep data comes from the account's cloud, and every field is empty or
+    # Disable when unlinked.
+    "/sleepdata/interoperation/vs/0",
+    # AI Air Combo ventilator (issue #551). /ai/options/vs/0 is a lone
+    # `aigraph` flag with no app feature identified to name it by;
+    # /rhs/connecteddevice/vs/0 is the MAC list of paired indoor units.
+    "/ai/options/vs/0",
+    "/rhs/connecteddevice/vs/0",
 ]
 
 # Built as bare no-entity caps; folded into the AC registry (not global).
