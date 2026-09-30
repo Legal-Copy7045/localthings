@@ -207,6 +207,23 @@ def _lamp_is_on(opts):
     return token is not None and option_value(opts, token) != "Off"
 
 
+# Issue #181: Lamp_Low confirmed on an ME7500D alongside Lamp_High/Lamp_Off.
+# UpperLamp boards have only On/Off, so the levels apply to bare 'Lamp' alone.
+_LAMP_LEVELS = ("Off", "Low", "High")
+
+
+def _lamp_level_exists(rep, resources):
+    return option_value(rep.get("x.com.samsung.da.options"), "Lamp") is not None
+
+
+def _lamp_level_write(p, rep, href=None):
+    if p not in _LAMP_LEVELS or not rep.get("x.com.samsung.da.options"):
+        return None
+    return ["mode", "vs", "0"], {
+        "x.com.samsung.da.options": option_write("Lamp", p),
+    }
+
+
 def _filter_remind_exists(rep, resources):
     return option_value(rep.get("x.com.samsung.da.options"), "FilterRemind") is not None
 
@@ -325,6 +342,15 @@ MICROWAVE_MODE = Capability(
             exists_fn=_lamp_exists,
             value_fn=_lamp_is_on,
             write_fn=_lamp_write,
+        ),
+        SelectDesc(
+            key="lamp_level",
+            field="x.com.samsung.da.options",
+            icon="mdi:track-light",
+            options=_LAMP_LEVELS,
+            exists_fn=_lamp_level_exists,
+            value_fn=lambda opts: option_value(opts, "Lamp"),
+            write_fn=_lamp_level_write,
         ),
         # issue #181: Filter Reminder / End Signal Reminder toggles, only on
         # boards carrying the FilterRemind_*/RemindBeep_* tokens; gated off

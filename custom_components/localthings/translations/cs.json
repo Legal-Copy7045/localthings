@@ -613,7 +613,12 @@
           "bread_proof": "Kynutí těsta",
           "dehydrate": "Sušení",
           "self_clean": "Samočištění",
-          "air_fryer": "Horkovzdušná fritéza"
+          "air_fryer": "Horkovzdušná fritéza",
+          "upper_broil": "Gril (horní)",
+          "upper_convection_bake": "Konvekční pečení (horní)",
+          "upper_convection_roast": "Pečení horkým vzduchem (horní)",
+          "lower_bake": "Pečení (dolní)",
+          "lower_convection_bake": "Konvekční pečení (dolní)"
         }
       },
       "operating_mode": {
@@ -767,7 +772,9 @@
           "no_spin": "Bez odstřeďování",
           "low": "Nízká",
           "medium": "Střední",
-          "high": "Vysoká"
+          "high": "Vysoká",
+          "extra_low": "Extra nízké",
+          "extra_high": "Extra vysoké"
         }
       },
       "wash_temperature": {
@@ -778,7 +785,8 @@
           "cool": "Chladná",
           "warm": "Teplá",
           "hot": "Horká",
-          "extra_hot": "Extra horká"
+          "extra_hot": "Extra horká",
+          "tap_cold": "Studená z kohoutku"
         }
       },
       "washer_cycle_table_00": {
@@ -1058,6 +1066,22 @@
           "aidirect": "AI přímé",
           "aiindirect": "AI nepřímé"
         }
+      },
+      "wash_zone": {
+        "name": "Zóna mytí",
+        "state": {
+          "on_on": "Oba koše",
+          "off_on": "Pouze spodní koš",
+          "on_off": "Pouze horní koš"
+        }
+      },
+      "lamp_level": {
+        "name": "Úroveň osvětlení",
+        "state": {
+          "off": "Vypnuto",
+          "low": "Nízká",
+          "high": "Vysoká"
+        }
       }
     },
     "sensor": {
@@ -1248,7 +1272,8 @@
       "dryer_type": {
         "name": "Typ sušičky",
         "state": {
-          "electricity": "Elektřina"
+          "electricity": "Elektřina",
+          "gas": "Plyn"
         }
       },
       "dust": {
@@ -1787,6 +1812,9 @@
       },
       "interlock": {
         "name": "Propojení provozu"
+      },
+      "speed_booster": {
+        "name": "Speed Booster"
       }
     },
     "time": {

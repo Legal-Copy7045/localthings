@@ -90,3 +90,17 @@ def test_cooktop_monitoring_present_on_the_master_only():
     assert "cooktop_running_state" in state
     assert "warming_center_state" in state
     assert "subdevice1_cooktop_running_state" not in state
+
+
+def test_every_cavity_mode_is_named():
+    """With the divider in, the upper cavity offers only Upper* modes and the
+    lower cavity Lower* ones; neither set had names."""
+    from custom_components.localthings.catalog import translated_states
+    from custom_components.localthings.select import _display
+
+    _bound, _materialized, _skipped, full_resources, _name = _discover()
+    known = translated_states("select", "oven_mode")
+    for href in ("/mode/vs/0", "/mode/vs/1"):
+        modes = full_resources[href]["x.com.samsung.da.supportedModes"]
+        assert modes
+        assert all(_display(mode, "oven_mode") in known for mode in modes), (href, modes)
