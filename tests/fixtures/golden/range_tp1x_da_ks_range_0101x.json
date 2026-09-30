@@ -23,7 +23,6 @@
     "progress_percentage",
     "remote_control",
     "sound",
-    "subdevice1_cloud_connected",
     "subdevice1_cook_time",
     "subdevice1_current_temp_c",
     "subdevice1_cycle_active",

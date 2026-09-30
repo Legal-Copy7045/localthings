@@ -113,6 +113,9 @@ def test_divider_sensor_is_on_the_lower_cavity_only():
     state = flatten(bound, full_resources)
     assert state["subdevice1_divider"] is True
     assert "divider" not in state
+    # The one field is the divider there, not a second, connectivity sensor.
+    assert "subdevice1_cloud_connected" not in state
+    assert "cloud_connected" in state
 
 
 def test_divider_sensor_reads_off_when_the_divider_is_out():

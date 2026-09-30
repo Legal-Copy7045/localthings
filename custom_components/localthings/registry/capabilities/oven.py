@@ -672,11 +672,14 @@ OVEN_CONNECTED = Capability(
     href="/connected/vs/0",
     poll_tier="warm",
     entities=(
+        # A lower cavity's copy of this field is the divider below, so it is
+        # not also shown as a connectivity sensor there.
         BinarySensorDesc(
             key="cloud_connected",
             field="x.com.samsung.da.connected",
             device_class="connectivity",
             entity_category="diagnostic",
+            exists_fn=lambda rep, resources: not _is_lower_cavity(rep, resources),
             value_fn=lambda v: v == "On",
         ),
         # On a lower cavity this flag is whether the divider is in, which
