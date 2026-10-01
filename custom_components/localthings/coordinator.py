@@ -67,6 +67,7 @@ from .registry.batch import parse_device0_batch
 from .registry.by_type import resolve as resolve_registry
 from .registry.capabilities import cook
 from .registry.capabilities.common import (
+    REMOTE_CONTROL_HREFS,
     merge_items_field,
     merge_options_field,
     remote_control_enabled,
@@ -2371,21 +2372,20 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # tree to read one rep.
         rep = self.entity_rep(href or "")
         # The remote-control gate below keys off the raw on-the-wire href
-        # and a raw snapshot -- /remotectrl/* is a shared, MAIN-only
-        # resource that a subdevice's canonical_resources() view (owned
-        # hrefs only) would drop entirely. write_fn/validate_fn, by
-        # contrast, are written against canonical hrefs (same convention as
-        # exists_fn/rep_fn -- see entity.py's _resources), so they get this
-        # entity's own subdevice view instead of the raw snapshot: without
-        # it, a composite device's write_fn reading resources.get(some
-        # canonical href) (e.g. airconditioner._temperature_step) would
-        # silently see the master's resource instead of its own subdevice's.
+        # and a raw snapshot (see _remote_control_enabled). write_fn/
+        # validate_fn, by contrast, are written against canonical hrefs
+        # (same convention as exists_fn/rep_fn -- see entity.py's
+        # _resources), so they get this entity's own subdevice view instead
+        # of the raw snapshot: without it, a composite device's write_fn
+        # reading resources.get(some canonical href) (e.g.
+        # airconditioner._temperature_step) would silently see the master's
+        # resource instead of its own subdevice's.
         raw_resources = self._cache.snapshot()
         bypass_remote_control = self._entry.options.get(CONF_BYPASS_REMOTE_CONTROL, False)
         if (
             not bypass_remote_control
             and remote_control_required_for_write(raw_resources, href or "")
-            and not remote_control_enabled(raw_resources)
+            and not self._remote_control_enabled(bound_entity.subdevice)
         ):
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
@@ -2565,6 +2565,22 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     snapshot[subdevice.to_actual(href)] = overlaid[href]
         return snapshot
 
+    def _remote_control_enabled(self, subdevice: Subdevice) -> bool:
+        """Smart Control for the subdevice being written. Each cavity of a
+        dual-cavity oven reports its own /remotectrl (the NV75N's
+        /remotectrl/vs/1, #300's /remotectrl/vs/2), so a subdevice's own
+        copy decides; one that reports none falls back to MAIN's."""
+        raw = self._cache.snapshot()
+        if subdevice != MAIN:
+            own = {
+                href: raw[actual]
+                for href in REMOTE_CONTROL_HREFS
+                if (actual := subdevice.to_actual(href)) in raw
+            }
+            if own:
+                return remote_control_enabled(own)
+        return remote_control_enabled(raw)
+
     def _holds_cook(self, subdevice: Subdevice) -> bool:
         """Whether a mode/setpoint/cook-time write is held rather than sent:
         an idle cavity that can start one of its modes. Anything else writes
@@ -2616,10 +2632,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="cook_start_not_supported"
             )
-        raw_resources = self._cache.snapshot()
         if not self._entry.options.get(
             CONF_BYPASS_REMOTE_CONTROL, False
-        ) and not remote_control_enabled(raw_resources):
+        ) and not self._remote_control_enabled(subdevice):
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="remote_control_disabled"
             )
