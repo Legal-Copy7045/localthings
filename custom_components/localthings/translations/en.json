@@ -150,6 +150,9 @@
       },
       "divider": {
         "name": "Divider"
+      },
+      "wrinkle_prevent_active": {
+        "name": "Wrinkle prevent active"
       }
     },
     "button": {
@@ -491,11 +494,12 @@
           "2f": "Heavy Duty",
           "30": "Activewear",
           "32": "Perm Press",
-          "33": "Steam Sanitize",
+          "33": "Steam Sanitize+",
           "34": "Steam Refresh",
           "35": "Wrinkle Away",
           "36": "Air Fluff",
-          "3e": "Small Load"
+          "3e": "Small Load",
+          "2e": "Eco Normal"
         }
       },
       "dryer_dry_level": {
@@ -904,7 +908,7 @@
           "54": "Towels",
           "55": "Activewear",
           "56": "Bedding",
-          "57": "Delicate",
+          "57": "Delicates",
           "5a": "Steam Sanitize",
           "5b": "Small Load",
           "5e": "Rinse+Spin",
@@ -942,7 +946,14 @@
           "8f": "Intense Cold",
           "96": "Less Microfiber",
           "a0": "15' Quick Wash",
-          "b0": "Mixed Load"
+          "b0": "Mixed Load",
+          "58": "Wool",
+          "5c": "Outdoor",
+          "5d": "Power Rinse",
+          "5f": "Spin Only",
+          "63": "Power Steam",
+          "67": "Steam Allergen",
+          "68": "Steam Bulky"
         }
       },
       "washer_dry_level": {
@@ -1820,6 +1831,12 @@
       },
       "speed_booster": {
         "name": "Speed Booster"
+      },
+      "damp_alert": {
+        "name": "Damp alert"
+      },
+      "extra_rinse": {
+        "name": "Extra rinse"
       }
     },
     "time": {
@@ -2193,6 +2210,9 @@
     },
     "cook_duration_out_of_range": {
       "message": "{mode} takes a cook time from {min} to {max}."
+    },
+    "extra_rinse_unavailable_for_cycle": {
+      "message": "Extra Rinse isn't available on the selected cycle."
     }
   },
   "selector": {
