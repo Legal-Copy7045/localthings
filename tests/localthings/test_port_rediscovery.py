@@ -79,7 +79,7 @@ class _Appliance:
 
         return _Transport()
 
-    def advertised(self, host: str, current: int) -> int | None:
+    def advertised(self, host: str, current: int, device_id: str | None = None) -> int | None:
         self.lookups += 1
         if self.live_port is None or self.live_port == current:
             return None
