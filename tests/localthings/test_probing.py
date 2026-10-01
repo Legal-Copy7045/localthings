@@ -814,22 +814,20 @@ def test_look_dials_the_appliance_behind_a_typeless_stack(monkeypatch) -> None:
     assert not probe.typeless_stack
 
 
-def test_look_dials_nothing_when_no_appliance_is_found_behind_a_typeless_stack(
-    monkeypatch,
-) -> None:
+def test_look_still_dials_a_typeless_stack_when_no_appliance_is_found(monkeypatch) -> None:
     """Multicast stops at a router, so an off-segment Home Assistant finds
-    only the typeless stack, whose port would refuse us with unknown_ca."""
+    no appliance behind the typeless stack. It is still dialled, in case it
+    is an appliance that declares no type, and flagged so a failure there
+    is reported as reaching the wrong stack."""
     from custom_components.localthings import probing
 
     _patch_stacks(monkeypatch, {5683: _identity(("oic.wk.d",))}, responders=(_TYPELESS,))
-    monkeypatch.setattr(
-        probing, "_clienthello_scan", lambda *a, **k: pytest.fail("nothing should be dialled")
-    )
+    monkeypatch.setattr(probing, "_clienthello_scan", lambda host, ports, preferred=None: [41000])
 
     probe = probing.look("10.0.0.1")
 
     assert probe.typeless_stack
-    assert probe.candidates == []
+    assert probe.candidates == [41000]
     assert probe.appliance_responders == 0
 
 

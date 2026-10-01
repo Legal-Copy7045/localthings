@@ -176,9 +176,9 @@ class ApplianceNoDtls(CannotConnect):
 class NonApplianceStack(CannotConnect):
     """The address answers as an OCF stack that isn't an appliance (#540).
 
-    It declares no appliance type, and multicast found no appliance behind
-    it, usually because Home Assistant is on another subnet. Its secure port
-    would only ever refuse us, so nothing is dialled.
+    It declares no appliance type, multicast found no appliance behind it
+    (usually because Home Assistant is on another subnet), and its secure
+    port then failed the handshake.
     """
 
     error_key = "non_appliance_stack"
@@ -898,8 +898,6 @@ def _handshake_and_read(
     A failure carries the appliance's plaintext port as `plaintext_port`,
     so the credential step reads that stack's doxm and not another's (#540).
     """
-    if scan.typeless_stack:
-        raise NonApplianceStack(f"{host} answers as an OCF stack with no appliance type")
     if scan.appliance_responders > 1:
         raise MultipleAppliances(f"{scan.appliance_responders} OCF appliances answer at {host}")
     if local_port is not None and scan.candidates and not _source_port_bindable(host, local_port):
@@ -914,8 +912,10 @@ def _handshake_and_read(
             except CannotConnect as err:
                 # The device answered, just not with something we can use --
                 # trying the remaining ports can't improve on that.
-                err.plaintext_port = scan.plaintext_port
-                raise
+                failure = _stack_failure(host, scan, err)
+                if failure is err:
+                    raise
+                raise failure from err
             except Exception as exc:
                 if not retried and _worth_retrying(exc, port in scan.confirmed, local_port):
                     retried = True
@@ -925,9 +925,18 @@ def _handshake_and_read(
                 _LOGGER.debug("port %d failed: %s", port, exc)
                 break
     alerts = _diagnose_failures(host, scan, failures, cert_pem, key_pem, auth=psk)
-    err = _classify_handshake_failure(host, scan, failures, alerts, psk=psk is not None)
+    raise _stack_failure(
+        host, scan, _classify_handshake_failure(host, scan, failures, alerts, psk=psk is not None)
+    )
+
+
+def _stack_failure(host: str, scan: probing.HostProbe, err: CannotConnect) -> CannotConnect:
+    """`err`, or NonApplianceStack when the stack dialled declared no
+    appliance type: its refusal says nothing about our credential (#540)."""
+    if scan.typeless_stack:
+        err = NonApplianceStack(f"{host} answers as an OCF stack with no appliance type ({err})")
     err.plaintext_port = scan.plaintext_port
-    raise err
+    return err
 
 
 def _probe_and_validate(

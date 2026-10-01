@@ -180,11 +180,12 @@ class HostProbe:
     plaintext: PlaintextIdentity | None = None
     plaintext_port: int | None = None
     legacy_http: bool = False
-    # Another OCF stack shares the address (#540). `typeless_stack`: the
-    # one that answered unicast declares no appliance type and no appliance
-    # responder was found behind it. `appliance_responders`: how many
+    # Another OCF stack may share the address (#540). `typeless_stack`: the
+    # one that answered unicast declares no appliance type and multicast
+    # found no appliance behind it; it is still dialled, and a failure is
+    # reported as reaching the wrong stack. `appliance_responders`: how many
     # appliance-typed responders multicast found; more than one is
-    # ambiguous. Either way `candidates` is empty, so nothing is dialled.
+    # ambiguous, and then `candidates` is empty so nothing is dialled.
     typeless_stack: bool = False
     appliance_responders: int = 0
 
@@ -328,8 +329,7 @@ def look(host: str) -> HostProbe:
             plaintext_port = responders[0].plaintext_port
             with contextlib.suppress(Exception):  # guarded like the first read
                 plaintext = _read_plaintext_identity(host, plaintext_port) or plaintext
-        else:
-            typeless_stack = not responders
+        elif appliance_responders > 1:
             return HostProbe(
                 host=host,
                 candidates=[],
@@ -337,9 +337,13 @@ def look(host: str) -> HostProbe:
                 advertised=advertised,
                 plaintext=plaintext,
                 plaintext_port=plaintext_port,
-                typeless_stack=typeless_stack,
                 appliance_responders=appliance_responders,
             )
+        else:
+            # Still dialled: an appliance that declares no type of its own
+            # would otherwise never be reached. Only a failure is reported
+            # as the other stack's.
+            typeless_stack = True
 
     if legacy_http and plaintext_port is None and not advertised:
         # Nothing to scan for: this lineage serves no CoAP at all.
@@ -364,6 +368,7 @@ def look(host: str) -> HostProbe:
             plaintext=plaintext,
             plaintext_port=plaintext_port,
             legacy_http=legacy_http,
+            typeless_stack=typeless_stack,
         )
 
     sweep, candidates = sweep_ports(host, PROBE_PORT_RANGE, LIVENESS_PROBE_TIMEOUT_S)
@@ -389,6 +394,7 @@ def look(host: str) -> HostProbe:
         plaintext=plaintext,
         plaintext_port=plaintext_port,
         legacy_http=legacy_http,
+        typeless_stack=typeless_stack,
     )
 
 
