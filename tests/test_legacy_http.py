@@ -16,10 +16,13 @@ MAC address in UUID form.
 import json
 from pathlib import Path
 
+import pytest
+
 from custom_components.localthings.legacy_http import (
     COURSE_TABLE_HREF,
     IDENTITY,
     PREFIX,
+    TP6X_RAC,
     TP6X_WASHER,
     StagedKey,
     add_staged,
@@ -243,20 +246,27 @@ class TestModelSettings:
     def test_a_ww6500_does_not_take_remote_power(self):
         """Its byte 26 is 00, and the washer answers a power write with
         `400 Control fail, <Operation.power=Off>`."""
-        rep = model_settings(self._with(self.WW6500))["/wm/setinfo/vs/0"]
+        rep = model_settings("TP6X_WASHER", self._with(self.WW6500))["/wm/setinfo/vs/0"]
 
         assert rep == {PREFIX + "isModelSettingPowerOnOff": "false"}
-        assert model_allows_power_on_off(model_settings(self._with(self.WW6500))) is False
+        assert (
+            model_allows_power_on_off(model_settings("TP6X_WASHER", self._with(self.WW6500)))
+            is False
+        )
 
     def test_bit_0_of_byte_26_allows_it(self):
         model_id = self.WW6500[: len(self.WW6500) - 6] + "01" + "0000"
 
-        assert model_allows_power_on_off(model_settings(self._with(model_id))) is True
+        assert (
+            model_allows_power_on_off(model_settings("TP6X_WASHER", self._with(model_id))) is True
+        )
 
     def test_only_bit_0_counts(self):
         model_id = self.WW6500[: len(self.WW6500) - 6] + "FE" + "0000"
 
-        assert model_allows_power_on_off(model_settings(self._with(model_id))) is False
+        assert (
+            model_allows_power_on_off(model_settings("TP6X_WASHER", self._with(model_id))) is False
+        )
 
     def test_no_usable_model_id_says_nothing(self):
         """Nothing to go on leaves the switch as it was."""
@@ -267,7 +277,7 @@ class TestModelSettings:
             self._with("TP6X_WW6500"),
             self._with("TP6X_WW6500|FF18E000|20010102001011070000000000ZZ0000"),
         ):
-            assert model_settings(bodies) == {}
+            assert model_settings("TP6X_WASHER", bodies) == {}
 
 
 class TestHttpStatusToCoap:
@@ -453,3 +463,98 @@ class TestStaging:
         }
         assert is_start(body)
         assert not is_start({"Device": {"Operation": {"state": "Pause"}}})
+
+
+class TestTp6xRac:
+    """TP6X_RAC_16K (issue #563) and TP6X_RAC_17K (issue #524), from the
+    bodies their diagnostics recorded.
+
+    Their fields are the ARTIK051 boards' CoAP vocabulary, so the table only
+    has to put each resource on that generation's href and the existing
+    air-conditioner registry does the rest.
+    """
+
+    FIXTURES = tuple(
+        Path(__file__).parent / "fixtures" / f"airconditioner_tp6x_rac_{size}_8888.json"
+        for size in ("16k", "17k")
+    )
+
+    @staticmethod
+    def _bodies(fixture):
+        return json.loads(fixture.read_text(encoding="utf-8"))["bodies"]
+
+    def _resources(self, fixture=None):
+        return to_resources(self._bodies(fixture or self.FIXTURES[0]), TP6X_RAC)
+
+    def test_every_capacity_shares_the_table(self):
+        """The reporter's unit is a 16K; issue #524's are 17K."""
+        for family in ("TP6X_RAC_16K", "TP6X_RAC_17K", "TP6X_RAC_09K"):
+            assert table_for(family) is TP6X_RAC
+            assert is_mapped(family)
+        assert not is_mapped("TP6X_RACX_16K")
+
+    @pytest.mark.parametrize("fixture", FIXTURES, ids=lambda p: p.stem)
+    def test_the_dump_produces_the_legacy_board_hrefs(self, fixture):
+        assert set(self._resources(fixture)) == {
+            "/airflow/vs/0",
+            "/alarms/vs/0",
+            "/configuration/vs/0",
+            "/diagnosis/vs/0",
+            "/information/vs/0",
+            "/mode/vs/0",
+            "/power/vs/0",
+            "/temperatures/vs/0",
+        }
+
+    @pytest.mark.parametrize("fixture", FIXTURES, ids=lambda p: p.stem)
+    def test_it_types_as_an_air_conditioner_with_nothing_unbound(self, fixture):
+        resources = self._resources(fixture)
+        registry = resolve(resources)
+        assert registry is not None
+        assert registry.name == "airconditioner"
+        unbound: list[str] = []
+
+        bound = discover(
+            resources, registry.capabilities, registry.pattern_capabilities, log=unbound.append
+        )
+
+        assert unbound == []
+        keys = {b.key_override or b.desc.key for b in bound}
+        assert {"climate", "beep", "alarm_code", "diagnosis_status"} <= keys
+
+    def test_climate_writes_reach_the_wrappers_the_appliance_reports(self):
+        """Through the climate entity's own write function. Number-valued
+        fields go back as numbers, the way the appliance reports them, and
+        the temperature list is the wrapper's whole body."""
+        from custom_components.localthings.registry.capabilities.airconditioner import (
+            _climate_write,
+        )
+
+        rep = self._resources()["/mode/vs/0"]
+
+        def wire(payload):
+            segs, body = _climate_write(payload, rep, resources={})
+            return to_write([("/" + "/".join(segs), body)], TP6X_RAC)["Device"]
+
+        assert wire(("power", False)) == {"Operation": {"power": "Off"}}
+        assert wire(("mode", "Cool")) == {"Mode": {"modes": ["Cool"]}}
+        assert wire(("temperature", 23)) == {"Temperatures": [{"id": "0", "desired": 23}]}
+        assert wire(("fan_legacy", "3")) == {"Wind": {"speedLevel": 3}}
+        assert wire(("swing_legacy", "Fix")) == {"Wind": {"direction": "Fix"}}
+        assert wire(("preset_legacy", "Nano")) == {"Mode": {"options": ["Comode_Nano"]}}
+
+    def test_the_washer_power_flag_is_not_read_off_an_ac(self):
+        """The 17K's modelID carries a feature string too, but byte 26 is
+        the washer plugin's reading, and /wm/setinfo/vs/0 a laundry resource."""
+        bodies = self._bodies(self.FIXTURES[1])
+        assert bodies["Information"]["modelID"].count("|") == 2
+
+        assert model_settings("TP6X_RAC_17K", bodies) == {}
+
+    def test_a_list_body_passes_the_start_split_untouched(self):
+        aggregate = {"Device": {"Temperatures": [{"id": "0", "desired": 23}]}}
+
+        sendable, staged = split_start_only(aggregate, TP6X_RAC)
+
+        assert sendable == aggregate
+        assert staged == {}
