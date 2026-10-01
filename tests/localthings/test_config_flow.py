@@ -257,7 +257,7 @@ def fake_dtls(monkeypatch):
     )
     monkeypatch.setattr(
         "custom_components.localthings.probing.read_credential_hint",
-        lambda host: CredentialHint(),
+        lambda host, port=None: CredentialHint(),
     )
     return FakeSession
 
@@ -846,6 +846,37 @@ def test_confirmed_port_that_times_out_is_reported_as_a_stuck_session() -> None:
     )
     assert isinstance(err, HandshakeTimeout)
     assert err.error_key == "handshake_timeout"
+
+
+@pytest.mark.parametrize(
+    ("scan_fields", "error_key"),
+    [
+        ({"typeless_stack": True}, "non_appliance_stack"),
+        ({"appliance_responders": 2}, "multiple_appliances"),
+    ],
+)
+async def test_another_ocf_stack_at_the_address_is_reported_before_any_handshake(
+    hass: HomeAssistant, monkeypatch, scan_fields, error_key
+) -> None:
+    """#540: dialling the stack that answered 5683 would only draw its
+    unknown_ca, which reads as a refused certificate."""
+    from custom_components.localthings import config_flow, probing
+
+    monkeypatch.setattr(
+        probing,
+        "look",
+        lambda host: probing.HostProbe(host=host, candidates=[], confirmed=[], **scan_fields),
+    )
+    monkeypatch.setattr(config_flow, "_fetch_samsung_uuid", lambda: "test-uuid")
+    monkeypatch.setattr(config_flow, "_mint_self_signed", lambda uuid: ("CERT", "KEY"))
+
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_HOST: MOCK_HOST}
+    )
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": error_key}
 
 
 def test_advertised_only_host_is_reported_as_appliance_no_dtls() -> None:

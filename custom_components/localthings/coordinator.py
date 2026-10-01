@@ -1010,7 +1010,9 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self._next_rediscovery_ts = now + self._rediscovery_backoff_s
         try:
-            return probing.moved_secure_port(self._entry.data[CONF_HOST], current)
+            return probing.moved_secure_port(
+                self._entry.data[CONF_HOST], current, self._entry.data.get(CONF_OCF_DEVICE_ID)
+            )
         except Exception as e:
             self._log.debug("secure port lookup failed: %s", e)
             return None

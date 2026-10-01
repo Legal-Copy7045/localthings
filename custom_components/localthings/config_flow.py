@@ -137,6 +137,8 @@ class CannotConnect(Exception):
     """
 
     error_key = "cannot_connect"
+    # The plaintext port the appliance answered on, when the probe found one.
+    plaintext_port: int | None = None
 
 
 class NoResponse(CannotConnect):
@@ -169,6 +171,23 @@ class ApplianceNoDtls(CannotConnect):
     def __init__(self, message: str, model: str, port: str) -> None:
         super().__init__(message)
         self.placeholders = {"model": model, "port": port}
+
+
+class NonApplianceStack(CannotConnect):
+    """The address answers as an OCF stack that isn't an appliance (#540).
+
+    It declares no appliance type, and multicast found no appliance behind
+    it, usually because Home Assistant is on another subnet. Its secure port
+    would only ever refuse us, so nothing is dialled.
+    """
+
+    error_key = "non_appliance_stack"
+
+
+class MultipleAppliances(CannotConnect):
+    """More than one OCF appliance answers at this address (#540)."""
+
+    error_key = "multiple_appliances"
 
 
 class HandshakeTimeout(CannotConnect):
@@ -875,7 +894,14 @@ def _handshake_and_read(
     LocalThingsConfigFlow._setup_source_port for when each applies.
 
     `psk`, when given, is offered instead of the certificate.
+
+    A failure carries the appliance's plaintext port as `plaintext_port`,
+    so the credential step reads that stack's doxm and not another's (#540).
     """
+    if scan.typeless_stack:
+        raise NonApplianceStack(f"{host} answers as an OCF stack with no appliance type")
+    if scan.appliance_responders > 1:
+        raise MultipleAppliances(f"{scan.appliance_responders} OCF appliances answer at {host}")
     if local_port is not None and scan.candidates and not _source_port_bindable(host, local_port):
         _LOGGER.debug("source port %d unavailable; using an ephemeral one", local_port)
         local_port = None
@@ -885,9 +911,10 @@ def _handshake_and_read(
         while True:
             try:
                 return _connect_and_read(host, port, cert_pem, key_pem, local_port, auth=psk)
-            except CannotConnect:
+            except CannotConnect as err:
                 # The device answered, just not with something we can use --
                 # trying the remaining ports can't improve on that.
+                err.plaintext_port = scan.plaintext_port
                 raise
             except Exception as exc:
                 if not retried and _worth_retrying(exc, port in scan.confirmed, local_port):
@@ -898,7 +925,9 @@ def _handshake_and_read(
                 _LOGGER.debug("port %d failed: %s", port, exc)
                 break
     alerts = _diagnose_failures(host, scan, failures, cert_pem, key_pem, auth=psk)
-    raise _classify_handshake_failure(host, scan, failures, alerts, psk=psk is not None)
+    err = _classify_handshake_failure(host, scan, failures, alerts, psk=psk is not None)
+    err.plaintext_port = scan.plaintext_port
+    raise err
 
 
 def _probe_and_validate(
@@ -998,6 +1027,9 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Set only on the PSK branch: the imported credential as it is
         # stored, and what plaintext doxm hinted before the menu.
         self._psk: dict[str, str] | None = None
+        # The appliance's plaintext port from the probe the certificate was
+        # refused on, for reading its doxm (#540).
+        self._plaintext_port: int | None = None
         self._credential_hint = probing.CredentialHint()
 
     def _setup_source_port(self, host: str) -> int | None:
@@ -1136,7 +1168,8 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     errors["base"] = exc.error_key
                 else:
                     return await self.async_step_legacy_token()
-            except CertRejected:
+            except CertRejected as exc:
+                self._plaintext_port = exc.plaintext_port
                 # The self-signed leaf (or a reused one, re-minted and refused
                 # again) didn't authenticate. Either this device validates the
                 # chain and wants AC14K_M, or it isn't on the certificate
@@ -1282,7 +1315,7 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         has been reported to accept it (#435, #494, #520).
         """
         self._credential_hint = await self.hass.async_add_executor_job(
-            probing.read_credential_hint, self._host
+            probing.read_credential_hint, self._host, self._plaintext_port
         )
         if self._credential_hint.suggests_psk:
             return await self.async_step_credential_psk()
