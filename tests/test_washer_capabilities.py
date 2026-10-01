@@ -615,6 +615,11 @@ def _live_course_rep(course, extra="ExtraRinse_Off"):
     }
 
 
+def _with_course(rep, resources=_LIVE_EDIT_COURSE_RESOURCES):
+    """The coordinator hands validate_fn the same /course/vs/0 as rep."""
+    return {**resources, "/course/vs/0": rep}
+
+
 class TestExtraRinse:
     """Extra Rinse switch over /course/vs/0's options[] array."""
 
@@ -650,23 +655,20 @@ class TestExtraRinse:
 
     def test_allowed_on_a_supported_course(self):
         rep = _live_course_rep("01")
-        assert self._desc().validate_fn("On", rep, _LIVE_EDIT_COURSE_RESOURCES) is None
+        assert self._desc().validate_fn("On", rep, _with_course(rep)) is None
 
     def test_rejected_on_courses_advertising_extra_rinse_unavailable(self):
         for course in ("58", "5F", "60"):
             rep = _live_course_rep(course)
-            translation_key = self._desc().validate_fn("On", rep, _LIVE_EDIT_COURSE_RESOURCES)
+            translation_key = self._desc().validate_fn("On", rep, _with_course(rep))
             assert translation_key == "extra_rinse_unavailable_for_cycle"
 
     def test_course_supported_attribute(self):
         attributes = self._desc().extra_state_attributes_fn
 
-        assert attributes(_live_course_rep("01"), _LIVE_EDIT_COURSE_RESOURCES) == {
-            "course_supported": True,
-        }
-        assert attributes(_live_course_rep("58"), _LIVE_EDIT_COURSE_RESOURCES) == {
-            "course_supported": False,
-        }
+        for course, supported in (("01", True), ("58", False)):
+            rep = _live_course_rep(course)
+            assert attributes(rep, _with_course(rep)) == {"course_supported": supported}
 
     def test_rejects_unavailable_course_with_extra_edit_list_slot(self):
         rep = {
@@ -679,17 +681,20 @@ class TestExtraRinse:
             # edit list's extra 03 appears only in another valid split.
             "x.com.samsung.da.supportedOptions": ["101A10304A20507A3090AA40B"],
         }
-        resources = {
-            "/wm/editcourse/vs/0": {
-                "x.com.samsung.da.editCourseList": "EditCourseList_01030407090A",
+        resources = _with_course(
+            rep,
+            {
+                "/wm/editcourse/vs/0": {
+                    "x.com.samsung.da.editCourseList": "EditCourseList_01030407090A",
+                },
             },
-        }
+        )
 
         assert self._desc().validate_fn("On", rep, resources) == "extra_rinse_unavailable_for_cycle"
 
     def test_turning_off_is_never_blocked(self):
         rep = _live_course_rep("58")
-        assert self._desc().validate_fn("Off", rep, _LIVE_EDIT_COURSE_RESOURCES) is None
+        assert self._desc().validate_fn("Off", rep, _with_course(rep)) is None
 
     def test_allows_write_when_availability_unresolvable(self):
         desc = self._desc()
@@ -732,7 +737,7 @@ class TestExtraRinse:
         rep = _live_course_rep("01")
         rep["x.com.samsung.da.options"][-1] = "ExtraRinseSet_GG" + "F0" * 24
 
-        assert self._desc().validate_fn("On", rep, _LIVE_EDIT_COURSE_RESOURCES) is None
+        assert self._desc().validate_fn("On", rep, _with_course(rep)) is None
 
     def test_edit_list_order_does_not_decide_extra_rinse(self):
         """On identical resources a shipped toggle resolves through its
@@ -757,34 +762,6 @@ class TestExtraRinse:
         assert desc.extra_state_attributes_fn(rep, _EDIT_COURSE_RESOURCES) == {
             "course_supported": None,
         }
-
-    def test_snapshot_without_a_table_uses_the_rep_table(self):
-        """A populated snapshot that carries no supportedOptions must not
-        suppress the live rep's own table."""
-        rep = _live_course_rep("58")
-        resources = {
-            "/course/vs/0": {
-                "x.com.samsung.da.options": [
-                    "Course_58",
-                    "ExtraRinse_Off",
-                    _LIVE_EXTRA_RINSE_SET,
-                ],
-            },
-        }
-        assert self._desc().validate_fn("On", rep, resources) == "extra_rinse_unavailable_for_cycle"
-
-    def test_a_malformed_snapshot_table_is_unknown_not_substituted(self):
-        """A present but malformed snapshot table means unknown, even when
-        the live rep carries a usable table of its own."""
-        rep = _live_course_rep("58")
-        resources = {
-            "/course/vs/0": {
-                "x.com.samsung.da.supportedOptions": ["101GGGG04GGGG"],
-            },
-        }
-        desc = self._desc()
-        assert desc.validate_fn("On", rep, resources) is None
-        assert desc.extra_state_attributes_fn(rep, resources) == {"course_supported": None}
 
 
 class TestSoilLevel:

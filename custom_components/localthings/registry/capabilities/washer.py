@@ -366,6 +366,12 @@ def _dosing_low(prefix):
     )
 
 
+def _is_hex(value):
+    return (
+        isinstance(value, str) and bool(value) and all(c in "0123456789abcdefABCDEF" for c in value)
+    )
+
+
 # Bubble soak / pre-wash / intensive-wash toggles, from the same options[]
 # array (issue #22 follow-up). Each rides as a plain '<Prefix>_On'/'_Off'
 # token, confirmed against a dump taken with Bubble Soak switched on in the
@@ -388,25 +394,13 @@ def _dosing_low(prefix):
 # edit-list fallback below must not decide its bitmap. Unresolvable data
 # reports unknown and leaves the write to the appliance.
 def _bool_option_switch(key, icon, prefix, availability_field, *, supported_options_only=False):
-    def _supported_options_table(course_rep, rep):
-        """The supportedOptions hex table, or None when it says nothing.
-
-        Prefers the resource snapshot's table; uses the live rep's own copy
-        only when the snapshot carries no table at all. A present but
-        malformed table means unknown, not a reason to look elsewhere.
-        """
+    def _supported_options_table(course_rep):
+        """The supportedOptions hex table, or None when it is missing or
+        malformed."""
         table = course_rep.get("x.com.samsung.da.supportedOptions")
-        if table is None:
-            table = rep.get("x.com.samsung.da.supportedOptions")
         if isinstance(table, list):
             table = table[0] if table else None
-        if (
-            not isinstance(table, str)
-            or not table
-            or not all(char in "0123456789abcdefABCDEF" for char in table)
-        ):
-            return None
-        return table
+        return table if _is_hex(table) else None
 
     def course_supported(rep, resources):
         """Whether the selected course allows this toggle; None when the
@@ -416,7 +410,7 @@ def _bool_option_switch(key, icon, prefix, availability_field, *, supported_opti
         current = option_value(opts, "Course")
         course_rep = resources.get("/course/vs/0") or {}
         if supported_options_only:
-            table = _supported_options_table(course_rep, rep)
+            table = _supported_options_table(course_rep)
             if table is None:
                 return None
             course_rep = {
@@ -430,11 +424,7 @@ def _bool_option_switch(key, icon, prefix, availability_field, *, supported_opti
             return None
         raw = option_value(opts, availability_field)
         if supported_options_only:
-            if (
-                not isinstance(raw, str)
-                or len(raw) % 2
-                or not all(char in "0123456789abcdefABCDEF" for char in raw)
-            ):
+            if not _is_hex(raw) or len(raw) % 2:
                 return None
         elif raw is None:
             return None
@@ -610,11 +600,7 @@ def _washer_course_label(value, resources):
     label = washer_cycle_fallback(value, resources)
     if label is not None:
         return label
-    if (
-        isinstance(value, str)
-        and len(value) == 2
-        and all(char in "0123456789abcdefABCDEF" for char in value)
-    ):
+    if _is_hex(value) and len(value) == 2:
         return value
     return None
 
