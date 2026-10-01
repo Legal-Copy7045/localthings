@@ -629,7 +629,9 @@
         "state": {
           "fdr_wine": "Wein",
           "fdr_deli": "Feinkost",
-          "fdr_drinks": "Getränke"
+          "fdr_drinks": "Getränke",
+          "ttype_meat_fish": "Fleisch/Fisch",
+          "ttype_rf9000a_fridge": "Kühlen"
         }
       },
       "winecellar_pantry_zone_mode": {

@@ -663,7 +663,9 @@
         "state": {
           "fdr_wine": "Wijn",
           "fdr_deli": "Delicatessen",
-          "fdr_drinks": "Dranken"
+          "fdr_drinks": "Dranken",
+          "ttype_meat_fish": "Vlees/vis",
+          "ttype_rf9000a_fridge": "Koelen"
         }
       },
       "winecellar_pantry_zone_mode": {

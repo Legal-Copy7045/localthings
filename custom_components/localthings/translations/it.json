@@ -663,7 +663,9 @@
         "state": {
           "fdr_wine": "Vino",
           "fdr_deli": "Salumeria",
-          "fdr_drinks": "Bevande"
+          "fdr_drinks": "Bevande",
+          "ttype_meat_fish": "Carne/Pesce",
+          "ttype_rf9000a_fridge": "Refrigerazione"
         }
       },
       "winecellar_pantry_zone_mode": {

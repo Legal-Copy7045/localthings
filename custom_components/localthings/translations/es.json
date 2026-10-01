@@ -1001,7 +1001,9 @@
         "state": {
           "fdr_wine": "Vino",
           "fdr_deli": "Charcutería",
-          "fdr_drinks": "Bebidas"
+          "fdr_drinks": "Bebidas",
+          "ttype_meat_fish": "Carne/Pescado",
+          "ttype_rf9000a_fridge": "Refrigerar"
         }
       },
       "winecellar_pantry_zone_mode": {
