@@ -14,6 +14,7 @@ so a family that disagrees costs a row rather than a branch.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -50,6 +51,9 @@ class Resource:
     # answers 204 to, then discards, on their own; the transport holds them
     # for the next start (see split_start_only).
     start_only: frozenset[str] = frozenset()
+    # Fields the appliance reports as JSON numbers, which the OCF side
+    # writes as strings; to_write sends them back as numbers.
+    numeric: frozenset[str] = frozenset()
 
 
 # Every family serves its own identity here -- it is how the family is told
@@ -100,18 +104,59 @@ TP6X_WASHER: tuple[Resource, ...] = (
 )
 
 
+# TP6X_RAC_16K (issue #563), read from a diagnostics dump. The fields are the
+# ones the ARTIK051 boards serve over CoAP, so each resource lands on that
+# generation's href: Wind is /airflow/vs/0, not /wind/strength/vs/0. Writes
+# follow the washer's aggregate PUT and are not yet confirmed on this family.
+TP6X_RAC: tuple[Resource, ...] = (
+    Resource(endpoint="operation", wrapper="Operation", href="/power/vs/0"),
+    Resource(endpoint="mode", wrapper="Mode", href="/mode/vs/0"),
+    Resource(
+        endpoint="temperatures",
+        wrapper="Temperatures",
+        href="/temperatures/vs/0",
+        as_items=True,
+        numeric=frozenset({"desired"}),
+    ),
+    Resource(
+        endpoint="wind",
+        wrapper="Wind",
+        href="/airflow/vs/0",
+        numeric=frozenset({"speedLevel"}),
+    ),
+    Resource(
+        endpoint="configuration",
+        wrapper="Configuration",
+        href="/configuration/vs/0",
+    ),
+    INFORMATION,
+    Resource(endpoint="diagnosis", wrapper="Diagnosis", href="/diagnosis/vs/0"),
+    Resource(endpoint="alarms", wrapper="Alarms", href="/alarms/vs/0", as_items=True),
+)
+
+
 # Keyed by the appliance's own `description` (/devices/0/information's,
-# e.g. 'TP6X_WASHER'). A family not listed here is read with IDENTITY.
-FAMILIES: dict[str, tuple[Resource, ...]] = {"TP6X_WASHER": TP6X_WASHER}
+# e.g. 'TP6X_WASHER'), less any trailing capacity (`_16K`), so one row covers
+# every size of a model line. A family not listed here is read with IDENTITY.
+FAMILIES: dict[str, tuple[Resource, ...]] = {
+    "TP6X_WASHER": TP6X_WASHER,
+    "TP6X_RAC": TP6X_RAC,
+}
+
+_CAPACITY = re.compile(r"_\d+K$")
+
+
+def _family_key(family: str | None) -> str:
+    return _CAPACITY.sub("", family or "")
 
 
 def table_for(family: str | None) -> tuple[Resource, ...]:
     """The envelope table for `family`, or IDENTITY when it is unmapped."""
-    return FAMILIES.get(family or "", IDENTITY)
+    return FAMILIES.get(_family_key(family), IDENTITY)
 
 
 def is_mapped(family: str | None) -> bool:
-    return (family or "") in FAMILIES
+    return _family_key(family) in FAMILIES
 
 
 def _canonical_name(name: str, rename: Mapping[str, str]) -> str:
@@ -230,10 +275,30 @@ def course_table(family: str) -> dict[str, dict]:
     return {COURSE_TABLE_HREF: {_COURSE_TABLE_FIELD: table}}
 
 
+def _bare(name: str) -> str:
+    return name[len(PREFIX) :] if name.startswith(PREFIX) else name
+
+
+def _wire_value(value: Any, numeric: frozenset[str], name: str = "") -> Any:
+    """One field's value as the appliance spells it: bare names inside any
+    nested map, and numbers where it reports numbers."""
+    if isinstance(value, Mapping):
+        return {_bare(k): _wire_value(v, numeric, _bare(k)) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_wire_value(v, numeric) for v in value]
+    if name in numeric and isinstance(value, str):
+        try:
+            number = float(value)
+        except ValueError:
+            return value
+        return int(number) if number.is_integer() else number
+    return value
+
+
 def _wire_field(href: str, name: str, table: tuple[Resource, ...]) -> tuple[str, str] | None:
     """``(wrapper, wire field name)`` for one canonical field, or None when
     this table has nowhere to put it."""
-    bare = name[len(PREFIX) :] if name.startswith(PREFIX) else name
+    bare = _bare(name)
     for resource in table:
         for wire_name, fan_href in resource.fan_out.items():
             if fan_href == href and wire_name == bare:
@@ -255,14 +320,25 @@ def to_write(
     Always the aggregate endpoint: a bare body on a resource endpoint
     (`PUT /devices/0/mode`) has never been tested on this hardware.
     """
-    device: dict[str, dict] = {}
+    device: dict[str, Any] = {}
+    items = {resource.href: resource for resource in table if resource.as_items}
     for href, patch in steps:
+        listed = items.get(href)
         for name, value in patch.items():
+            if listed is not None:
+                # The appliance's list is the wrapper's whole body, so the
+                # items go there as they are and nothing else on the href does.
+                if name == PREFIX + "items" and isinstance(value, list):
+                    device[listed.wrapper] = _wire_value(value, listed.numeric)
+                continue
             target = _wire_field(href, name, table)
             if target is None:
                 continue
             wrapper, wire_name = target
-            device.setdefault(wrapper, {})[wire_name] = value
+            resource = next(r for r in table if r.wrapper == wrapper)
+            device.setdefault(wrapper, {})[wire_name] = _wire_value(
+                value, resource.numeric, wire_name
+            )
     return {"Device": device}
 
 
@@ -284,9 +360,12 @@ def split_start_only(
     token did apply). Returns `(sendable body, {key: value})`.
     """
     by_wrapper = {resource.wrapper: resource for resource in table}
-    device: dict[str, dict] = {}
+    device: dict[str, Any] = {}
     staged: dict[StagedKey, Any] = {}
     for wrapper, fields in (aggregate.get("Device") or {}).items():
+        if not isinstance(fields, Mapping):
+            device[wrapper] = fields
+            continue
         resource = by_wrapper.get(wrapper)
         start_only = resource.start_only if resource is not None else frozenset()
         for name, value in fields.items():
@@ -346,7 +425,10 @@ def add_staged(aggregate: Mapping[str, Any], staged: Mapping[StagedKey, Any]) ->
     """A start body carrying every staged value alongside what it already
     had. Tokens go in as single-token writes, the merge this firmware
     applies to an `options` array."""
-    device = {k: dict(v) for k, v in (aggregate.get("Device") or {}).items()}
+    device = {
+        k: dict(v) if isinstance(v, Mapping) else v
+        for k, v in (aggregate.get("Device") or {}).items()
+    }
     for (wrapper, name, prefix), value in staged.items():
         fields = device.setdefault(wrapper, {})
         if prefix is None:

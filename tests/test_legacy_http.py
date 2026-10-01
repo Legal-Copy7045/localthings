@@ -20,6 +20,7 @@ from custom_components.localthings.legacy_http import (
     COURSE_TABLE_HREF,
     IDENTITY,
     PREFIX,
+    TP6X_RAC,
     TP6X_WASHER,
     StagedKey,
     add_staged,
@@ -453,3 +454,81 @@ class TestStaging:
         }
         assert is_start(body)
         assert not is_start({"Device": {"Operation": {"state": "Pause"}}})
+
+
+class TestTp6xRac:
+    """TP6X_RAC_16K (issue #563), from the bodies its diagnostics recorded.
+
+    Its fields are the ARTIK051 boards' CoAP vocabulary, so the table only
+    has to put each resource on that generation's href and the existing
+    air-conditioner registry does the rest.
+    """
+
+    FIXTURE = Path(__file__).parent / "fixtures" / "airconditioner_tp6x_rac_16k_8888.json"
+
+    def _resources(self):
+        dump = json.loads(self.FIXTURE.read_text(encoding="utf-8"))
+        return to_resources(dump["bodies"], TP6X_RAC)
+
+    def test_every_capacity_shares_the_table(self):
+        """The reporter's unit is a 16K; issue #524's are 17K."""
+        for family in ("TP6X_RAC_16K", "TP6X_RAC_17K", "TP6X_RAC_09K"):
+            assert table_for(family) is TP6X_RAC
+            assert is_mapped(family)
+        assert not is_mapped("TP6X_RACX_16K")
+
+    def test_the_dump_produces_the_legacy_board_hrefs(self):
+        assert set(self._resources()) == {
+            "/airflow/vs/0",
+            "/alarms/vs/0",
+            "/configuration/vs/0",
+            "/diagnosis/vs/0",
+            "/information/vs/0",
+            "/mode/vs/0",
+            "/power/vs/0",
+            "/temperatures/vs/0",
+        }
+
+    def test_it_types_as_an_air_conditioner_with_nothing_unbound(self):
+        resources = self._resources()
+        registry = resolve(resources)
+        assert registry is not None
+        assert registry.name == "airconditioner"
+        unbound: list[str] = []
+
+        bound = discover(
+            resources, registry.capabilities, registry.pattern_capabilities, log=unbound.append
+        )
+
+        assert unbound == []
+        keys = {b.key_override or b.desc.key for b in bound}
+        assert {"climate", "beep", "alarm_code", "diagnosis_status"} <= keys
+
+    def test_climate_writes_reach_the_wrappers_the_appliance_reports(self):
+        """Through the climate entity's own write function. Number-valued
+        fields go back as numbers, the way the appliance reports them, and
+        the temperature list is the wrapper's whole body."""
+        from custom_components.localthings.registry.capabilities.airconditioner import (
+            _climate_write,
+        )
+
+        rep = self._resources()["/mode/vs/0"]
+
+        def wire(payload):
+            segs, body = _climate_write(payload, rep, resources={})
+            return to_write([("/" + "/".join(segs), body)], TP6X_RAC)["Device"]
+
+        assert wire(("power", False)) == {"Operation": {"power": "Off"}}
+        assert wire(("mode", "Cool")) == {"Mode": {"modes": ["Cool"]}}
+        assert wire(("temperature", 23)) == {"Temperatures": [{"id": "0", "desired": 23}]}
+        assert wire(("fan_legacy", "3")) == {"Wind": {"speedLevel": 3}}
+        assert wire(("swing_legacy", "Fix")) == {"Wind": {"direction": "Fix"}}
+        assert wire(("preset_legacy", "Nano")) == {"Mode": {"options": ["Comode_Nano"]}}
+
+    def test_a_list_body_passes_the_start_split_untouched(self):
+        aggregate = {"Device": {"Temperatures": [{"id": "0", "desired": 23}]}}
+
+        sendable, staged = split_start_only(aggregate, TP6X_RAC)
+
+        assert sendable == aggregate
+        assert staged == {}
