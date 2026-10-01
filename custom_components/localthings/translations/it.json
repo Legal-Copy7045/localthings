@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Doppio setpoint attivo"
+      },
+      "divider": {
+        "name": "Divisorio"
       }
     },
     "button": {

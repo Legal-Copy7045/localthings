@@ -485,6 +485,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Doble consigna activada"
+      },
+      "divider": {
+        "name": "Divisor"
       }
     },
     "button": {

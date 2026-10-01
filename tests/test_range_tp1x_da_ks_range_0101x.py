@@ -104,3 +104,24 @@ def test_every_cavity_mode_is_named():
         modes = full_resources[href]["x.com.samsung.da.supportedModes"]
         assert modes
         assert all(_display(mode, "oven_mode") in known for mode in modes), (href, modes)
+
+
+def test_divider_sensor_is_on_the_lower_cavity_only():
+    """This dump has the divider in: the upper cavity offers only Upper*
+    modes and the lower cavity's /connected reads On."""
+    bound, _materialized, _skipped, full_resources, _name = _discover()
+    state = flatten(bound, full_resources)
+    assert state["subdevice1_divider"] is True
+    assert "divider" not in state
+    # The one field is the divider there, not a second, connectivity sensor.
+    assert "subdevice1_cloud_connected" not in state
+    assert "cloud_connected" in state
+
+
+def test_divider_sensor_reads_off_when_the_divider_is_out():
+    """Divider out, as on an NX9802T: the lower cavity's /connected reads Off."""
+    bound, _materialized, _skipped, full_resources, _name = _discover()
+    connected = next(b.href for b in bound if b.desc.key == "divider" and b.subdevice.key == "1")
+    assert connected == "/connected/vs/1"
+    resources = {**full_resources, connected: {"x.com.samsung.da.connected": "Off"}}
+    assert flatten(bound, resources)["subdevice1_divider"] is False

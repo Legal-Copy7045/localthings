@@ -147,6 +147,9 @@
       },
       "dual_setpoint_enabled": {
         "name": "Dvojitá požadovaná teplota zapnutá"
+      },
+      "divider": {
+        "name": "Priečka"
       }
     },
     "button": {
