@@ -150,6 +150,9 @@
       },
       "divider": {
         "name": "Priečka"
+      },
+      "wrinkle_prevent_active": {
+        "name": "Ochrana proti pokrčeniu aktívna"
       }
     },
     "button": {
@@ -491,11 +494,12 @@
           "2f": "Intenzívny",
           "30": "Športové oblečenie",
           "32": "Nekrčivá bielizeň",
-          "33": "Parná dezinfekcia",
+          "33": "Parná dezinfekcia+",
           "34": "Osvieženie parou",
           "35": "Proti pokrčeniu",
           "36": "Prevetranie",
-          "3e": "Malá náplň"
+          "3e": "Malá náplň",
+          "2e": "Eko Normálny"
         }
       },
       "dryer_dry_level": {
@@ -904,7 +908,7 @@
           "54": "Uteráky",
           "55": "Športové oblečenie",
           "56": "Posteľná bielizeň",
-          "57": "Jemný",
+          "57": "Jemná bielizeň",
           "5a": "Parná dezinfekcia",
           "5b": "Malá náplň",
           "5e": "Plákanie + odstreďovanie",
@@ -942,7 +946,14 @@
           "8f": "Intenzívne pranie v studenej vode",
           "96": "Menej mikrovlákien",
           "a0": "15-minútové rýchle pranie",
-          "b0": "Zmiešaná náplň"
+          "b0": "Zmiešaná náplň",
+          "58": "Vlna",
+          "5c": "Outdoor",
+          "5d": "Výkonné plákanie",
+          "5f": "Iba odstreďovanie",
+          "63": "Výkonná para",
+          "67": "Parný antialergénny",
+          "68": "Parná objemná bielizeň"
         }
       },
       "washer_dry_level": {
@@ -1820,6 +1831,12 @@
       },
       "speed_booster": {
         "name": "Speed Booster"
+      },
+      "damp_alert": {
+        "name": "Upozornenie na vlhké prádlo"
+      },
+      "extra_rinse": {
+        "name": "Extra plákanie"
       }
     },
     "time": {
@@ -2193,6 +2210,9 @@
     },
     "cook_duration_out_of_range": {
       "message": "Režim {mode} prijíma čas prípravy od {min} do {max}."
+    },
+    "extra_rinse_unavailable_for_cycle": {
+      "message": "Extra plákanie nie je pri vybranom cykle dostupné."
     }
   },
   "selector": {

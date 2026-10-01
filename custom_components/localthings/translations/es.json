@@ -335,6 +335,9 @@
     },
     "cook_duration_out_of_range": {
       "message": "{mode} admite un tiempo de cocción de {min} a {max}."
+    },
+    "extra_rinse_unavailable_for_cycle": {
+      "message": "El aclarado extra no está disponible en el ciclo seleccionado."
     }
   },
   "entity": {
@@ -488,6 +491,9 @@
       },
       "divider": {
         "name": "Divisor"
+      },
+      "wrinkle_prevent_active": {
+        "name": "Anti-arrugas activo"
       }
     },
     "button": {
@@ -829,11 +835,12 @@
           "2f": "Servicio intensivo",
           "30": "Ropa deportiva",
           "32": "Planchado fácil",
-          "33": "Desinfección por vapor",
+          "33": "Desinfección por vapor+",
           "34": "Renovación con vapor",
           "35": "Antiarrugas",
           "36": "Aireación",
-          "3e": "Carga pequeña"
+          "3e": "Carga pequeña",
+          "2e": "Eco normal"
         }
       },
       "dryer_dry_level": {
@@ -1242,7 +1249,7 @@
           "54": "Toallas",
           "55": "Ropa deportiva",
           "56": "Ropa de cama",
-          "57": "Delicado",
+          "57": "Delicados",
           "5a": "Desinfección por vapor",
           "5b": "Carga pequeña",
           "5e": "Aclarar + Centrifugar",
@@ -1280,7 +1287,14 @@
           "8f": "Lavado en frío",
           "96": "Menos microfibras",
           "a0": "Lavado rápido 15'",
-          "b0": "Carga mixta"
+          "b0": "Carga mixta",
+          "58": "Lana",
+          "5c": "Exterior",
+          "5d": "Aclarado potente",
+          "5f": "Solo centrifugar",
+          "63": "Vapor potente",
+          "67": "Antialérgico con vapor",
+          "68": "Voluminoso con vapor"
         }
       },
       "washer_dry_level": {
@@ -2158,6 +2172,12 @@
       },
       "speed_booster": {
         "name": "Speed Booster"
+      },
+      "damp_alert": {
+        "name": "Alerta de humedad"
+      },
+      "extra_rinse": {
+        "name": "Aclarado extra"
       }
     },
     "time": {
