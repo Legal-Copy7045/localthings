@@ -241,10 +241,17 @@ SETINFO_HREF = "/wm/setinfo/vs/0"
 _POWER_ON_OFF_FIELD = PREFIX + "isModelSettingPowerOnOff"
 
 
-def model_settings(bodies: Mapping[str, Any]) -> dict[str, dict]:
+# Families whose modelID feature string is the washer plugin's. The
+# TP6X_RAC's carries one too, but the byte means nothing known on an AC
+# (#524's units all read 00), and /wm/setinfo/vs/0 is a laundry resource.
+_SETINFO_FAMILIES = frozenset({"TP6X_WASHER"})
+
+
+def model_settings(family: str | None, bodies: Mapping[str, Any]) -> dict[str, dict]:
     """A `/wm/setinfo/vs/0` rep carrying the power on/off flag this family
     states in Information.modelID, which CoAP boards serve as a resource of
-    its own; empty when the model id doesn't carry it.
+    its own; empty when the model id doesn't carry it, or for a family
+    outside the laundry ones.
 
     The third `|` field of modelID is a hex feature string. Samsung's own
     washer plugin reads remote power control from bit 0 of the byte at
@@ -252,6 +259,8 @@ def model_settings(bodies: Mapping[str, Any]) -> dict[str, dict]:
     whose byte is 00: `Operation.power = Off` answers
     `400 Control fail, <Operation.power=Off>` and the washer stays on.
     """
+    if _family_key(family) not in _SETINFO_FAMILIES:
+        return {}
     info = bodies.get("Information")
     model_id = info.get("modelID") if isinstance(info, Mapping) else None
     if not isinstance(model_id, str):
