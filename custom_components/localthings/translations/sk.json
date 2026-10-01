@@ -2009,7 +2009,9 @@
       "wrong_device": "Na tejto adrese odpovedal spotrebič Samsung, ale nie je to tento spotrebič – nahlásil inú identitu. Skontrolujte, či adresa patrí tomuto spotrebiču. Ak chcete pridať ten druhý, použite možnosť Pridať zariadenie.",
       "token_not_received": "Nedorazil žiadny token zariadenia. Skontrolujte, či je na spotrebiči zapnuté diaľkové ovládanie so zatvorenými dvierkami a či sa spotrebič dostane k Home Assistant na port 8889 – alebo vložte token, ktorý ste získali inak.",
       "invalid_token": "Spotrebič tento token zariadenia odmietol. Nechajte pole prázdne a požiadajte o nový.",
-      "callback_port_in_use": "Port 8889 je v Home Assistant už obsadený, zvyčajne ešte čakajúcou žiadosťou o token. Skúste to znova o minútu a pol."
+      "callback_port_in_use": "Port 8889 je v Home Assistant už obsadený, zvyčajne ešte čakajúcou žiadosťou o token. Skúste to znova o minútu a pol.",
+      "callback_cert_rejected": "Spotrebič sa ozval späť na porte 8889, ale odmietol certifikát Home Assistant podpísaný sám sebou. Vložte certifikát a kľúč CA AC14K_M, aby LocalThings podpísal certifikát, ktorý prijme; žiadosť o token sa potom spustí znova.",
+      "callback_ca_rejected": "Spotrebič sa ozval späť na porte 8889, ale odmietol aj certifikát podpísaný AC14K_M. Vložte token získaný iným spôsobom; chybu handshaku nájdete v protokole Home Assistant."
     },
     "abort": {
       "already_configured": "Zariadenie je už nakonfigurované",

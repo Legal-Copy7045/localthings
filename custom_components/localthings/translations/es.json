@@ -134,7 +134,9 @@
       "wrong_device": "Un electrodoméstico Samsung respondió en esa dirección, pero no es este: informó de una identidad distinta. Comprueba que la dirección corresponde a este electrodoméstico. Para añadir el otro, usa Añadir dispositivo.",
       "token_not_received": "No llegó ningún token de dispositivo. Comprueba que el control remoto esté activado en el electrodoméstico con la puerta cerrada y que pueda alcanzar Home Assistant en el puerto 8889, o pega un token obtenido de otra forma.",
       "invalid_token": "El electrodoméstico rechazó ese token. Deja el campo vacío para solicitar uno nuevo.",
-      "callback_port_in_use": "El puerto 8889 ya está en uso en Home Assistant, normalmente por una solicitud de token que sigue esperando. Vuelve a intentarlo en un minuto y medio."
+      "callback_port_in_use": "El puerto 8889 ya está en uso en Home Assistant, normalmente por una solicitud de token que sigue esperando. Vuelve a intentarlo en un minuto y medio.",
+      "callback_cert_rejected": "El electrodoméstico devolvió la llamada en el puerto 8889, pero rechazó el certificado autofirmado de Home Assistant. Pega el certificado y la clave de la CA AC14K_M para que LocalThings firme uno que acepte; después, la solicitud de token se repetirá.",
+      "callback_ca_rejected": "El electrodoméstico devolvió la llamada en el puerto 8889, pero también rechazó el certificado firmado con AC14K_M. Pega un token obtenido de otra forma y consulta el registro de Home Assistant para ver el error del handshake."
     },
     "abort": {
       "already_configured": "El dispositivo ya está configurado",
