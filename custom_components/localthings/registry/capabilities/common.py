@@ -427,6 +427,10 @@ KIDS_LOCK_VS_FALLBACK = Capability(
 )
 
 
+# The hrefs remote_control_enabled reads, in precedence order.
+REMOTE_CONTROL_HREFS = ("/remotectrl/0", "/remotectrl/vs/0")
+
+
 def remote_control_enabled(resources: dict) -> bool:
     """Single source of truth for the /remotectrl on/off signal, mirroring
     REMOTE_CONTROL_GENERIC/_VS_FALLBACK's href/field precedence. Used both
