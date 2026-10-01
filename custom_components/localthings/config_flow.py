@@ -95,7 +95,11 @@ from .credentials import (
 from .devices import find_entry_device
 from .learned import persist as learned_persist
 from .learned import stored as learned_stored
-from .legacy_http_token import CallbackPortUnavailable, obtain_device_token
+from .legacy_http_token import (
+    CallbackCertRejected,
+    CallbackPortUnavailable,
+    obtain_device_token,
+)
 from .registry.capabilities.laundry import cycle_options, personal_course_labels
 from .registry.subdevices import MAIN
 from .session import psk_provider
@@ -1032,6 +1036,7 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # The form a token exchange returns to: "legacy_token" when adding
         # an appliance, "reauth_confirm" when its token stopped working.
         self._legacy_step: str = "legacy_token"
+        self._legacy_cert_rejected = False
         self._token_task: asyncio.Task[str | None] | None = None
         # Set only on the PSK branch: the imported credential as it is
         # stored, and what plaintext doxm hinted before the menu.
@@ -1162,10 +1167,10 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     self._setup_source_port(self._host),
                 )
             except LegacyHttpFamily:
-                # This family authenticates nothing about the certificate
-                # (measured on a TP6X_WW6500: any leaf is answered 200, a
-                # wrong device token is 401), so there is no fallback_ca to
-                # fall through to -- the token step is the whole credential.
+                # The washer authenticates nothing about the certificate (a
+                # TP6X_WW6500 answers any leaf 200), so the token step comes
+                # first; fallback_ca is offered only if the token callback
+                # refuses the leaf, as the TP6X_RAC appears to (#524).
                 try:
                     self._legacy_leaf = existing_leaf or await self.hass.async_add_executor_job(
                         _mint_preferred, self._ca_cert_pem, self._ca_key_pem
@@ -1258,42 +1263,50 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Ask for the AC14K_M CA after a device rejects the self-signed leaf.
 
-        Reached from the credential menu. Kept for an appliance that checks
-        the chain against AC14K_M, though none has been confirmed since the
-        self-signed default landed (#435). The pasted CA cert and key mint a
-        chain-signed leaf, which is then stored on the entry so the retry is
-        never needed again for this appliance. A refusal goes back to a menu
+        Reached from the credential menu, or from the 8888 token exchange
+        when the appliance's callback refused the self-signed leaf (#524).
+        DTLS-side, it is kept for an appliance that checks the chain against
+        AC14K_M, though none has been confirmed since the self-signed default
+        landed (#435). The pasted CA cert and key mint a chain-signed leaf,
+        which is then stored on the entry so the retry is never needed again
+        for this appliance. A DTLS refusal goes back to a menu
         (async_step_ca_rejected), since a PSK appliance refuses every CA.
         """
         existing = self.hass.config_entries.async_entries(DOMAIN)
         errors: dict[str, str] = {}
+        if user_input is None and self._legacy_cert_rejected:
+            errors["base"] = "callback_cert_rejected"
 
         if user_input is not None:
             # Normalized here, not just before minting: this is also what gets
             # stored and reused to re-mint the leaf later.
             self._ca_cert_pem = _normalize_pem(user_input[CONF_CA_CERT_PEM])
             self._ca_key_pem = _normalize_pem(user_input[CONF_CA_KEY_PEM])
-            try:
-                info = await self.hass.async_add_executor_job(
-                    _probe_and_validate,
-                    self._host,
-                    self._ca_cert_pem,
-                    self._ca_key_pem,
-                    None,
-                    self._setup_source_port(self._host),
-                )
-            except CertRejected as exc:
-                _LOGGER.warning("Probe of %s failed [%s]: %s", self._host, exc.error_key, exc)
-                return await self.async_step_ca_rejected()
-            except (CannotConnect, InvalidCA) as exc:
-                _LOGGER.warning("Probe of %s failed [%s]: %s", self._host, exc.error_key, exc)
-                errors["base"] = exc.error_key
-                self._error_placeholders = getattr(exc, "placeholders", {})
-            except Exception:
-                _LOGGER.exception("Unexpected error during device probe")
-                errors["base"] = "unknown"
+            if self._legacy_cert_rejected:
+                if (result := await self._legacy_retry_with_ca(errors)) is not None:
+                    return result
             else:
-                return await self._finish_probe(info, existing)
+                try:
+                    info = await self.hass.async_add_executor_job(
+                        _probe_and_validate,
+                        self._host,
+                        self._ca_cert_pem,
+                        self._ca_key_pem,
+                        None,
+                        self._setup_source_port(self._host),
+                    )
+                except CertRejected as exc:
+                    _LOGGER.warning("Probe of %s failed [%s]: %s", self._host, exc.error_key, exc)
+                    return await self.async_step_ca_rejected()
+                except (CannotConnect, InvalidCA) as exc:
+                    _LOGGER.warning("Probe of %s failed [%s]: %s", self._host, exc.error_key, exc)
+                    errors["base"] = exc.error_key
+                    self._error_placeholders = getattr(exc, "placeholders", {})
+                except Exception:
+                    _LOGGER.exception("Unexpected error during device probe")
+                    errors["base"] = "unknown"
+                else:
+                    return await self._finish_probe(info, existing)
 
         schema = vol.Schema(
             {
@@ -1312,6 +1325,24 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 **self._error_placeholders,
             },
         )
+
+    async def _legacy_retry_with_ca(self, errors: dict[str, str]) -> ConfigFlowResult | None:
+        """Mint an AC14K_M-signed leaf and rerun the token exchange with it.
+
+        The listener presents the whole chain, as the manual `openssl
+        s_server -cert_chain` workaround in #524 did. Returns None, with
+        `errors` filled in, when the CA cannot mint.
+        """
+        try:
+            self._legacy_leaf = await self.hass.async_add_executor_job(
+                _mint_credentials, self._ca_cert_pem, self._ca_key_pem
+            )
+        except (CannotConnect, InvalidCA) as exc:
+            _LOGGER.warning("Minting for %s failed [%s]: %s", self._host, exc.error_key, exc)
+            errors["base"] = exc.error_key
+            return None
+        self._legacy_cert_rejected = False
+        return await self.async_step_legacy_token_exchange()
 
     async def async_step_credential(
         self, user_input: dict[str, Any] | None = None
@@ -1469,6 +1500,8 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="reauth_unsupported")
         self._host = entry_data[CONF_HOST]
         self._legacy_leaf = (entry_data[CONF_LEAF_CERT_PEM], entry_data[CONF_LEAF_KEY_PEM])
+        self._ca_cert_pem = entry_data.get(CONF_CA_CERT_PEM, "")
+        self._ca_key_pem = entry_data.get(CONF_CA_KEY_PEM, "")
         self._legacy_step = "reauth_confirm"
         return await self.async_step_reauth_confirm()
 
@@ -1514,6 +1547,13 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except CallbackPortUnavailable as err:
             _LOGGER.warning("Token callback port for %s unavailable: %s", self._host, err)
             return self._legacy_token_form({"base": "callback_port_in_use"})
+        except CallbackCertRejected as err:
+            _LOGGER.warning("Token callback from %s refused the certificate: %s", self._host, err)
+            if self._ca_cert_pem:
+                # Already an AC14K_M-signed leaf; another CA is a guess.
+                return self._legacy_token_form({"base": "callback_ca_rejected"})
+            self._legacy_cert_rejected = True
+            return await self.async_step_fallback_ca()
         except OSError as err:
             _LOGGER.warning("Token request to %s failed: %s", self._host, err)
             return self._legacy_token_form({"base": "cannot_connect"})
@@ -1547,8 +1587,16 @@ class LocalThingsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             entry = self._get_reauth_entry()
             if not _identity_matches(entry, info, self._host):
                 return self._legacy_token_form({"base": "wrong_device"})
+            # The leaf too: fallback_ca may have replaced it with a CA-signed one.
             return self.async_update_reload_and_abort(
-                entry, data_updates={CONF_DEVICE_TOKEN: token}
+                entry,
+                data_updates={
+                    CONF_DEVICE_TOKEN: token,
+                    CONF_LEAF_CERT_PEM: cert_pem,
+                    CONF_LEAF_KEY_PEM: key_pem,
+                    CONF_CA_CERT_PEM: self._ca_cert_pem,
+                    CONF_CA_KEY_PEM: self._ca_key_pem,
+                },
             )
         self._legacy_token = token
         info = {**info, "leaf_cert_pem": cert_pem, "leaf_key_pem": key_pem}

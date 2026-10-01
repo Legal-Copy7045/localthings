@@ -2009,7 +2009,9 @@
       "wrong_device": "Pod tym adresem odpowiedziało urządzenie Samsung, ale nie to — zgłosiło inną tożsamość. Sprawdź, czy adres należy do tego urządzenia. Aby dodać to drugie, użyj opcji Dodaj urządzenie.",
       "token_not_received": "Nie otrzymano tokenu urządzenia. Sprawdź, czy w urządzeniu włączone jest Zdalne sterowanie przy zamkniętych drzwiach i czy urządzenie może połączyć się z Home Assistant na porcie 8889 — albo wklej token uzyskany w inny sposób.",
       "invalid_token": "Urządzenie odrzuciło ten token. Pozostaw pole puste, aby poprosić o nowy.",
-      "callback_port_in_use": "Port 8889 jest już zajęty w Home Assistant, zwykle przez wciąż oczekujące żądanie tokenu. Spróbuj ponownie za półtorej minuty."
+      "callback_port_in_use": "Port 8889 jest już zajęty w Home Assistant, zwykle przez wciąż oczekujące żądanie tokenu. Spróbuj ponownie za półtorej minuty.",
+      "callback_cert_rejected": "Urządzenie oddzwoniło na port 8889, ale odrzuciło samopodpisany certyfikat Home Assistant. Wklej certyfikat i klucz CA AC14K_M, aby LocalThings podpisał certyfikat, który zostanie zaakceptowany; potem żądanie tokenu zostanie powtórzone.",
+      "callback_ca_rejected": "Urządzenie oddzwoniło na port 8889, ale odrzuciło również certyfikat podpisany przez AC14K_M. Wklej token uzyskany w inny sposób; błąd uzgadniania znajdziesz w dzienniku Home Assistant."
     },
     "abort": {
       "already_configured": "Urządzenie jest już skonfigurowane",

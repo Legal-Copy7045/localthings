@@ -2009,7 +2009,9 @@
       "wrong_device": "Op dat adres antwoordde een Samsung-apparaat, maar niet dit apparaat — het meldde een andere identiteit. Controleer of het adres bij dit apparaat hoort. Gebruik Apparaat toevoegen om het andere toe te voegen.",
       "token_not_received": "Er is geen apparaattoken binnengekomen. Controleer of de afstandsbediening op het apparaat aanstaat met de deur dicht en of het Home Assistant kan bereiken op poort 8889 - of plak een token dat je op een andere manier hebt opgehaald.",
       "invalid_token": "Het apparaat heeft dat token geweigerd. Laat het veld leeg om een nieuw token aan te vragen.",
-      "callback_port_in_use": "Poort 8889 is al in gebruik op Home Assistant, meestal door een tokenaanvraag die nog wacht. Probeer het over anderhalve minuut opnieuw."
+      "callback_port_in_use": "Poort 8889 is al in gebruik op Home Assistant, meestal door een tokenaanvraag die nog wacht. Probeer het over anderhalve minuut opnieuw.",
+      "callback_cert_rejected": "Het apparaat belde terug op poort 8889, maar weigerde het zelfondertekende certificaat van Home Assistant. Plak het AC14K_M-CA-certificaat en de sleutel zodat LocalThings er een kan ondertekenen dat wel wordt geaccepteerd; daarna wordt de tokenaanvraag opnieuw uitgevoerd.",
+      "callback_ca_rejected": "Het apparaat belde terug op poort 8889, maar weigerde ook het met AC14K_M ondertekende certificaat. Plak een token dat je op een andere manier hebt verkregen; de handshakefout staat in het Home Assistant-logboek."
     },
     "abort": {
       "already_configured": "Apparaat is al geconfigureerd",
