@@ -2183,6 +2183,14 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     # per cycle, and the same wait again on every setup
                     # attempt while it stays dark (issue #269).
                     return self._device_unreachable("device unreachable", e)
+                if self._failed_cycles:
+                    # Already reported dark, so the retry below can only
+                    # repeat the failure. The 8888 transport needs this
+                    # guard: its connect() never touches the network, so
+                    # `_handshake_failed` never fires and a switched-off
+                    # washer warned and polled twice every cycle (issue #269).
+                    await self.hass.async_add_executor_job(self._close_session)
+                    return self._device_unreachable("device unreachable", e)
                 # A lone reconnect is routine (README's "Known device
                 # behavior"); only warn once they pile up. Pause first so
                 # the device can clean up its DTLS state before we knock
