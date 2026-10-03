@@ -201,6 +201,21 @@ def is_mapped(family: str | None) -> bool:
     return _family_key(family) in FAMILIES
 
 
+def unmapped_wrappers(bodies: Mapping[str, Any], table: tuple[Resource, ...]) -> list[str]:
+    """The resources the appliance reported that `table` has no row for, and
+    so are not read: what a new row would have to cover. Links and the
+    aggregate's own scalars are not resources."""
+    named = {resource.wrapper for resource in table}
+    return sorted(
+        key
+        for key, body in bodies.items()
+        if key[:1].isupper()
+        and not key.endswith("Link")
+        and isinstance(body, (Mapping, list))
+        and key not in named
+    )
+
+
 def _canonical_name(name: str, rename: Mapping[str, str]) -> str:
     return PREFIX + rename.get(name, name)
 
