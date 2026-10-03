@@ -53,9 +53,10 @@ def lifetime_wh_to_kwh(v):
     """wh_to_kwh for an appliance's lifetime energy counter, where 0 reads as
     unknown: a TP2X_RAC_20K (issue #488) reports "0" for a minute or two
     after its connection drops, and HA books a total_increasing drop to 0 as
-    a meter reset, counting the whole lifetime total again on recovery."""
+    a meter reset, counting the whole lifetime total again on recovery. A
+    negative reading is the same: issue #569's meterless RAC reports "-1"."""
     n = _num(v)
-    return round(n / 1000.0, 2) if n else None
+    return round(n / 1000.0, 2) if n is not None and n > 0 else None
 
 
 def parse_iso_utc(raw):

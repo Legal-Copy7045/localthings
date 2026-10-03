@@ -1939,3 +1939,20 @@ def test_registry_reproduces_golden_state_keys_for_airconditioner_tp1x_rhs():
         f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
         f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
     )
+
+
+def test_registry_reproduces_golden_state_keys_for_airconditioner_tp1x_rac_01001_oadr():
+    """AR18CYLZBGEN (issue #569): the TP1X_DA-AC-RAC-01001 board with
+    /oadr/vs/0 and an empty /auxiliaryheater/vs/0."""
+    from tests.conftest import _load_device
+
+    name = "airconditioner_tp1x_rac_01001_oadr"
+    golden = json.loads((GOLDEN / f"{name}.json").read_text())
+    state_keys = _new_state_keys(
+        name, _load_device(name), device_types=("oic.wk.d", "oic.d.airconditioner")
+    )
+    assert set(state_keys) == set(golden["state_keys"]), (
+        f"state_keys mismatch:\n"
+        f"  extra:   {sorted(set(state_keys) - set(golden['state_keys']))}\n"
+        f"  missing: {sorted(set(golden['state_keys']) - set(state_keys))}"
+    )
