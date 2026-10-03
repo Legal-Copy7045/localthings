@@ -101,6 +101,7 @@ from .transport import (
     AuthRejected,
     DecodeError,
     Transport,
+    WriteUnsupported,
     create_transport,
 )
 from .transport import local_source_port as _local_source_port
@@ -2514,6 +2515,13 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         async with self._session_lock:
             try:
                 await self.hass.async_add_executor_job(_do_put)
+            except WriteUnsupported as e:
+                # Nothing was sent, so there is nothing to reconnect for.
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN,
+                    translation_key="command_unsupported",
+                    translation_placeholders={"href": write_href},
+                ) from e
             except Exception as e:
                 self._log.warning("command failed for %s, reconnecting: %s", write_href, e)
                 await self.hass.async_add_executor_job(self._close_session)
@@ -2708,7 +2716,12 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         sess = self._session
         if sess is None:
             raise RuntimeError("no session")
-        code, response_body = sess.write(path_segs, body, timeout=self._POST_TIMEOUT_S)
+        try:
+            code, response_body = sess.write(path_segs, body, timeout=self._POST_TIMEOUT_S)
+        except WriteUnsupported as e:
+            # A debug write reports the refusal as the 4.04 it is, like any
+            # other, rather than failing the whole sequence.
+            return 0x84, {}, str(e)
         self._log.warning("DEBUG raw write POST %s %r → code %#04x", href, body, code)
         new_rep: dict = {}
         if readback:

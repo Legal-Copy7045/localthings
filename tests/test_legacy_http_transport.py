@@ -17,6 +17,7 @@ import pytest
 
 from custom_components.localthings.legacy_http import http_status_to_coap
 from custom_components.localthings.legacy_http_transport import LegacyHttpTransport
+from custom_components.localthings.transport import WriteUnsupported
 
 AGGREGATE = {
     "Device": {
@@ -291,11 +292,11 @@ class TestWrites:
         }
 
     def test_a_write_with_nowhere_to_land_is_refused_rather_than_guessed(self, transport):
-        code, _ = transport.write(
-            ["energy", "consumption", "vs", "0"], {PREFIX + "cumulativePower": "1"}, timeout=8.0
-        )
+        with pytest.raises(WriteUnsupported):
+            transport.write(
+                ["energy", "consumption", "vs", "0"], {PREFIX + "cumulativePower": "1"}, timeout=8.0
+            )
 
-        assert code == 0x84
         assert _FakeConnection.log == []
 
     def test_stop_on_an_idle_appliance_sends_nothing(self, transport):
@@ -622,9 +623,9 @@ class TestUnknownType:
         unknown.read(["device", "0"], timeout=10.0)
         _FakeConnection.log.clear()
 
-        code, _ = unknown.write(["washer", "vs", "0"], {PREFIX + "spinLevel": "800"}, 8.0)
+        with pytest.raises(WriteUnsupported):
+            unknown.write(["washer", "vs", "0"], {PREFIX + "spinLevel": "800"}, 8.0)
 
-        assert code == 0x84
         assert _FakeConnection.log == []
 
     def test_diagnostics_carry_the_type_and_the_untranslated_bodies(self, unknown):

@@ -2166,6 +2166,9 @@
     "command_failed": {
       "message": "The command to {href} failed even after reconnecting: {error}"
     },
+    "command_unsupported": {
+      "message": "This appliance can't be controlled at {href} over its local connection yet."
+    },
     "debug_read_failed": {
       "message": "The read from {href} failed: {error}"
     },

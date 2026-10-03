@@ -286,6 +286,9 @@
     "command_failed": {
       "message": "El comando para {href} falló incluso después de reconectar: {error}"
     },
+    "command_unsupported": {
+      "message": "Este electrodoméstico aún no se puede controlar en {href} a través de su conexión local."
+    },
     "debug_read_failed": {
       "message": "La lectura desde {href} falló: {error}"
     },

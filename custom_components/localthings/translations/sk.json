@@ -2166,6 +2166,9 @@
     "command_failed": {
       "message": "Príkaz pre {href} zlyhal aj po opätovnom pripojení: {error}"
     },
+    "command_unsupported": {
+      "message": "Toto zariadenie zatiaľ nemožno cez miestne pripojenie ovládať na {href}."
+    },
     "debug_read_failed": {
       "message": "Čítanie z {href} zlyhalo: {error}"
     },
