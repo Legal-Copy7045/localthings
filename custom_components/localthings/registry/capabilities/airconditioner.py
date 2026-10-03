@@ -345,8 +345,8 @@ def _legacy_cumulative_power_kwh(v):
         n = float(v)
     except (TypeError, ValueError):
         return None
-    # 0 reads as unknown, same as common.lifetime_wh_to_kwh.
-    return round(n / 100000.0, 2) if n else None
+    # 0 or less reads as unknown, same as common.lifetime_wh_to_kwh.
+    return round(n / 100000.0, 2) if n > 0 else None
 
 
 ENERGY_METER_LEGACY = replace(
@@ -1819,6 +1819,9 @@ _AC_IGNORED = [
     # /rhs/connecteddevice/vs/0 is the MAC list of paired indoor units.
     "/ai/options/vs/0",
     "/rhs/connecteddevice/vs/0",
+    # Empty ({}) on a cool-only RAC (issue #569). Revisit if a heat-pump dump
+    # populates it.
+    "/auxiliaryheater/vs/0",
 ]
 
 # Built as bare no-entity caps; folded into the AC registry (not global).

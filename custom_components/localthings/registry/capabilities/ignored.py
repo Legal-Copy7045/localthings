@@ -97,6 +97,9 @@ IGNORED: list[Capability] = [
     # Demand-response energy planner — same utility-program dependency as
     # /drlc/vs/0 above; every dump seen so far is inert (plan: 'none').
     Capability(href="/energy/planner/vs/0"),
+    # OpenADR demand response (AHRI 1380, issue #569) -- same
+    # utility-program dependency as /drlc/vs/0 above; status Idle on the dump.
+    Capability(href="/oadr/vs/0"),
     # Temperature-unit display preference, redundant with HA's own units.
     Capability(href="/wm/submode/vs/0"),
     # Read-only re-encoding of the course already exposed by
