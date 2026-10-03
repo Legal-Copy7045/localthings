@@ -34,6 +34,7 @@ from .legacy_http import (
     is_mapped,
     is_start,
     model_settings,
+    resources_for,
     split_start_only,
     staged_current,
     table_for,
@@ -94,6 +95,9 @@ class _ApplianceState:
 
     # The last sweep's bodies as the appliance sent them, before translation.
     last_bodies: dict[str, Any] = field(default_factory=dict)
+    # The aggregate's own `type` ('Washer', 'Oven', ...), which picks the
+    # envelope table; None until the aggregate is read, "" if it has none.
+    device_type: str | None = None
     # Values held for the next start, each with what the appliance reported
     # for it when it was chosen (None until first read).
     staged: dict[StagedKey, tuple[Any, Any]] = field(default_factory=dict)
@@ -123,10 +127,12 @@ class LegacyHttpTransport:
         self._key_pem = key_pem
         self._token = token
         self._family = family or ""
-        self._table = table_for(family)
-        self._by_href = _index_by_href(self._table)
         self._ctx: ssl.SSLContext | None = None
         self._state = _STATE.setdefault((host, port), _ApplianceState())
+
+    @property
+    def _table(self) -> tuple[Resource, ...]:
+        return table_for(self._state.device_type)
 
     @property
     def host(self) -> str:
@@ -152,7 +158,8 @@ class LegacyHttpTransport:
         href = "/" + "/".join(path_segs)
         if href == _SEED_HREF:
             return self._read_seed(timeout)
-        resource = self._by_href.get(href)
+        self._learn_type(timeout)
+        resource = _index_by_href(resources_for(self._state.last_bodies, self._table)).get(href)
         if resource is None:
             # Including /oic/p and /oic/d, which nginx answers with HTML.
             return 0x84, None
@@ -162,6 +169,19 @@ class LegacyHttpTransport:
         bodies = self._with_staged(unwrap(body))
         return 0x45, to_resources(bodies, self._table).get(href, {})
 
+    def _learn_type(self, timeout: float) -> None:
+        """Read the aggregate's `type` once, for a read or write that comes
+        before any sweep; without it only identity has a table."""
+        if self._state.device_type is not None:
+            return
+        status, body = self._request("GET", "/devices/0", timeout=timeout)
+        if status == 200 and isinstance(body, dict):
+            self._remember_type(unwrap(body))
+
+    def _remember_type(self, bodies: dict[str, Any]) -> None:
+        device_type = bodies.get("type")
+        self._state.device_type = device_type if isinstance(device_type, str) else ""
+
     def _read_seed(self, timeout: float) -> tuple[int, Any]:
         """The whole device in the shape a /device/0 batch arrives in: the
         aggregate plus the two resources it only links to. A linked resource
@@ -170,6 +190,7 @@ class LegacyHttpTransport:
         if status != 200 or not isinstance(body, dict):
             return http_status_to_coap(status), body if isinstance(body, str) else None
         bodies = unwrap(body)
+        self._remember_type(bodies)
         for endpoint in _LINKED_ENDPOINTS:
             linked_status, linked = self._request("GET", f"/devices/0/{endpoint}", timeout=timeout)
             if linked_status == 200 and isinstance(linked, dict):
@@ -191,6 +212,7 @@ class LegacyHttpTransport:
             # with no Collections.
             _LOGGER.warning("%s: no batch writes over 8888; write to %s refused", self._host, href)
             return 0x85, None
+        self._learn_type(timeout)
         aggregate = to_write([(href, body)], self._table)
         if not aggregate.get("Device"):
             # A guessed wrapper would reach the appliance as a command nobody
@@ -327,7 +349,8 @@ class LegacyHttpTransport:
         return {
             "transport": "legacy_http",
             "family": self._family,
-            "family_mapped": is_mapped(self._family),
+            "device_type": self._state.device_type or None,
+            "type_mapped": is_mapped(self._state.device_type),
             # Resource bodies only: the aggregate's own scalars include a
             # `description` that can carry the serial and a user-set `name`.
             "bodies": {
