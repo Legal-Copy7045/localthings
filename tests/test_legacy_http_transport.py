@@ -39,7 +39,6 @@ AGGREGATE = {
         "description": "TP6X_WW6500(REDACTED)",
         "id": "0",
         "name": "Washer",
-        "type": "Washer",
     }
 }
 CONFIGURATION = {"Configuration": {"remoteControlEnabled": True}}
@@ -119,10 +118,6 @@ def transport(monkeypatch):
         "10.0.0.7", 8888, cert_pem="CERT", key_pem="KEY", token="tok123456", family="TP6X_WASHER"
     )
     device.connect()
-    # The coordinator's first cycle is a sweep, which is where the
-    # appliance's `type` is learned.
-    device.read(["device", "0"], timeout=10.0)
-    _FakeConnection.log.clear()
     return device
 
 
@@ -522,119 +517,35 @@ class TestCapabilities:
         assert _FakeConnection.log[-1][3]["Authorization"] == "Bearer tok123456"
 
 
-class TestType:
-    """The aggregate's `type` picks the envelope table, and is read once
-    for a read or write that comes before any sweep."""
+class TestUnmappedFamily:
+    """A family with no envelope table is read for its identity alone, so it
+    sets up like an unrecognized DTLS device rather than borrowing another
+    family's field map."""
 
     @pytest.fixture
-    def cold(self, transport, monkeypatch):
-        monkeypatch.setattr("custom_components.localthings.legacy_http_transport._STATE", {})
-        device = LegacyHttpTransport(
-            "10.0.0.7", 8888, cert_pem="C", key_pem="K", token="t", family="TP6X_WASHER"
-        )
-        device.connect()
-        return device
-
-    def test_a_read_before_any_sweep_learns_the_type_first(self, cold):
-        code, rep = cold.read(["power", "vs", "0"], timeout=10.0)
-
-        assert (code, rep) == (0x45, {PREFIX + "power": "On"})
-        assert [path for _, path, *_ in _FakeConnection.log] == [
-            "/devices/0",
-            "/devices/0/operation",
-        ]
-
-    def test_the_type_is_learned_once(self, cold):
-        cold.read(["power", "vs", "0"], timeout=10.0)
-        _FakeConnection.log.clear()
-
-        cold.read(["power", "vs", "0"], timeout=10.0)
-
-        assert [path for _, path, *_ in _FakeConnection.log] == ["/devices/0/operation"]
-
-    def test_a_write_before_any_sweep_still_reaches_its_wrapper(self, cold):
-        _FakeConnection.routes[("PUT", "/devices/0")] = (204, None)
-
-        code, _ = cold.write(
-            ["operational", "state", "vs", "0"], {PREFIX + "state": "Pause"}, timeout=8.0
-        )
-
-        assert code == 0x44
-        assert _FakeConnection.log[-1][:3] == (
-            "PUT",
-            "/devices/0",
-            {"Device": {"Operation": {"state": "Pause"}}},
-        )
-
-    def test_an_aggregate_with_no_type_is_not_read_again(self, cold):
-        aggregate = json.loads(json.dumps(AGGREGATE))
-        del aggregate["Device"]["type"]
-        _FakeConnection.routes["/devices/0"] = (200, aggregate)
-
-        cold.read(["power", "vs", "0"], timeout=10.0)
-        cold.read(["power", "vs", "0"], timeout=10.0)
-
-        assert [path for _, path, *_ in _FakeConnection.log] == ["/devices/0"]
-
-
-class TestUnknownType:
-    """A type with no envelope table reads by the mechanical rule, so routing
-    sees its real resources and anything unbound raises the coverage repair,
-    while writes stay refused: nothing tells which wrapper a command belongs
-    in."""
-
-    @pytest.fixture
-    def unknown(self, transport, monkeypatch):
-        monkeypatch.setattr("custom_components.localthings.legacy_http_transport._STATE", {})
-        aggregate = json.loads(json.dumps(AGGREGATE))
-        aggregate["Device"]["type"] = "Dryer"
-        _FakeConnection.routes["/devices/0"] = (200, aggregate)
+    def unmapped(self, transport):
         device = LegacyHttpTransport(
             "10.0.0.7", 8888, cert_pem="C", key_pem="K", token="t", family="TP6X_DRYER"
         )
         device.connect()
         return device
 
-    def test_the_seed_carries_every_resource_on_its_mechanical_href(self, unknown):
-        code, body = unknown.read(["device", "0"], timeout=10.0)
+    def test_the_seed_carries_identity_and_nothing_else(self, unmapped):
+        code, body = unmapped.read(["device", "0"], timeout=10.0)
 
         assert code == 0x45
-        assert {entry["href"] for entry in body} == {
-            "/alarms/vs/0",
-            "/configuration/vs/0",
-            "/diagnosis/vs/0",
-            "/information/vs/0",
-            "/mode/vs/0",
-            "/operation/vs/0",
-            "/washer/vs/0",
-        }
+        assert [entry["href"] for entry in body] == ["/information/vs/0"]
 
-    def test_a_mechanical_href_reads_on_its_own(self, unknown):
-        unknown.read(["device", "0"], timeout=10.0)
+    def test_a_washer_href_is_not_served(self, unmapped):
+        assert unmapped.read(["washer", "vs", "0"], timeout=10.0) == (0x84, None)
 
-        code, rep = unknown.read(["washer", "vs", "0"], timeout=10.0)
+    def test_diagnostics_carry_the_untranslated_bodies(self, unmapped):
+        unmapped.read(["device", "0"], timeout=10.0)
 
-        assert code == 0x45
-        assert rep[PREFIX + "spinLevel"] == "1400"
-        assert _FakeConnection.log[-1][1] == "/devices/0/washer"
-
-    def test_a_write_is_refused_rather_than_guessed(self, unknown):
-        unknown.read(["device", "0"], timeout=10.0)
-        _FakeConnection.log.clear()
-
-        code, _ = unknown.write(["washer", "vs", "0"], {PREFIX + "spinLevel": "800"}, 8.0)
-
-        assert code == 0x84
-        assert _FakeConnection.log == []
-
-    def test_diagnostics_carry_the_type_and_the_untranslated_bodies(self, unknown):
-        unknown.read(["device", "0"], timeout=10.0)
-
-        diag = unknown.diagnostics()
+        diag = unmapped.diagnostics()
 
         assert diag["family"] == "TP6X_DRYER"
-        assert diag["device_type"] == "Dryer"
-        assert diag["type_mapped"] is False
+        assert diag["family_mapped"] is False
         assert diag["bodies"]["Washer"] == AGGREGATE["Device"]["Washer"]
         # The aggregate's description can carry the serial; name is user-set.
         assert "description" not in diag["bodies"]

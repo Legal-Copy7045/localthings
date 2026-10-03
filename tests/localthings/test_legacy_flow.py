@@ -233,17 +233,14 @@ async def test_an_unmapped_family_is_confirmed_like_an_unknown_device(
     assert result["step_id"] == "confirm_unknown_type"
 
 
-def test_probe_reads_the_appliance_once_and_keeps_what_routing_found(monkeypatch) -> None:
-    """The sweep carries the `type` that picks the table, so there is no
-    second pass, and routing's verdict on the real resources stands."""
+def test_probe_reads_an_unmapped_family_for_identity_only(monkeypatch) -> None:
     from custom_components.localthings import config_flow
 
-    transports: list[dict] = []
-    reads: list[object] = []
+    families: list[str | None] = []
 
     class _Transport:
-        def __init__(self, *args, **kwargs):
-            transports.append(kwargs)
+        def __init__(self, *args, family=None, **kwargs):
+            families.append(family)
 
         def connect(self):
             pass
@@ -252,8 +249,7 @@ def test_probe_reads_the_appliance_once_and_keeps_what_routing_found(monkeypatch
             pass
 
     def _read(transport, host, port):
-        reads.append(transport)
-        return {**LEGACY_DEVICE, "device_type_name": "dryer", "device_type_recognized": True}
+        return {**LEGACY_DEVICE, "description": "TP6X_DRYER"}
 
     monkeypatch.setattr(
         "custom_components.localthings.legacy_http_transport.LegacyHttpTransport", _Transport
@@ -262,9 +258,34 @@ def test_probe_reads_the_appliance_once_and_keeps_what_routing_found(monkeypatch
 
     info = config_flow._probe_legacy(MOCK_HOST, "C", "K", "tok")
 
-    assert len(reads) == 1
-    assert "family" not in transports[0]
-    assert info["device_type_name"] == "dryer"
+    assert families == [None]
+    assert info["device_type_recognized"] is False
+    assert info["device_type_name"] is None
+
+
+def test_probe_reads_a_mapped_family_through_its_table(monkeypatch) -> None:
+    from custom_components.localthings import config_flow
+
+    families: list[str | None] = []
+
+    class _Transport:
+        def __init__(self, *args, family=None, **kwargs):
+            families.append(family)
+
+        def connect(self):
+            pass
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(
+        "custom_components.localthings.legacy_http_transport.LegacyHttpTransport", _Transport
+    )
+    monkeypatch.setattr(config_flow, "_read_device", lambda transport, host, port: LEGACY_DEVICE)
+
+    info = config_flow._probe_legacy(MOCK_HOST, "C", "K", "tok")
+
+    assert families == [None, "TP6X_WASHER"]
     assert info["device_type_recognized"] is True
 
 

@@ -7,10 +7,9 @@ paths, so this module translates it to the `{href: rep}` shape
 `parse_device0_batch` produces and `registry/` works on it unchanged.
 
 Pure: no I/O, no Home Assistant. Two mechanical rules carry the translation
--- a field takes the `x.com.samsung.da.` prefix, and a resource `Foo` lands on
-`/foo/vs/0` -- and a table row, chosen by the `type` the appliance states in
-its own body, says where its type disagrees. A resource only the mechanical
-rule placed is read-only: a write needs a row someone has written.
+-- a field takes the `x.com.samsung.da.` prefix, a resource maps onto the
+canonical href its fields belong in -- and everything else is a table row,
+so a family that disagrees costs a row rather than a branch.
 """
 
 from __future__ import annotations
@@ -60,8 +59,9 @@ class Resource:
     joined: frozenset[str] = frozenset()
 
 
-# Information is served by its own endpoint rather than in the aggregate,
-# and is renamed in two places, so every table carries this row.
+# Every family serves its own identity here -- it is how the family is told
+# apart in the first place -- so this row is the one thing an unmapped
+# family can still be read with.
 INFORMATION = Resource(
     endpoint="information",
     wrapper="Information",
@@ -69,13 +69,14 @@ INFORMATION = Resource(
     rename={"modelID": "modelNum", "serialNumber": "serialNum"},
 )
 
-# What a type with no table is read with, alongside the mechanical rule:
-# nothing of another type's field map is borrowed.
+# What an unmapped family is read with: identity only, so it sets up the way
+# an unrecognized DTLS device does rather than borrowing another family's
+# field map.
 IDENTITY: tuple[Resource, ...] = (INFORMATION,)
 
 # TP6X_WW6500 (EU), the one 8888 appliance measured end to end. `Mode` is
 # /course/vs/0, not /mode/vs/0 (which this firmware 404s).
-WASHER: tuple[Resource, ...] = (
+TP6X_WASHER: tuple[Resource, ...] = (
     Resource(
         endpoint="operation",
         wrapper="Operation",
@@ -110,7 +111,7 @@ WASHER: tuple[Resource, ...] = (
 # ones the ARTIK051 boards serve over CoAP, so each resource lands on that
 # generation's href: Wind is /airflow/vs/0, not /wind/strength/vs/0. Writes
 # follow the washer's aggregate PUT and are not yet confirmed on this family.
-AIR_CONDITIONER: tuple[Resource, ...] = (
+TP6X_RAC: tuple[Resource, ...] = (
     Resource(endpoint="operation", wrapper="Operation", href="/power/vs/0"),
     Resource(endpoint="mode", wrapper="Mode", href="/mode/vs/0"),
     Resource(
@@ -141,7 +142,7 @@ AIR_CONDITIONER: tuple[Resource, ...] = (
 # dump. The fields are the TP2X_DA-KS-WALLOVEN's CoAP vocabulary, so each
 # resource lands on that board's href. Writes follow the washer's aggregate
 # PUT and are not yet confirmed on this family.
-OVEN: tuple[Resource, ...] = (
+LCD_OV_WALL: tuple[Resource, ...] = (
     Resource(
         endpoint="operation",
         wrapper="Operation",
@@ -175,70 +176,29 @@ OVEN: tuple[Resource, ...] = (
 )
 
 
-# Keyed by the aggregate's own `type`, which every 8888 appliance on record
-# states, so a new model line of a known type needs no row. A type not listed
-# here is read with IDENTITY and the mechanical rule.
-TYPES: dict[str, tuple[Resource, ...]] = {
-    "Washer": WASHER,
-    "Air_Conditioner": AIR_CONDITIONER,
-    "Oven": OVEN,
+# Keyed by the appliance's own `description` (/devices/0/information's,
+# e.g. 'TP6X_WASHER'), less any trailing capacity (`_16K`), so one row covers
+# every size of a model line. A family not listed here is read with IDENTITY.
+FAMILIES: dict[str, tuple[Resource, ...]] = {
+    "TP6X_WASHER": TP6X_WASHER,
+    "TP6X_RAC": TP6X_RAC,
+    "LCD_OV_WALL": LCD_OV_WALL,
 }
-
-
-def table_for(device_type: str | None) -> tuple[Resource, ...]:
-    """The envelope table for the appliance's `type`, or IDENTITY."""
-    return TYPES.get(device_type or "", IDENTITY)
-
-
-def is_mapped(device_type: str | None) -> bool:
-    return (device_type or "") in TYPES
-
-
-# Aggregate keys that hold no resource of their own: the links to the two
-# endpoints read separately, and EnergyConsumption, whose one field names the
-# usage-history file (`/files/usage.db`) rather than reporting any state.
-_LINK_SUFFIX = "Link"
-IGNORED_WRAPPERS = frozenset({"EnergyConsumption"})
-
-
-def _default_resource(wrapper: str, body: Any) -> Resource | None:
-    """The mechanical row for a resource no table names: `Foo` on
-    `/foo/vs/0`, as every CoAP board spells a resource of that name. Lower
-    case keys (`type`, `resources`, `uuid`) are the aggregate's own scalars."""
-    if not wrapper[:1].isupper() or wrapper.endswith(_LINK_SUFFIX):
-        return None
-    if wrapper in IGNORED_WRAPPERS or not isinstance(body, (Mapping, list)):
-        return None
-    name = wrapper.lower()
-    return Resource(
-        endpoint=name, wrapper=wrapper, href=f"/{name}/vs/0", as_items=isinstance(body, list)
-    )
-
-
-def resources_for(bodies: Mapping[str, Any], table: tuple[Resource, ...]) -> tuple[Resource, ...]:
-    """`table` plus a mechanical row for every other resource in `bodies`,
-    so nothing the appliance reports is dropped unseen: a resource no
-    capability binds reaches discovery as an unbound href, the same coverage
-    gap a CoAP board raises."""
-    named = {resource.wrapper for resource in table}
-    taken = {resource.href for resource in table} | {
-        href for resource in table for href in resource.fan_out.values()
-    }
-    extra = []
-    for wrapper, body in bodies.items():
-        if wrapper in named:
-            continue
-        resource = _default_resource(wrapper, body)
-        if resource is not None and resource.href not in taken:
-            extra.append(resource)
-    return (*table, *extra)
-
 
 _CAPACITY = re.compile(r"_\d+K$")
 
 
 def _family_key(family: str | None) -> str:
     return _CAPACITY.sub("", family or "")
+
+
+def table_for(family: str | None) -> tuple[Resource, ...]:
+    """The envelope table for `family`, or IDENTITY when it is unmapped."""
+    return FAMILIES.get(_family_key(family), IDENTITY)
+
+
+def is_mapped(family: str | None) -> bool:
+    return _family_key(family) in FAMILIES
 
 
 def _canonical_name(name: str, rename: Mapping[str, str]) -> str:
@@ -297,11 +257,10 @@ def to_resources(bodies: Mapping[str, Any], table: tuple[Resource, ...]) -> dict
     """Wrapper-keyed 8888 bodies (see unwrap) -> `{canonical href: rep}`.
 
     A wrapper the appliance didn't report is absent from the result, the same
-    as an href a `/device/0` batch didn't carry. One no table row names takes
-    the mechanical rule (see resources_for).
+    as an href a `/device/0` batch didn't carry.
     """
     out: dict[str, dict] = {}
-    for resource in resources_for(bodies, table):
+    for resource in table:
         body = bodies.get(resource.wrapper)
         if body is None:
             continue
@@ -425,8 +384,7 @@ def to_write(
 ) -> dict[str, Any]:
     """`[(canonical href, canonical patch), ...]` -> one `PUT /devices/0` body.
 
-    Only `table`'s rows are written; a resource the mechanical rule placed
-    is read-only. Always the aggregate endpoint: a bare body on a resource endpoint
+    Always the aggregate endpoint: a bare body on a resource endpoint
     (`PUT /devices/0/mode`) has never been tested on this hardware.
     """
     device: dict[str, Any] = {}
