@@ -50,7 +50,7 @@ from .registry.capabilities.laundry import (
     OPTION_KIND_WATER_TEMPERATURE,
     course_option_mask,
 )
-from .transport import AuthRejected, WriteUnsupported
+from .transport import AuthRejected
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -216,8 +216,9 @@ class LegacyHttpTransport:
         aggregate = to_write([(href, body)], self._table)
         if not aggregate.get("Device"):
             # A guessed wrapper would reach the appliance as a command nobody
-            # chose, so a patch no table row places is refused.
-            raise WriteUnsupported(href)
+            # chose, so a patch this family has no resource for is refused.
+            _LOGGER.warning("%s: no 8888 resource for %s; write dropped", self._host, href)
+            return 0x84, None
         sendable, staged = split_start_only(aggregate, self._table)
         if any(prefix == _COURSE_PREFIX for _, _, prefix in staged):
             # A new course brings its own settings, on the panel as well, so

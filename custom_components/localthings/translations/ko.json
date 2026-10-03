@@ -2166,9 +2166,6 @@
     "command_failed": {
       "message": "재연결 후에도 {href} 명령이 실패했습니다: {error}"
     },
-    "command_unsupported": {
-      "message": "이 기기는 아직 로컬 연결로 {href}을(를) 제어할 수 없습니다."
-    },
     "debug_read_failed": {
       "message": "{href}에서 읽기가 실패했습니다: {error}"
     },

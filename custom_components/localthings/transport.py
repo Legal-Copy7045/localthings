@@ -79,16 +79,6 @@ class DecodeError(ValueError):
         self.payload = payload
 
 
-class WriteUnsupported(Exception):
-    """The transport has no way to send this write: the 8888 bridge reads a
-    resource no envelope table names, but won't guess where a command for
-    it belongs. Nothing reached the appliance, so retrying cannot help."""
-
-    def __init__(self, href: str) -> None:
-        super().__init__(f"no local write path for {href}")
-        self.href = href
-
-
 class AuthRejected(Exception):
     """The device refused this entry's credentials outright -- the 8888
     bridge's 401 for a device token it no longer accepts. Only new

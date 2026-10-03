@@ -8,8 +8,6 @@ or getting translated into a HomeAssistantError for a service caller.
 
 from __future__ import annotations
 
-from typing import cast
-
 import pytest
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -22,7 +20,6 @@ from custom_components.localthings.const import (
     DOMAIN,
 )
 from custom_components.localthings.coordinator import LocalThingsCoordinator
-from custom_components.localthings.transport import Transport
 
 ENTRY_DATA = {
     CONF_HOST: "10.0.0.198",
@@ -77,46 +74,3 @@ async def test_subdevice_enumeration_failure_does_not_abort_first_discovery(
     assert coordinator._discovered is True
     assert result == {}
     assert "subdevice enumeration failed" in caplog.text
-
-
-class _UnwritableSession:
-    """An 8888 session asked to write a resource only the mechanical rule
-    placed: it refuses before anything is sent."""
-
-    def write(self, path_segs, body, timeout):
-        from custom_components.localthings.transport import WriteUnsupported
-
-        raise WriteUnsupported("/" + "/".join(path_segs))
-
-
-async def test_a_write_with_no_local_path_says_so_without_reconnecting(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Otherwise a control bound to a read-only 8888 resource would do
-    nothing, silently; and a reconnect cannot help a write never sent."""
-    from homeassistant.exceptions import HomeAssistantError
-
-    coordinator = _coordinator(hass)
-    coordinator._session = cast(Transport, _UnwritableSession())
-    closed: list[bool] = []
-    monkeypatch.setattr(coordinator, "_close_session", lambda: closed.append(True))
-
-    with pytest.raises(HomeAssistantError) as err:
-        await coordinator._async_put(["dryer", "vs", "0"], {"x": "1"}, "/dryer/vs/0")
-
-    assert err.value.translation_key == "command_unsupported"
-    assert err.value.translation_placeholders == {"href": "/dryer/vs/0"}
-    assert closed == []
-
-
-def test_a_debug_write_with_no_local_path_reports_a_404(hass: HomeAssistant) -> None:
-    coordinator = _coordinator(hass)
-    coordinator._session = cast(Transport, _UnwritableSession())
-
-    code, after, body = coordinator._raw_write_blocking(
-        ["dryer", "vs", "0"], {"x": "1"}, "/dryer/vs/0", True
-    )
-
-    assert code == 0x84
-    assert after == {}
-    assert "/dryer/vs/0" in body

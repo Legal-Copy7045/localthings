@@ -2166,9 +2166,6 @@
     "command_failed": {
       "message": "Der Befehl an {href} ist auch nach erneutem Verbinden fehlgeschlagen: {error}"
     },
-    "command_unsupported": {
-      "message": "Dieses Gerät lässt sich unter {href} über die lokale Verbindung noch nicht steuern."
-    },
     "debug_read_failed": {
       "message": "Das Lesen von {href} ist fehlgeschlagen: {error}"
     },

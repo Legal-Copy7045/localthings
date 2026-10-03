@@ -2166,9 +2166,6 @@
     "command_failed": {
       "message": "Il comando per {href} è fallito anche dopo la riconnessione: {error}"
     },
-    "command_unsupported": {
-      "message": "Questo elettrodomestico non può ancora essere controllato su {href} tramite la connessione locale."
-    },
     "debug_read_failed": {
       "message": "La lettura da {href} è fallita: {error}"
     },
