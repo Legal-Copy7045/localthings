@@ -160,8 +160,8 @@ def identity_may_be_suggested_from_doxm(profile: str) -> bool:
 def normalize_psk_identity(value: Any) -> str:
     """One canonical 16-byte OCF UUID, usable as a DTLS PSK identity.
 
-    Ask the transport whether it can preserve zero bytes. OpenSSL cannot;
-    the optional Mbed TLS backend can. Keep older installations fail-closed.
+    Ask the installed transport whether it can preserve zero bytes.
+    Keep unsupported installations fail-closed.
     """
     try:
         parsed = UUID(str(value).strip())
