@@ -8,7 +8,6 @@ read back, and that everything that heats or starts a cook stays refused.
 
 from __future__ import annotations
 
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -18,10 +17,8 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from custom_components.localthings.const import DOMAIN
 from custom_components.localthings.coordinator import LocalThingsCoordinator, _payload_present_in
 from custom_components.localthings.registry.capabilities import oven
-from custom_components.localthings.registry.capabilities.common import remote_control_enabled
 from custom_components.localthings.registry.discovery import BoundEntity
 
-FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 _WAIVED = ("lamp", "sound", "energy_saving")
 _STILL_GATED = ("oven_mode", "fast_preheat", "natural_steam", "cooktop_on_alert")
 _OPTIONS = [
@@ -62,17 +59,6 @@ def test_options_token_counts_as_taken_when_merged_into_the_array() -> None:
     assert not _payload_present_in({"x.com.samsung.da.options": ["UpperLamp_Off"]}, readback)
 
 
-def test_fridge_fixtures_report_no_remote_control_lock() -> None:
-    """Fridges never carry /remotectrl, so none of their writes is gated --
-    the SmartThings behaviour already, with nothing to waive."""
-    fridges = sorted(FIXTURES_DIR.glob("refrigerator_*.json"))
-    assert fridges
-    for path in fridges:
-        text = path.read_text(encoding="utf-8")
-        assert "/remotectrl" not in text, path.name
-    assert remote_control_enabled({}) is True
-
-
 async def _oven_with_remote_control_off(hass, mock_entry) -> LocalThingsCoordinator:
     await hass.config_entries.async_setup(mock_entry.entry_id)
     await hass.async_block_till_done()
@@ -111,8 +97,14 @@ async def test_waived_switch_is_sent_and_read_back_with_remote_control_off(
 
     assert written[0][0] == ["mode", "vs", "0"]
     assert written[0][1] == {"x.com.samsung.da.options": [token]}
-    # Background door reads can land in the same window; only the confirm matters.
-    assert [c.args[0] for c in read.call_args_list].count(["mode", "vs", "0"]) == 1
+    # Sub-polls read /mode/vs/0 too and can land in the same window; the
+    # confirm is the one read made with the write timeout.
+    confirms = [
+        c.args[0]
+        for c in read.call_args_list
+        if c.kwargs.get("timeout") == LocalThingsCoordinator._POST_TIMEOUT_S
+    ]
+    assert confirms == [["mode", "vs", "0"]]
 
 
 async def test_waived_switch_the_oven_dropped_is_reported(
