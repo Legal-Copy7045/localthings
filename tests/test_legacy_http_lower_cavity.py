@@ -302,6 +302,19 @@ class TestCavityModes:
 
         assert "ConvectionBake" in modes
 
+    def test_a_listing_that_times_out_still_reads_the_upper_cavity(self, monkeypatch):
+        transport = _transport()
+        _seed(transport, 0)
+
+        def _timeout(timeout):
+            raise TimeoutError("timed out")
+
+        monkeypatch.setattr(transport, "_list_devices", _timeout)
+
+        modes = _supported(_seed(transport, 0), 0)
+
+        assert "UpperConvectionBake" in modes and "ConvectionBake" in modes
+
     def test_divider_out_the_lower_cavity_offers_nothing_to_start(self):
         _FakeConnection.routes = _routes(divided=False)
 

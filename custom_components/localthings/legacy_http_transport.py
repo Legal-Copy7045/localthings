@@ -237,8 +237,13 @@ class LegacyHttpTransport:
             record, devices = unwrap(body), None
             if has_cavities(self._family):
                 # Whether the divider is in decides which modes the upper
-                # cavity offers (with_cavity_modes).
-                _, listing = self._list_devices(timeout)
+                # cavity offers (with_cavity_modes). An unanswered listing
+                # leaves the divider unknown rather than failing the sweep.
+                try:
+                    _, listing = self._list_devices(timeout)
+                except (OSError, http.client.HTTPException) as err:
+                    _LOGGER.debug("%s: /devices for the divider failed: %s", self._host, err)
+                    listing = None
                 if listing is None:
                     self._state_at(1).listed = None
                 else:
