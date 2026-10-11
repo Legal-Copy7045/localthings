@@ -2914,6 +2914,115 @@ class LocalThingsCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     translation_placeholders={"href": norm_href, "error": str(e)},
                 ) from e
 
+    # observe_resource's listening window, in seconds, and how many
+    # notifications one call keeps.
+    OBSERVE_DURATION_MAX_S: float = 120.0
+    _OBSERVE_KEEP: int = 200
+
+    async def async_observe_resource(
+        self, href: str, query: Sequence[str] = (), duration: float = 30.0
+    ) -> dict[str, Any]:
+        """Debug-only OBSERVE on one href for `duration` seconds, after one
+        live GET of it (issue #607: whether a board pushes fields its GET
+        leaves out). Backs the observe_resource service.
+
+        The session lock is held only to subscribe and unsubscribe, so polls
+        and writes carry on while it listens. An href this coordinator
+        observes is only listened to: unsubscribing retires every relation
+        on the path, its own included."""
+        path_segs = _href_to_path_segs(href)
+        if not path_segs:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="resource_href_required",
+            )
+        if not 0 < duration <= self.OBSERVE_DURATION_MAX_S:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="observe_duration_out_of_range",
+                translation_placeholders={"max": str(int(self.OBSERVE_DURATION_MAX_S))},
+            )
+        if self._entry.data.get(CONF_TRANSPORT) == TRANSPORT_LEGACY_HTTP:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="observe_not_supported",
+            )
+        norm_href = "/" + "/".join(path_segs)
+        query_refused = ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="observe_query_while_observed",
+            translation_placeholders={"href": norm_href},
+        )
+        if query and self._observe.coordinator_observes(norm_href):
+            raise query_refused
+        tap = self._observe.reserve_tap(norm_href, limit=self._OBSERVE_KEEP, isolate=bool(query))
+        if tap is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="observe_in_progress",
+                translation_placeholders={"href": norm_href},
+            )
+        sess = None
+        subscribed = False
+        try:
+            code, rep, body = await self.async_raw_read(norm_href, query)
+            async with self._session_lock:
+                # Decided here, not above: the GET and the lock wait give
+                # the coordinator time to subscribe or drop the href.
+                already_observed = self._observe.coordinator_observes(norm_href)
+                if already_observed and query:
+                    raise query_refused
+
+                def _subscribe():
+                    if self._session is None:
+                        self._connect_session()
+                    live = self._session
+                    if live is None:
+                        raise RuntimeError("no session")
+                    self._observe.start_tap(tap)
+                    if not already_observed:
+                        live.subscribe(path_segs, query=tuple(query))
+                    return live
+
+                try:
+                    sess = await self.hass.async_add_executor_job(_subscribe)
+                except Exception as e:
+                    self._log.warning("debug observe failed for %s: %s", norm_href, e)
+                    raise HomeAssistantError(
+                        translation_domain=DOMAIN,
+                        translation_key="debug_observe_failed",
+                        translation_placeholders={"href": norm_href, "error": str(e)},
+                    ) from e
+                subscribed = not already_observed
+            await asyncio.sleep(duration)
+            session_dropped = self._session is not sess
+        finally:
+            self._observe.release_tap(norm_href, tap)
+            # Also on cancellation: a query-qualified relation left behind
+            # would keep pushing into the cache once nothing isolates it.
+            if subscribed:
+                await self._retire_debug_relation(sess, path_segs, norm_href)
+        started = tap.started or 0.0
+        return {
+            "get": (code, rep, body),
+            "already_observed": already_observed,
+            "session_dropped": session_dropped,
+            "notifications": [(round(at - started, 2), item) for at, item in tap.items],
+            "truncated": tap.dropped > 0,
+        }
+
+    async def _retire_debug_relation(self, sess, path_segs: list[str], href: str) -> None:
+        """Unsubscribe observe_resource's relation, unless its session is gone
+        (the relation went with it) or the coordinator now holds one on the
+        same path, which an unsubscribe would retire too."""
+        async with self._session_lock:
+            if self._session is not sess or self._observe.coordinator_observes(href):
+                return
+            try:
+                await self.hass.async_add_executor_job(sess.unsubscribe, path_segs)
+            except Exception as e:
+                self._log.debug("debug observe: unsubscribe %s failed: %s", href, e)
+
     async def async_raw_write_sequence(
         self,
         writes: list[dict],
